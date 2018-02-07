@@ -52,9 +52,9 @@ void main(void){
     
     //flash_Erase(g_data_adr,B_ERASE);
     
-    CAMERA_POW = 0;
-    CAMERA_SEL = 0;
-    max2828_txon();
+//    CAMERA_POW = 0;
+//    CAMERA_SEL = 0;
+//    max2828_txon();
 //    send_pn9();            //PN9送信
 //    send_55();             //プリアンブル送信
     send_tst_str();        //テスト文字送信

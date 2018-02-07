@@ -16,6 +16,10 @@
 #define PA_SW			RA4
 #define Mod_SW			RC0
 
+#define Send            RC2
+#define CAM1            RB1
+#define CAM2            RB0
+
 #define REGTBL_NUM		13	//レジスタテーブル数
 #define REGDATA_NUM		14	//データのビット数
 #define ADDRESS_NUM		4	//アドレスのビット数

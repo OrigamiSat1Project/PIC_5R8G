@@ -680,40 +680,43 @@ void send_55(void){
 void send_tst_str(void){
     CREN = Bit_Low;
     TXEN = Bit_High;
-	UBYTE testcount_1 = 0,testcount_2 = 0;
+	UINT clock_in_tst = 0;
 //	initbau(BAU_HIGH);								//UARTÇÃèâä˙âª 115.2kbps
 //	initbau(0x1F);									//57.6kbps
 //	initbau(0x5F);									//19.2kbps
 	while(1){
-        if(testcount_2 = 0){
-            send_01();
-            /*
-            for(UINT i=0;i<10;i++){
-                sendChar(0xFF);
-                __delay_us(20);
-                sendChar(0xD8);
-                __delay_us(20);
-            }*/
-        }else if(testcount_2 > 50 ){
+        if(clock_in_tst == 0){
+            //  TODO : check input 5V, then judge to send or not
+        }else if(clock_in_tst <= 1200 ){
+            if(CAM1 == 0){
+                for(UINT i=0;i<10;i++){
+                    send_buf[0] = STR[i];
+                    sendChar(send_buf[0]);
+                    //sendChar(0x00);
+                    __delay_us(20);
+                }
+            }else{
+                break;
+            }
+        }else if(clock_in_tst > 1200 ){
+            //  shut down power for amp
 			CLRWDT();
 			WDT_CLK = ~WDT_CLK;
-			testcount_2 = 0;
-            delay_ms(1000);
-		}else if(testcount_2 <= 50 ){
-			for(UINT i=0;i<10;i++){
-                //send_01();
-                send_buf[0] = STR[i];
-                sendChar(send_buf[0]);
-                //sendChar(0x00);
-                __delay_us(20);
+			clock_in_tst = 0;
+            CAMERA_POW = 1;
+            CAMERA_SEL = 1;
+            MAX2828_TXEN = 0;
+            PA_SW = 0;
+            delay_ms(5000);
+            if(CAM1 == 0){
+                //  wake up power for amp
+                CAMERA_POW = 0;
+                CAMERA_SEL = 0;
+                max2828_txon();
+                delay_ms(1000);
             }
-            /*
-            sendChar(0xFF);
-            delay_us(20);
-            sendChar(0xD8);
-            delay_us(20);*/
-		}
-        testcount_2 ++;
+		}        
+        clock_in_tst ++;
 	}
 }
 

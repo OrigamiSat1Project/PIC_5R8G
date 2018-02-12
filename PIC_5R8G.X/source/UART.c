@@ -684,39 +684,62 @@ void send_tst_str(void){
 //	initbau(BAU_HIGH);								//UARTÇÃèâä˙âª 115.2kbps
 //	initbau(0x1F);									//57.6kbps
 //	initbau(0x5F);									//19.2kbps
+    CAMERA_POW = 0;
+    CAMERA_SEL = 0;
+    max2828_txon();
+    delay_ms(1000);
 	while(1){
-        if(clock_in_tst == 0){
-            //  TODO : check input 5V, then judge to send or not
-        }else if(clock_in_tst <= 1200 ){
-            if(CAM1 == 0){
+        if(CAM2 == 0){
+            if(clock_in_tst <= 1200 ){
                 for(UINT i=0;i<10;i++){
                     send_buf[0] = STR[i];
                     sendChar(send_buf[0]);
                     //sendChar(0x00);
                     __delay_us(20);
                 }
-            }else{
-                break;
+                if(CAM2 == 1 && CAMERA_POW == 0){
+                    //  shut down power of amp
+                    CLRWDT();
+                    WDT_CLK = ~WDT_CLK;
+                    clock_in_tst = 1300;    //  over 1200
+                    CAMERA_POW = 1;
+                    CAMERA_SEL = 1;
+                    MAX2828_TXEN = 0;
+                    PA_SW = 0;
+                    break;
+                }
+            }else if(clock_in_tst > 1200 ){
+                //  shut down power of amp
+                CLRWDT();
+                WDT_CLK = ~WDT_CLK;
+                CAMERA_POW = 1;
+                CAMERA_SEL = 1;
+                MAX2828_TXEN = 0;
+                PA_SW = 0;
+                delay_ms(5000);
+                if(CAM2 == 0 && CAMERA_POW == 1){
+                    //  wake up power for amp
+                    CAMERA_POW = 0;
+                    CAMERA_SEL = 0;
+                    max2828_txon();
+                    delay_ms(1000);
+                }
+                clock_in_tst = 0;
             }
-        }else if(clock_in_tst > 1200 ){
-            //  shut down power for amp
-			CLRWDT();
-			WDT_CLK = ~WDT_CLK;
-			clock_in_tst = 0;
-            CAMERA_POW = 1;
-            CAMERA_SEL = 1;
-            MAX2828_TXEN = 0;
-            PA_SW = 0;
-            delay_ms(5000);
-            if(CAM1 == 0){
-                //  wake up power for amp
-                CAMERA_POW = 0;
-                CAMERA_SEL = 0;
-                max2828_txon();
-                delay_ms(1000);
+            clock_in_tst ++;
+        }else{
+            //  if amp power on
+            if(CAMERA_POW == 0){
+               CLRWDT();
+                WDT_CLK = ~WDT_CLK;
+                clock_in_tst = 0;
+                CAMERA_POW = 1;
+                CAMERA_SEL = 1;
+                MAX2828_TXEN = 0;
+                PA_SW = 0;
+                clock_in_tst = 0;
             }
-		}        
-        clock_in_tst ++;
+        }    
 	}
 }
 

@@ -61,6 +61,23 @@ static void		loadCamPack(UDWORD *);
 static UBYTE	mk_pn9(void);
 static void		set_pn9(void);
 
+//  Switch on power of amplifier
+void Amp_ON(void){
+    CAMERA_POW = 0;
+    CAMERA_SEL = 0;
+    max2828_txon();
+    send_pn9();            //PN9送信
+    send_55();             //プリアンブル送信
+}
+
+//  Switch off power  of amplifier 
+void Amp_OFF(void){
+    CAMERA_POW = 1;
+    CAMERA_SEL = 1;
+    MAX2828_TXEN = 0;
+    PA_SW = 0;
+}
+
 //*** SENDポートのチェック ***
 //UBYTE return 0：未検出　、1：検出
 UBYTE CheckSendPort(void)
@@ -84,29 +101,29 @@ UBYTE CheckSendPort(void)
 	return 0;
 }
 
-//カメラのセットアップ
-void setupCam(UBYTE cam)
-{
-	//カメラの選択
-	if(cam)
-	{
-		CAMERA_SEL = Bit_Low;		//カメラ2を選択
-	}
-	else
-	{
-		CAMERA_SEL = Bit_High;		//カメラ1を選択
-	}		
-	
-	CAMERA_POW = Bit_High;			//カメラ電源ON
-	
-	initbau(BAU_LOW);				//MPU UART初期設定
-	__delay_ms(1000);				//1sウェイト
-	syncCam();						//カメラとの同期
-	
-	BAULATE = BAU_HIGH;				//MPUのボーレートを115.2kbpsに変更
-	
-	changePackageSize();			//パッケージサイズを128BYTEに設定
-}
+////カメラのセットアップ
+//void setupCam(UBYTE cam)
+//{
+//	//カメラの選択
+//	if(cam)
+//	{
+//		CAMERA_SEL = Bit_Low;		//カメラ2を選択
+//	}
+//	else
+//	{
+//		CAMERA_SEL = Bit_High;		//カメラ1を選択
+//	}		
+//	
+//	CAMERA_POW = Bit_High;			//カメラ電源ON
+//	
+//	initbau(BAU_LOW);				//MPU UART初期設定
+//	__delay_ms(1000);				//1sウェイト
+//	syncCam();						//カメラとの同期
+//	
+//	BAULATE = BAU_HIGH;				//MPUのボーレートを115.2kbpsに変更
+//	
+//	changePackageSize();			//パッケージサイズを128BYTEに設定
+//}
 
 //画像データサイズの取得
 void getPicSize(void)

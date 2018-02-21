@@ -30,34 +30,40 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 #define JPGCOUNT 5000
 
 void main(void){
-//    UDWORD			g1_data_adr = (UDWORD)0x00010000;	//FROM上のアドレス(データ用)
-//    UDWORD			g2_data_adr = (UDWORD)0x00020000;	//FROM上のアドレス(データ用)
-//    
-//    UBYTE Rxdata[20];
-//    UBYTE Txdata[20];
-//    UDWORD FROM_Write_adr = g1_data_adr; //EEPROM書き込み用アドレス
-//    UDWORD FROM_Read_adr  = g1_data_adr; //EEPROM読み込み用アドレス
-//    UDWORD Roop_adr       = g1_data_adr; //EEPROMループ用アドレス
-//    UINT roopcount = 0;
+    UDWORD			g1_data_adr = (UDWORD)0x00010000;
+    UDWORD			g2_data_adr = (UDWORD)0x00020000;
     
-    init_mpu();                         //ポートの初期化
-    //initbau(BAU_HIGH);                  //115200bps
-    //initbau(0x1f);                      //57600bps
+    UBYTE Rxdata[20];
+    UBYTE Txdata[20];
+    UDWORD FROM_Write_adr = g1_data_adr;
+    UDWORD FROM_Read_adr  = g1_data_adr;
+    UDWORD Roop_adr       = g1_data_adr;
+    UINT roopcount = 0;
+    
+    init_mpu();
+    //initbau(BAU_HIGH);                //115200bps
+    //initbau(BAU_MIDDLE);              //57600bps
     initbau(BAU_LOW);                   //14400bps
-    MAX2828_EN = 1;                     //全電源ON
-    __delay_us(100);                      //100us wait
-    FLASH_SPI_EI();                     //SPI通信許可    
-    init_max2828();                     //MAX2828の初期設定
-    Mod_SW = 0;                         //送信変調（FSK変調）ON
+    MAX2828_EN = 1;                     //MAX2828 ON
+    __delay_us(100);                    //100us wait
+    FLASH_SPI_EI();                     //enable SPI
+    init_max2828();                     //init MAX2828
+    Mod_SW = 0;                         //FSK modulation ON
     
-    //flash_Erase(g_data_adr,B_ERASE);
+    flash_Erase(g_data_adr,B_ERASE);    //Format FROM
     
-//    CAMERA_POW = 0;
-//    CAMERA_SEL = 0;
-//    max2828_txon();
-//    send_pn9();            //PN9送信
-//    send_55();             //プリアンブル送信
+
     while(1){
+        //  if 5V SW is low (CAM2 is logical inverter)
+        if(CAM2 == 1)
+        {
+            
+        }
+        //  if 5V SW is high
+        else
+        {
+            
+        }
         send_tst_str();
     }
     

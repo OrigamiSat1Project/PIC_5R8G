@@ -8,6 +8,7 @@
 //ボーレート設定
 #define BAULATE		SPBRG		//ボーレート設定レジスタ
 #define BAU_LOW		0x7F		//14.4kbps
+#define BAU_MIDDLE  0x1F		//57.6kbps
 #define BAU_HIGH	0x0F		//115.2kbps
 
 #define cam1		0x00

@@ -1,13 +1,14 @@
 #include <xc.h>
 //#include "pic16f886.h"
 
+#include "stdio.h"
+#include "string.h"
 #include "InitMPU.h"
 #include "MAX2828.h"
 #include "UART.h"
 #include "time.h"
 #include "FROM.h"
 
-/*コンフィギュレーションビットの設定*/
 // CONFIG1
 #pragma config FOSC = HS        // Oscillator Selection bits (HS oscillator: High-speed crystal/resonator on RA6/OSC2/CLKOUT and RA7/OSC1/CLKIN)
 #pragma config WDTE = OFF       // Watchdog Timer Enable bit (WDT disabled and can be enabled by SWDTEN bit of the WDTCON register)
@@ -28,18 +29,22 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 
 #define JPGCOUNT 5000
+#define MaxOfMemory 20
 
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
     UDWORD			g2_data_adr = (UDWORD)0x00020000;
-    
-    UBYTE Rxdata[20];
-    UBYTE Txdata[20];
+
+    UBYTE Rxdata[MaxOfMemory];
+    UBYTE Txdata[MaxOfMemory];
+    UINT indexOfRxdata = 0;
+    UINT indexOfTxdata = 0;
+
     UDWORD FROM_Write_adr = g1_data_adr;
     UDWORD FROM_Read_adr  = g1_data_adr;
     UDWORD Roop_adr       = g1_data_adr;
     UINT roopcount = 0;
-    
+
     init_mpu();
     //initbau(BAU_HIGH);                //115200bps
     //initbau(BAU_MIDDLE);              //57600bps
@@ -49,56 +54,82 @@ void main(void){
     FLASH_SPI_EI();                     //enable SPI
     init_max2828();                     //init MAX2828
     Mod_SW = 0;                         //FSK modulation ON
-    
-    flash_Erase(g_data_adr,B_ERASE);    //Format FROM
-    
+
+    flash_Erase(g_data_adr,B_ERASE);    //Format memory of FROM
+
 
     while(1){
-        //  if 5V SW is low (CAM2 is logical inverter)
-        if(CAM2 == 1)
-        {
-            
+        if(CAMERA_POW == 0){
+            offAmp();
         }
-        //  if 5V SW is high
+        CREN = Bit_High;
+        TXEN = Bit_Low;
+        UBYTE Command;
+        while(RCIF != 1);
+        Command = RCREG;
+        if(Command == 'P')
+        {
+            while(CAM2 == 0){
+                if(CAMERA_POW == 1){
+                    onAmp();
+                }
+                FROM_Read_adr = Roop_adr;
+                UINT sendBufferCount = 0;
+                while(FROM_Read_adr > FROM_Write_adr){
+                    flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Txdata);
+                    send_01();  //  send preamble
+                    for(UINT i=0;i<20;i++){
+                        sendChar(Txdata[i]);
+                        //sendChar(0x00);
+                        __delay_us(20);
+                    }
+                    FROM_Read_adr += (UDWORD)(MaxOfMemory);
+                    sendBufferCount ++;
+                    if (sendBufferCount % 20 == 0) {
+                        CLRWDT();
+                        WDT_CLK = ~WDT_CLK;
+                    }
+                }
+            }
+        }
+        else if (Command == 'D')
+        {
+            while(CAM2 == 0){
+                if(CAMERA_POW == 1){
+                    onAmp();
+                }
+                send_dummy_data();
+            }
+        }
+        else if (Command == 'R')
+        {
+            flash_Erase(g1_data_adr,S_ERASE);    //delete memory of g1_data_adr sector ( 65536byte )
+            flash_Erase(g2_data_adr,S_ERASE);    //delete memory of g2_data_adr sector ( 65536byte )
+            Roop_adr = g1_data_adr;
+            FROM_Write_adr = Roop_adr;
+            UBYTE receiveEndJpegFlag = 0x00;
+            while(receiveEndJpegFlag =! 0x11){
+                for (UINT i = 0; i < MaxOfMemory; i++) {
+                    while (RCIF != 1);
+                    Rxdata[i] = RCREG;
+                    if(receiveEndJpegFlag == 0x00 && RCREG == 0xff){
+                        receiveEndJpegFlag = 0x01;
+                    }else if (receiveEndJpegFlag == 0x01 && RCREG == 0xd9){
+                        receiveEndJpegFlag = 0x11;
+                    }else{
+                        receiveEndJpegFlag = 0x00;
+                    }
+                }
+                flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Rxdata);
+                FROM_Write_adr += (UDWORD)(MaxOfMemory);
+            }
+        }
         else
         {
-            
+            offAmp();
         }
-        send_tst_str();
     }
-    
-    
-//    while(1){
-//        flash_Erase(g1_data_adr,S_ERASE);    //g1_data_adrのsector65536byte分削除
-//        flash_Erase(g2_data_adr,S_ERASE);    //g2_data_adrのsector65536byte分削除
-//        
-//        // Cameraポートに設定
-//        CAMERA_POW = 1;
-//        CAMERA_SEL = 1;
-//        CREN = Bit_High;
-//        TXEN = Bit_Low;
-//        MAX2828_TXEN = 0;
-//        PA_SW = 0;
-//        
-//        //send_tst_str();   //  テスト文字列送信
-//        //echo_back();      //　エコーバック（UART&FROM格納）
-//        
-//        //  ループアドレスを次の空きバッファにセット
-//        Roop_adr = g1_data_adr;
-//        //  書き込みアドレスをループアドレスにセット
-//        FROM_Write_adr = Roop_adr;
-//        //send_OK();
-//        //  UART受信→EEPROMに格納
-//        for(UINT j=0;j<JPGCOUNT;j++){
-//            for(UINT i=0;i<20;i++){
-//                while(RCIF != 1);
-//                Rxdata[i] = RCREG;
-//            }
-//            flash_Write_Data(FROM_Write_adr,20UL,&Rxdata);
-//            FROM_Write_adr += 20UL;
-//        }
-//        //send_NG();
-//        
+//
 //        // Ampポートに設定
 //        /**/
 //        CAMERA_POW = 0;
@@ -107,7 +138,7 @@ void main(void){
 //        CREN = Bit_Low;
 //        TXEN = Bit_High;
 //        delay_ms(10);
-//        
+//
 //        //  読み込みアドレスをループアドレスにセット
 //        FROM_Read_adr = Roop_adr;
 //        //  プリアンブル送信
@@ -116,7 +147,7 @@ void main(void){
 //        for(UINT j=0;j<JPGCOUNT;j++){
 //            UINT sendcount = 0;
 //            flash_Read_Data(FROM_Read_adr,20UL,&Txdata);
-//            
+//
 //            for(UINT i=0;i<20;i++){
 //                sendChar(Txdata[i]);
 //                //sendChar(0x00);
@@ -135,7 +166,7 @@ void main(void){
 //        sendChar('\n');
 //        g1_data_adr += (UDWORD)0x00020000;
 //        g2_data_adr += (UDWORD)0x00020000;
-//        
+//
 //        //  外付けWDT有効関数
 //        /*
 //        roopcount++;

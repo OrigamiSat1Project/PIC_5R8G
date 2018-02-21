@@ -62,20 +62,20 @@ static UBYTE	mk_pn9(void);
 static void		set_pn9(void);
 
 //  Switch on power of amplifier
-void Amp_ON(void){
+void onAmp(void){
     CAMERA_POW = 0;
     CAMERA_SEL = 0;
     max2828_txon();
-    send_pn9();            //PN9送信
-    send_55();             //プリアンブル送信
+	__delay_ms(10);
 }
 
-//  Switch off power  of amplifier 
-void Amp_OFF(void){
+//  Switch off power  of amplifier
+void offAmp(void){
     CAMERA_POW = 1;
     CAMERA_SEL = 1;
     MAX2828_TXEN = 0;
     PA_SW = 0;
+	__delay_ms(10);
 }
 
 //*** SENDポートのチェック ***
@@ -83,7 +83,7 @@ void Amp_OFF(void){
 UBYTE CheckSendPort(void)
 {
 	static UBYTE	cha = (UBYTE)0;
-	
+
 	if(SEND == 0)
 	{
 		if(cha < 30)
@@ -94,7 +94,7 @@ UBYTE CheckSendPort(void)
 		else if(cha >= 30)
 		{
 			cha = 0;
-			return 1;	
+			return 1;
 		}
 	}
 	cha = 0;
@@ -112,16 +112,16 @@ UBYTE CheckSendPort(void)
 //	else
 //	{
 //		CAMERA_SEL = Bit_High;		//カメラ1を選択
-//	}		
-//	
+//	}
+//
 //	CAMERA_POW = Bit_High;			//カメラ電源ON
-//	
+//
 //	initbau(BAU_LOW);				//MPU UART初期設定
 //	__delay_ms(1000);				//1sウェイト
 //	syncCam();						//カメラとの同期
-//	
+//
 //	BAULATE = BAU_HIGH;				//MPUのボーレートを115.2kbpsに変更
-//	
+//
 //	changePackageSize();			//パッケージサイズを128BYTEに設定
 //}
 
@@ -140,13 +140,13 @@ UBYTE savePicSize(void)
 	UBYTE i = 0;
 	UBYTE j = 3;
 	UBYTE Ret;
-	
+
 	len.us = (UDWORD)dlength;
 	for(i=0;i<4;i++)
 	{
 		tmp.uc[j] = len.uc[i];
 		j--;
-	}	
+	}
 	Ret = flash_Write_Page(0UL,(UWORD)4,tmp.uc);
 	return Ret;
 }
@@ -159,37 +159,37 @@ void savePicData(void)
 	UWORD i = 0;
 //	UBYTE Ret;
 	UDWORD w_adr;
-	
+
 	w_adr = g_data_adr;
 	//ACK0を送信バッファにロード
 	for(i=0;i<6;i++)
 	{
 		send_buf[i] = ACK0[i];
 	}
-	
+
 	while(dlength > 122)
 	{
 		//IDカウント加算
 		send_buf[4] = idCount1;
 		send_buf[5] = idCount2;
-	
+
 		sendAckID(send_buf);		//ACK(データ取得ID)送信
-	
+
 		//画像データ受信
 		for(i=0;i<64;i++)
 		{
 			Rbuf2.Data[i] = getUartData();
 		}
-		
+
 		for(i=0;i<64;i++)
 		{
 			Rbuf3.Data[i] = getUartData();
 		}
-		
+
 		saveCamPack(&w_adr);
-	
+
 		dlength -= 122;
-		
+
 		//イメージデータIDの加算処理
 		if(idCount1 == 0xFF)	//パッケージIDのLSBがFFなら桁上がり
 		{
@@ -199,18 +199,18 @@ void savePicData(void)
 		else
 		{
 			idCount1++;
-		}		
+		}
 	}
-	
+
 	/***最終パッケージの処理***/
 	if(dlength != 0)
 	{
 		//IDカウント加算
 		send_buf[4] = idCount1;
 		send_buf[5] = idCount2;
-	
+
 		sendAckID(send_buf);		//ACK(データ取得ID)送信
-		
+
 		if(dlength > 58)
 		{
 			for(i=0;i<64;i++)
@@ -218,12 +218,12 @@ void savePicData(void)
 				Rbuf2.Data[i] = getUartData();
 			}
 			dlength = dlength - 60;
-			
+
 			for(i=0;i<(dlength+2);i++)
 			{
 				Rbuf3.Data[i] = getUartData();
 			}
-			
+
 			for(i=(dlength+2);i<64;i++)
 			{
 				Rbuf3.Data[i] = 0xFF;
@@ -236,12 +236,12 @@ void savePicData(void)
 			{
 				Rbuf2.Data[i] = getUartData();
 			}
-			
+
 			for(i=0;i<64;i++)
 			{
 				Rbuf3.Data[i] = 0xFF;
 			}
-			
+
 			saveCamPack(&w_adr);
 		}
 		else
@@ -254,21 +254,21 @@ void savePicData(void)
 			{
 				Rbuf2.Data[i] = 0xFF;
 			}
-			
+
 			for(i=0;i<64;i++)
 			{
 				Rbuf3.Data[i] = 0xFF;
 			}
-			
+
 			saveCamPack(&w_adr);
 		}
-		
-		sendCom(AckEnd);		
+
+		sendCom(AckEnd);
 	}
 	else
 	{
 		sendCom(AckEnd);
-	}		
+	}
 }
 
 /* 変調データ送信 */
@@ -279,11 +279,11 @@ void sendModData(UDWORD RAddr)
 	UBYTE		j;
 	EXCHG_LONG	len;
 	EXCHG_LONG	tmp;
-	
+
 	initbau(BAU_HIGH);								//UARTの初期化
 //	BAULATE = BAU_HIGH;						//115.2kbpsに設定
 	CREN = Bit_Low;							//受信禁止
-	
+
 	//データ長取得
 	Ret = flash_Read_Data(0UL,4,len.uc);	//データ長をFROMから読み出し
 	j = 3;
@@ -293,18 +293,18 @@ void sendModData(UDWORD RAddr)
 		j--;
 	}
 	dlength = (USLONG)tmp.us;
-	
+
 	Mod_SW = Bit_Low;						//変調ON
 	max2828_txon();
 	PA_SW  = Bit_High;
-	
+
 	delay_ms(1);
-	
+
 	//変調データ取得・送信
 	while(dlength > 122)
 	{
 		loadCamPack(&RAddr);				//画像データをFROMからバッファに読み出し
-		
+
 		//バッファ内のデータをUART送信
 		for(i=0;i<64;i++)
 		{
@@ -326,11 +326,11 @@ void sendModData(UDWORD RAddr)
 	{
 		sendChar(Rbuf3.Data[i]);
 	}
-	
+
 	PA_SW = Bit_Low;
 	MAX2828_TXEN = Bit_Low;
 	Mod_SW = Bit_High;						//変調OFF
-}	
+}
 
 //UARTの初期化
 //static void initbau(void)
@@ -360,12 +360,12 @@ static void changePackageSize(void)
 	UBYTE i = 0;
 
 	sendCom(changeSize);	//パッケージサイズを128BYTEに変更
-	
+
 	//ACKの空読み
 	for(i=0;i<6;i++)
 	{
 		rData[i] = getUartData();
-	}	
+	}
 }
 
 //撮影コマンド送信
@@ -374,12 +374,12 @@ static void snap(void)
 	UBYTE i = 0;
 
 	sendCom(SnapShot);	//パッケージサイズを128BYTEに変更
-	
+
 	//Ackの空読み
 	for(i=0;i<6;i++)
 	{
 		rData[i] = getUartData();
-	}	
+	}
 }
 
 //データ長取得
@@ -388,12 +388,12 @@ static USLONG sendGetPicCom(void)
 	UBYTE i = 0;
 
 	sendCom(GetPicCom);	//Jpeg圧縮コマンド送信
-	
+
 	for(i=0;i<12;i++)
 	{
 		rData[i] = getUartData();
 	}
-	
+
 	return ((USLONG)rData[11]<<16)+((USLONG)rData[10]<<8)+(USLONG)rData[9];	//データ長の計算
 }
 
@@ -402,7 +402,7 @@ static void syncCam(void)
 {
 	UBYTE i = 0;
 	UBYTE j = 0;
-	
+
 	for(i = 0;i < 60;i++)
 	{
 		if(RCIF)	//受信バッファにデータがあるとき
@@ -412,29 +412,29 @@ static void syncCam(void)
 				rData[j] = getUartData();
 			}
 			j = 0;
-			
+
 			sendCom(ACK0);		//ACK0送信
 			delay_ms(1);
-			
+
 			sendCom(InitCam);	//カメラ設定(115.2kbps,VGA)
 			delay_ms(1);
-			
+
 			//ACKの空読み
 			for(j = 0;j < 6;j++)
 			{
 				rData[j] = getUartData();
-			}	
-			
+			}
+
 			delay_ms(50);		//50msウェイト
-			
+
 			return;
 		}
 		else
 		{
 			sendCom(syncWord);	//同期ワード送信
 			delay_ms(1);
-		}		
-	}	
+		}
+	}
 }
 
 //1BYTE受信関数
@@ -479,7 +479,7 @@ static void sendCom(const UBYTE *com)
 static void sendAckID(UBYTE *id)
 {
 	UBYTE i = 0;
-	
+
 	for(i = 0;i < 6;i++)
 	{
 		sendChar(id[i]);
@@ -491,7 +491,7 @@ static void sendAckID(UBYTE *id)
 static void saveCamPack(UDWORD * WAddr)
 {
 	UBYTE Ret;
-	
+
 	Ret = flash_Write_Page((UDWORD)*WAddr,(UWORD)64,(UBYTE *)Rbuf2.Data);
 	*WAddr += (UDWORD)64;
 	Ret = flash_Write_Page((UDWORD)*WAddr,(UWORD)64,(UBYTE *)Rbuf3.Data);
@@ -502,13 +502,13 @@ static void saveCamPack(UDWORD * WAddr)
 static void loadCamPack(UDWORD * RAddr)
 {
 	UBYTE Ret;
-	
+
 	Ret = flash_Read_Data((UDWORD)*RAddr,64UL,(UBYTE *)Rbuf2.Data);
 	*RAddr += 64UL;
 	Ret = flash_Read_Data((UDWORD)*RAddr,64UL,(UBYTE *)Rbuf3.Data);
 	*RAddr += 64UL;
 }
-	
+
 /*-----------------------------------------------------------------------*/
 
 //画像データ取得(直接変調用)
@@ -517,22 +517,22 @@ void getPicData(void)
 	UBYTE idCount1 = 0;			//パッケージID(LSB)
 	UBYTE idCount2 = 0;			//パッケージID(MSB)
 	UWORD i = 0;
-	
+
 	//ACK0を送信バッファにロード
 	for(i=0;i<6;i++)
 	{
 		send_buf[i] = ACK0[i];
 	}
 	i = 0;
-	
+
 	while(dlength > 122)
 	{
 		//IDカウント加算
 		send_buf[4] = idCount1;
 		send_buf[5] = idCount2;
-	
+
 		sendAckID(send_buf);		//ACK(データ取得ID)送信
-	
+
 		//画像データ受信
 		for(i=0;i<64;i++)
 		{
@@ -544,9 +544,9 @@ void getPicData(void)
 			Rbuf3.Data[i] = getUartData();
 		}
 		i = 0;
-		
+
 		dlength -= 122;
-		
+
 		//イメージデータIDの加算処理
 		if(idCount1 == 0xFF)	//パッケージIDのLSBがFFなら桁上がり
 		{
@@ -556,18 +556,18 @@ void getPicData(void)
 		else
 		{
 			idCount1++;
-		}		
+		}
 	}
-	
+
 	/***最終パッケージの処理***/
 	if(dlength != 0)
 	{
 		//IDカウント加算
 		send_buf[4] = idCount1;
 		send_buf[5] = idCount2;
-	
+
 		sendAckID(send_buf);		//ACK(データ取得ID)送信
-		
+
 		if(dlength > 58)
 		{
 			for(i=0;i<64;i++)
@@ -583,7 +583,7 @@ void getPicData(void)
 			for(i=(dlength+2);i<64;i++)
 			{
 				Rbuf3.Data[i] = 0xFF;
-			}	
+			}
 		}
 		else if(dlength == 58)
 		{
@@ -595,7 +595,7 @@ void getPicData(void)
 			for(i=0;i<64;i++)
 			{
 				Rbuf3.Data[i] = 0xFF;
-			}	
+			}
 		}
 		else
 		{
@@ -613,13 +613,13 @@ void getPicData(void)
 				Rbuf3.Data[i] = 0xFF;
 			}
 		}
-		
-		sendCom(AckEnd);		
+
+		sendCom(AckEnd);
 	}
 	else
 	{
 		sendCom(AckEnd);
-	}		
+	}
 }
 
 //文字列送信関数
@@ -639,13 +639,13 @@ static UBYTE mk_pn9(void)
 	out = reg & 0x0001;
 	fb = (reg ^ (reg >> 4U)) & 0x0001;
 	reg = (reg >> 1) | (fb << 8);
-	
+
 	return((UBYTE)out);
 }
 
 static void set_pn9(void){
 	UBYTE i;
-	
+
     send_buf[0] = 0x00;
 	for(i = 0; i < 8; i++){
 		send_buf[0] |= mk_pn9() << i;
@@ -659,19 +659,19 @@ void send_pn9(void)
 {
 //	UWORD i;
 	UBYTE i;
-	
+
 	initbau(BAU_HIGH);								//UARTの初期化 115.2kbps
 //	initbau(BAU_LOW);								//14.4kbps
 //	initbau(0x5F);									//19.2kbps
-//	initbau(0x1F);									//57.6kbps	
+//	initbau(0x1F);									//57.6kbps
 	CREN = Bit_Low;									//受信禁止
-	
+
 //	Mod_SW = Bit_Low;						//変調ON
 //	max2828_txon();
 //	PA_SW  = Bit_High;
-	
+
 //	delay_ms(1);
-	
+
 	while(1){
 //	for(i = 0; i < 10000; i++){
 //        set_pn9();
@@ -756,7 +756,7 @@ void send_tst_str(void){
                 PA_SW = 0;
                 clock_in_tst = 0;
             }
-        }    
+        }
 	}
 }
 
@@ -800,5 +800,36 @@ void echo_back(void){
         flash_Read_Data(echo_adr,1UL,&testbuf2);
         sendChar(testbuf2);
         echo_adr += 1UL;
+    }
+}
+
+void send_dummy_data(void){
+    CREN = Bit_Low;
+    TXEN = Bit_High;
+	UINT clock_in_tst = 0;
+    delay_ms(1000);
+    while(CAM2 == 0){
+        if(clock_in_tst <= 1200 ){
+            for(UINT i=0;i<10;i++){
+                send_buf[0] = STR[i];
+                sendChar(send_buf[0]);
+                //sendChar(0x00);
+                __delay_us(20);
+            }
+			if(clock_in_tst % 100 == 0){
+				CLRWDT();
+	            WDT_CLK = ~WDT_CLK;
+			}
+        }else if(clock_in_tst > 1200 ){
+            //  shut down power of amp
+            CLRWDT();
+            WDT_CLK = ~WDT_CLK;
+			if(CAMERA_POW == 0){
+				offAmp();
+			}
+            delay_ms(5000);
+            clock_in_tst = 0;
+        }
+        clock_in_tst ++;
     }
 }

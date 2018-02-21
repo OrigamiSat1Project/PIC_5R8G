@@ -35,7 +35,7 @@
 void setupCam(UBYTE);
 //void getPicture(void);
 void getPicSize(void);
-void getPicData(void);	
+void getPicData(void);
 UBYTE CheckSendPort(void);
 void savePicData(void);
 UBYTE savePicSize(void);
@@ -50,11 +50,15 @@ void send_01(void);
 void send_OK(void);
 void send_NG(void);
 void echo_back(void);
+void send_dummy_data(void);
 UBYTE    getUartData(void);
 typedef union{
 	UBYTE	Data[64];
 	UDWORD	dummy;
 }CamDataBuf;
+
+void onAmp(void);
+void offAmp(void);
 
 //extern bank2 volatile CamDataBuf	Rbuf2;		//画像データ用バッファ
 //extern bank3 volatile CamDataBuf	Rbuf3;		//画像データ用バッファ

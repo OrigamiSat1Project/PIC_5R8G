@@ -55,15 +55,13 @@ void main(void){
     init_max2828();                     //init MAX2828
     Mod_SW = 0;                         //FSK modulation ON
 
-    flash_Erase(g_data_adr,B_ERASE);    //Format memory of FROM
-
-
     while(1){
         if(CAMERA_POW == 0){
             offAmp();
         }
         CREN = Bit_High;
-        TXEN = Bit_Low;
+        //TXEN = Bit_Low;
+        TXEN = Bit_High;
         UBYTE Command;
         while(RCIF != 1);
         Command = RCREG;
@@ -71,10 +69,12 @@ void main(void){
         {
             while(CAM2 == 0){
                 if(CAMERA_POW == 1){
-                    onAmp();
+                    //onAmp();
                 }
                 FROM_Read_adr = Roop_adr;
                 UINT sendBufferCount = 0;
+                CREN = Bit_Low;
+                TXEN = Bit_High;
                 while(FROM_Read_adr > FROM_Write_adr){
                     flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Txdata);
                     send_01();  //  send preamble
@@ -94,9 +94,11 @@ void main(void){
         }
         else if (Command == 'D')
         {
+            send_OK();
+            while(CAM2 == 1);   //  wait 5V SW
             while(CAM2 == 0){
                 if(CAMERA_POW == 1){
-                    onAmp();
+                    //onAmp();
                 }
                 send_dummy_data();
             }

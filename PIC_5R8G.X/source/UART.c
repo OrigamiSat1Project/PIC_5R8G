@@ -69,7 +69,7 @@ void onAmp(void){
 	__delay_ms(10);
 }
 
-//  Switch off power  of amplifier
+//  Switch off power of amplifier
 void offAmp(void){
     CAMERA_POW = 1;
     CAMERA_SEL = 1;
@@ -773,10 +773,15 @@ void send_01(void){
 }
 
 void send_OK(void){
+    CREN = Bit_Low;
+    TXEN = Bit_High;
+    __delay_ms(10);
     sendChar('O');
     __delay_us(20);
     sendChar('K');
     __delay_us(20);
+    sendChar('\r');
+    sendChar('\n');
 }
 
 void send_NG(void){
@@ -792,13 +797,14 @@ void echo_back(void){
     UDWORD echo_adr = g_data_adr;
     CREN = Bit_High;
     TXEN = Bit_High;
-    flash_Erase(g_data_adr,S_ERASE);    //g_data_adr‚Ìsector65536byte•ªíœ
+    __delay_ms(1000);
+    //flash_Erase(g_data_adr,S_ERASE);    //g_data_adr‚Ìsector65536byte•ªíœ
     while(1){
         while(RCIF != 1);
         testbuf1 = RCREG;
-        flash_Write_Data(echo_adr,1UL,&testbuf1);
-        flash_Read_Data(echo_adr,1UL,&testbuf2);
-        sendChar(testbuf2);
+        //flash_Write_Data(echo_adr,1UL,&testbuf1);
+        //flash_Read_Data(echo_adr,1UL,&testbuf2);
+        sendChar(testbuf1);
         echo_adr += 1UL;
     }
 }
@@ -816,19 +822,18 @@ void send_dummy_data(void){
                 //sendChar(0x00);
                 __delay_us(20);
             }
-			if(clock_in_tst % 100 == 0){
-				CLRWDT();
-	            WDT_CLK = ~WDT_CLK;
-			}
-        }else if(clock_in_tst > 1200 ){
+        }else if(1200 < clock_in_tst && clock_in_tst <= 1800){
             //  shut down power of amp
-            CLRWDT();
-            WDT_CLK = ~WDT_CLK;
 			if(CAMERA_POW == 0){
 				offAmp();
 			}
-            delay_ms(5000);
+            __delay_ms(8);
+        }else{
             clock_in_tst = 0;
+        }
+        if(clock_in_tst % 100 == 0){
+            CLRWDT();
+            WDT_CLK = ~WDT_CLK;
         }
         clock_in_tst ++;
     }

@@ -29,7 +29,8 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 
 #define JPGCOUNT 5000
-#define MaxOfMemory 20
+#define MaxOfMemory 20  //  TODO : Use Bank function then magnify buffer size
+const UBYTE EndOfJPEG[] =  {'R', 'A'}; 
 
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
@@ -67,6 +68,7 @@ void main(void){
         Command = RCREG;
         if(Command == 'P')
         {
+            while(CAM2 == 1);   //  wait 5V SW
             while(CAM2 == 0){
                 if(CAMERA_POW == 1){
                     //onAmp();
@@ -94,7 +96,6 @@ void main(void){
         }
         else if (Command == 'D')
         {
-            send_OK();
             while(CAM2 == 1);   //  wait 5V SW
             while(CAM2 == 0){
                 if(CAMERA_POW == 1){
@@ -110,14 +111,15 @@ void main(void){
             Roop_adr = g1_data_adr;
             FROM_Write_adr = Roop_adr;
             UBYTE receiveEndJpegFlag = 0x00;
-            while(receiveEndJpegFlag =! 0x11){
+            while(receiveEndJpegFlag != 0x11){
                 for (UINT i = 0; i < MaxOfMemory; i++) {
                     while (RCIF != 1);
                     Rxdata[i] = RCREG;
-                    if(receiveEndJpegFlag == 0x00 && RCREG == 0xff){
+                    if(receiveEndJpegFlag == 0x00 && RCREG == EndOfJPEG[0]){
                         receiveEndJpegFlag = 0x01;
-                    }else if (receiveEndJpegFlag == 0x01 && RCREG == 0xd9){
+                    }else if (receiveEndJpegFlag == 0x01 && RCREG == EndOfJPEG[1]){
                         receiveEndJpegFlag = 0x11;
+                        break;
                     }else{
                         receiveEndJpegFlag = 0x00;
                     }

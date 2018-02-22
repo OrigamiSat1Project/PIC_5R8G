@@ -30,7 +30,7 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 #define JPGCOUNT 5000
 #define MaxOfMemory 20  //  TODO : Use Bank function then magnify buffer size
-const UBYTE EndOfJPEG[] =  {'R', 'A'}; 
+const UBYTE FooterOfJPEG[] =  {'R', 'A'}; 
 
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
@@ -68,31 +68,34 @@ void main(void){
         Command = RCREG;
         if(Command == 'P')
         {
+            sendChar('P');
             while(CAM2 == 1);   //  wait 5V SW
-            while(CAM2 == 0){
-                if(CAMERA_POW == 1){
-                    //onAmp();
-                }
-                FROM_Read_adr = Roop_adr;
-                UINT sendBufferCount = 0;
-                CREN = Bit_Low;
-                TXEN = Bit_High;
-                while(FROM_Read_adr > FROM_Write_adr){
-                    flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Txdata);
+            if(CAMERA_POW == 1){
+                //onAmp();
+            }
+            FROM_Read_adr = Roop_adr;
+            UINT sendBufferCount = 0;
+            //CREN = Bit_Low;
+            //TXEN = Bit_High;
+            while(FROM_Read_adr < FROM_Write_adr && CAM2 == 0){
+                flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Txdata);
+                if(sendBufferCount % JPGCOUNT == 0){
+                    __delay_ms(3000);
                     send_01();  //  send preamble
-                    for(UINT i=0;i<20;i++){
-                        sendChar(Txdata[i]);
-                        //sendChar(0x00);
-                        __delay_us(20);
-                    }
-                    FROM_Read_adr += (UDWORD)(MaxOfMemory);
-                    sendBufferCount ++;
-                    if (sendBufferCount % 20 == 0) {
-                        CLRWDT();
-                        WDT_CLK = ~WDT_CLK;
-                    }
+                }
+                for(UINT i=0;i<20;i++){
+                    sendChar(Txdata[i]);
+                    //sendChar(0x00);
+                    __delay_us(20);
+                }
+                FROM_Read_adr += (UDWORD)(MaxOfMemory);
+                sendBufferCount ++;
+                if (sendBufferCount % 20 == 0) {
+                    CLRWDT();
+                    WDT_CLK = ~WDT_CLK;
                 }
             }
+            send_OK();
         }
         else if (Command == 'D')
         {
@@ -106,6 +109,7 @@ void main(void){
         }
         else if (Command == 'R')
         {
+            sendChar('R');
             flash_Erase(g1_data_adr,S_ERASE);    //delete memory of g1_data_adr sector ( 65536byte )
             flash_Erase(g2_data_adr,S_ERASE);    //delete memory of g2_data_adr sector ( 65536byte )
             Roop_adr = g1_data_adr;
@@ -115,18 +119,24 @@ void main(void){
                 for (UINT i = 0; i < MaxOfMemory; i++) {
                     while (RCIF != 1);
                     Rxdata[i] = RCREG;
-                    if(receiveEndJpegFlag == 0x00 && RCREG == EndOfJPEG[0]){
+                    if(receiveEndJpegFlag == 0x00 && RCREG == FooterOfJPEG[0]){
                         receiveEndJpegFlag = 0x01;
-                    }else if (receiveEndJpegFlag == 0x01 && RCREG == EndOfJPEG[1]){
+                    }else if (receiveEndJpegFlag == 0x01 && RCREG == FooterOfJPEG[1]){
+                        //  get JPEG footer
                         receiveEndJpegFlag = 0x11;
+                        //  save data to FROM before break roop
+                        flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Rxdata);
+                        FROM_Write_adr += (UDWORD)(MaxOfMemory);
                         break;
                     }else{
                         receiveEndJpegFlag = 0x00;
                     }
+                    sendChar(RCREG);
                 }
                 flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Rxdata);
                 FROM_Write_adr += (UDWORD)(MaxOfMemory);
             }
+            send_OK();
         }
         else
         {

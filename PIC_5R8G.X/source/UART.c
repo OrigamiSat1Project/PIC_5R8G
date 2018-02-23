@@ -830,6 +830,7 @@ void send_dummy_data(void){
             __delay_ms(8);
         }else{
             clock_in_tst = 0;
+            onAmp();
         }
         if(clock_in_tst % 100 == 0){
             CLRWDT();

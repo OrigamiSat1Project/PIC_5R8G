@@ -29,21 +29,19 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 
 #define JPGCOUNT 5000
-#define MaxOfMemory 20  //  TODO : Use Bank function then magnify buffer size
-const UBYTE FooterOfJPEG[] =  {'R', 'A'}; 
+#define MaxOfMemory 40  //  TODO : Use Bank function then magnify buffer size
+const UBYTE FooterOfJPEG[] =  {0xff, 0xd9}; 
 
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
     UDWORD			g2_data_adr = (UDWORD)0x00020000;
 
-    UBYTE Rxdata[MaxOfMemory];
-    UBYTE Txdata[MaxOfMemory];
-    UINT indexOfRxdata = 0;
-    UINT indexOfTxdata = 0;
+    UBYTE Buffer[MaxOfMemory];
+    UINT indexOfBuffer = 0;
 
     UDWORD FROM_Write_adr = g1_data_adr;
     UDWORD FROM_Read_adr  = g1_data_adr;
-    UDWORD Roop_adr       = g1_data_adr;
+    UDWORD Roop_adr = g1_data_adr;
     UINT roopcount = 0;
 
     init_mpu();
@@ -61,30 +59,36 @@ void main(void){
             offAmp();
         }
         CREN = Bit_High;
-        //TXEN = Bit_Low;
         TXEN = Bit_High;
         UBYTE Command;
+        
         while(RCIF != 1);
         Command = RCREG;
+        while(Command != '5');
+        
+        while(RCIF != 1);
+        Command = RCREG;
+        //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
         if(Command == 'P')
         {
             sendChar('P');
             while(CAM2 == 1);   //  wait 5V SW
-            if(CAMERA_POW == 1){
-                //onAmp();
-            }
             FROM_Read_adr = Roop_adr;
             UINT sendBufferCount = 0;
-            //CREN = Bit_Low;
-            //TXEN = Bit_High;
+            CREN = Bit_Low;
+            TXEN = Bit_High;
             while(FROM_Read_adr < FROM_Write_adr && CAM2 == 0){
-                flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Txdata);
+                flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
                 if(sendBufferCount % JPGCOUNT == 0){
+                    offAmp();
                     __delay_ms(3000);
+                    if(CAMERA_POW == 1){
+                        onAmp();
+                    }
                     send_01();  //  send preamble
                 }
-                for(UINT i=0;i<20;i++){
-                    sendChar(Txdata[i]);
+                for(UINT i=0;i<MaxOfMemory;i++){
+                    sendChar(Buffer[i]);
                     //sendChar(0x00);
                     __delay_us(20);
                 }
@@ -95,6 +99,7 @@ void main(void){
                     WDT_CLK = ~WDT_CLK;
                 }
             }
+            offAmp();
             send_OK();
         }
         else if (Command == 'D')
@@ -102,38 +107,40 @@ void main(void){
             while(CAM2 == 1);   //  wait 5V SW
             while(CAM2 == 0){
                 if(CAMERA_POW == 1){
-                    //onAmp();
+                    onAmp();
                 }
                 send_dummy_data();
             }
+            offAmp();
+            send_OK();
         }
         else if (Command == 'R')
         {
-            sendChar('R');
             flash_Erase(g1_data_adr,S_ERASE);    //delete memory of g1_data_adr sector ( 65536byte )
             flash_Erase(g2_data_adr,S_ERASE);    //delete memory of g2_data_adr sector ( 65536byte )
-            Roop_adr = g1_data_adr;
             FROM_Write_adr = Roop_adr;
             UBYTE receiveEndJpegFlag = 0x00;
+            sendChar('R');
             while(receiveEndJpegFlag != 0x11){
                 for (UINT i = 0; i < MaxOfMemory; i++) {
                     while (RCIF != 1);
-                    Rxdata[i] = RCREG;
+                    Buffer[i] = RCREG;
                     if(receiveEndJpegFlag == 0x00 && RCREG == FooterOfJPEG[0]){
                         receiveEndJpegFlag = 0x01;
+                        //sendChar('1');
                     }else if (receiveEndJpegFlag == 0x01 && RCREG == FooterOfJPEG[1]){
                         //  get JPEG footer
                         receiveEndJpegFlag = 0x11;
                         //  save data to FROM before break roop
-                        flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Rxdata);
+                        flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
                         FROM_Write_adr += (UDWORD)(MaxOfMemory);
+                        sendChar('2');
                         break;
                     }else{
                         receiveEndJpegFlag = 0x00;
                     }
-                    sendChar(RCREG);
                 }
-                flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Rxdata);
+                flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
                 FROM_Write_adr += (UDWORD)(MaxOfMemory);
             }
             send_OK();
@@ -143,55 +150,4 @@ void main(void){
             offAmp();
         }
     }
-//
-//        // Ampポートに設定
-//        /**/
-//        CAMERA_POW = 0;
-//        CAMERA_SEL = 0;
-//        max2828_txon();
-//        CREN = Bit_Low;
-//        TXEN = Bit_High;
-//        delay_ms(10);
-//
-//        //  読み込みアドレスをループアドレスにセット
-//        FROM_Read_adr = Roop_adr;
-//        //  プリアンブル送信
-//        send_01();
-//        //  EEPROMから取り出し→UART送信
-//        for(UINT j=0;j<JPGCOUNT;j++){
-//            UINT sendcount = 0;
-//            flash_Read_Data(FROM_Read_adr,20UL,&Txdata);
-//
-//            for(UINT i=0;i<20;i++){
-//                sendChar(Txdata[i]);
-//                //sendChar(0x00);
-//                __delay_us(20);
-//            }
-//            FROM_Read_adr += 20UL;
-//            /*
-//            sendcount ++;
-//            if(sendcount == 60){
-//                __delay_ms(50);
-//                sendcount = 0;
-//            }*/
-//        }
-//        send_01();
-//        sendChar('\r');
-//        sendChar('\n');
-//        g1_data_adr += (UDWORD)0x00020000;
-//        g2_data_adr += (UDWORD)0x00020000;
-//
-//        //  外付けWDT有効関数
-//        /*
-//        roopcount++;
-//        if(roopcount == 29)
-//        {
-//            //CLRWDT();
-//            //WDT_CLK = ~WDT_CLK;
-//            //  メモリ，カウンタリセット
-//            roopcount = 0;
-//            g1_data_adr = (UDWORD)0x00010000;
-//            //g2_data_adr = (UDWORD)0x00020000;
-//        }*/
-//    }
 }

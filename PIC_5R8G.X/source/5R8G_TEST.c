@@ -34,7 +34,7 @@ const UBYTE FooterOfJPEG[] =  {0xff, 0xd9};
 
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
-    UDWORD			g2_data_adr = (UDWORD)0x00020000;
+    //UDWORD			g2_data_adr = (UDWORD)0x00020000;   No need
 
     UBYTE Buffer[MaxOfMemory];
     UINT indexOfBuffer = 0;
@@ -117,8 +117,8 @@ void main(void){
         else if (Command == 'R')
         {
             flash_Erase(g1_data_adr,S_ERASE);    //delete memory of g1_data_adr sector ( 65536byte )
-            flash_Erase(g2_data_adr,S_ERASE);    //delete memory of g2_data_adr sector ( 65536byte )
-            FROM_Write_adr = Roop_adr;
+            //flash_Erase(g2_data_adr,S_ERASE);    //delete memory of g2_data_adr sector ( 65536byte )
+            //FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
             UBYTE receiveEndJpegFlag = 0x00;
             sendChar('R');
             while(receiveEndJpegFlag != 0x11){
@@ -128,7 +128,7 @@ void main(void){
                     if(receiveEndJpegFlag == 0x00 && RCREG == FooterOfJPEG[0]){
                         receiveEndJpegFlag = 0x01;
                         //sendChar('1');
-                    }else if (receiveEndJpegFlag == 0x01 && RCREG == FooterOfJPEG[1]){
+                    }/*else if (receiveEndJpegFlag == 0x01 && RCREG == FooterOfJPEG[1]){    //No need
                         //  get JPEG footer
                         receiveEndJpegFlag = 0x11;
                         //  save data to FROM before break roop
@@ -136,19 +136,23 @@ void main(void){
                         FROM_Write_adr += (UDWORD)(MaxOfMemory);
                         sendChar('2');
                         break;
-                    }/*else if (receiveEndJpegFlag == 0x01 && RCREG == FooterOfJPEG[2]){
-                      * const UBYTE FooterOfJPEG[2] = 0x0e;
-                      * UDWORD Sector_start_adr = (UDWORD)0x00001000;
-                      * UDWORD Jump_next_sector = (UDWORD)0x00010000;
-                      * 
-                      * receiveEndJpegFlag = 0x11;
-                      * //save data before jump to next sector
-                      * flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory)), &Buffer);
-                      * //Jump to next Sector of FROM
-                      * Sector_start_adr += Jump_next_sector;
-                      * FROM_Write_adr = Sector_start_adr;
-                      * break;
-                      * 
+                    }*/
+                    /*  Jump to next sector of FROM after RCREG reveived EOF(0x0E)
+                        DEFINE Secotr_start_adr in order to remember first address of each sector
+                        DEFINE Jump_next_sector in order to jump to next sector by address += 0x10000
+                        Add 0x10000 to Sector_start_adr and make FROM_Write_adr Sector_start_adr*/
+                     /*else if (receiveEndJpegFlag == 0x01 && RCREG == FooterOfJPEG[2]){
+                        * const UBYTE FooterOfJPEG[2] = 0x0e;
+                        * UDWORD Sector_start_adr = (UDWORD)0x00001000;
+                        * UDWORD Jump_next_sector = (UDWORD)0x00010000;
+                        * 
+                        * receiveEndJpegFlag = 0x11;
+                        * //save data before jump to next sector
+                        * flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory)), &Buffer);
+                        * //Jump to next Sector of FROM
+                        * Sector_start_adr += Jump_next_sector;
+                        * FROM_Write_adr = Sector_start_adr;
+                        * break;
                       }*/
                     else{
                         receiveEndJpegFlag = 0x00;
@@ -159,18 +163,50 @@ void main(void){
             }
             send_OK();
         }
+        /*  Make initialize mode
+            Only copy the first regulation above and paste*/
         /*else if(Command == 'I'){     //Initialize mode
-            *   init_mpu();
-            *   //initbau(BAU_HIGH);                //115200bps
-            *   //initbau(BAU_MIDDLE);              //57600bps
-            *   initbau(BAU_LOW);                   //14400bps
-            *   MAX2828_EN = 1;                     //MAX2828 ON
-            *   __delay_us(100);                    //100us wait
-            *   FLASH_SPI_EI();                     //enable SPI
-            *   init_max2828();                     //init MAX2828
-            *   Mod_SW = 0;                         //FSK modulation ON
-            *
+            * init_mpu();
+            * //initbau(BAU_HIGH);                //115200bps
+            * //initbau(BAU_MIDDLE);              //57600bps
+            * initbau(BAU_LOW);                   //14400bps
+            * MAX2828_EN = 1;                     //MAX2828 ON
+            *  __delay_us(100);                    //100us wait
+            *  FLASH_SPI_EI();                     //enable SPI
+            * init_max2828();                     //init MAX2828
+            * Mod_SW = 0;                         //FSK modulation ON
         }*/
+        /*  Add Command C:Change FROM_Write_adr when some sectors of FROM are broken
+            We devide 63 sectors(sector 0 is to keep config) into 3groups.
+         *  That is because one eight(1/8) of original JPEG uses two sectors each so they need 16sectors for all fle.
+         *  1 is sector 1 to 16.
+         *  2 is sector 17 to 32.
+         *  3 is sector 33 to 48.
+         *  DEFINE sector 1  address(0x0001 0000) as g1_data_adr
+         *  DEFINE sector 17 address(0x0011 0000) as g2_data_adr
+         *  DEFINE sector 33 address(0x0021 0000) as g3_data_adr
+         *  If sector  1~16 were broken, make FROM_Write_adr g2_data_adr
+         *  If sector 17~32 were broken, make FROM_Write_adr g3_data_adr
+         *  If sector 33~48 were broken, how should we do?  When we use g3_data_adr, g1_data_adr was also broken.
+         */
+        /*else if(Command == 'C'){
+         *  UDWORD g2_data_adr = 0x00110000;
+         *  UDWORD g3_data_adr = 0x00210000;
+         *  if(g2_data_adr > FROM_Write_adr){
+         *      FROM_Write_adr = g2_data_adr;
+         *  }else if{
+         *      FROM_Write_adr = g3_data_adr;
+         *  }else{
+         *      FROM_Write_adr = g1_data_adr;
+         *  }
+         * }*/
+        /* Make Sleep mode (Command =='S')
+         * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
+         * We have to keep MCLR pin High.
+         */
+        /*Make Wake up mode (Command == 'W')
+         * We make PIC wakeup mode to change MCLR Low.
+         */
         else
         {
             offAmp();

@@ -136,7 +136,21 @@ void main(void){
                         FROM_Write_adr += (UDWORD)(MaxOfMemory);
                         sendChar('2');
                         break;
-                    }else{
+                    }/*else if (receiveEndJpegFlag == 0x01 && RCREG == FooterOfJPEG[2]){
+                      * const UBYTE FooterOfJPEG[2] = 0x0e;
+                      * UDWORD Sector_start_adr = (UDWORD)0x00001000;
+                      * UDWORD Jump_next_sector = (UDWORD)0x00010000;
+                      * 
+                      * receiveEndJpegFlag = 0x11;
+                      * //save data before jump to next sector
+                      * flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory)), &Buffer);
+                      * //Jump to next Sector of FROM
+                      * Sector_start_adr += Jump_next_sector;
+                      * FROM_Write_adr = Sector_start_adr;
+                      * break;
+                      * 
+                      }*/
+                    else{
                         receiveEndJpegFlag = 0x00;
                     }
                 }
@@ -145,6 +159,18 @@ void main(void){
             }
             send_OK();
         }
+        /*else if(Command == 'I'){     //Initialize mode
+            *   init_mpu();
+            *   //initbau(BAU_HIGH);                //115200bps
+            *   //initbau(BAU_MIDDLE);              //57600bps
+            *   initbau(BAU_LOW);                   //14400bps
+            *   MAX2828_EN = 1;                     //MAX2828 ON
+            *   __delay_us(100);                    //100us wait
+            *   FLASH_SPI_EI();                     //enable SPI
+            *   init_max2828();                     //init MAX2828
+            *   Mod_SW = 0;                         //FSK modulation ON
+            *
+        }*/
         else
         {
             offAmp();

@@ -140,15 +140,16 @@ void main(void){
                     /*  Jump to next sector of FROM after RCREG reveived EOF(0x0E)
                         DEFINE Secotr_start_adr in order to remember first address of each sector
                         DEFINE Jump_next_sector in order to jump to next sector by address += 0x10000
-                        Add 0x10000 to Sector_start_adr and make FROM_Write_adr Sector_start_adr*/
+                        Add 0x10000 to Sector_start_adr and make FROM_Write_adr Sector_start_adr
+                        Maybe we have to make another receiveEndJpegFlag ex.0x12 for distinct 8split end from full JPEG end*/
                      /*else if (receiveEndJpegFlag == 0x01 && RCREG == FooterOfJPEG[2]){
                         * const UBYTE FooterOfJPEG[2] = 0x0e;
                         * UDWORD Sector_start_adr = (UDWORD)0x00001000;
                         * UDWORD Jump_next_sector = (UDWORD)0x00010000;
                         * 
-                        * receiveEndJpegFlag = 0x11;
+                        * receiveEndJpegFlag = 0x11;        //Quit researvation JPEG 
                         * //save data before jump to next sector
-                        * flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory)), &Buffer);
+                        * flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
                         * //Jump to next Sector of FROM
                         * Sector_start_adr += Jump_next_sector;
                         * FROM_Write_adr = Sector_start_adr;
@@ -177,35 +178,30 @@ void main(void){
             * Mod_SW = 0;                         //FSK modulation ON
         }*/
         /*  Add Command C:Change FROM_Write_adr when some sectors of FROM are broken
-            We devide 63 sectors(sector 0 is to keep config) into 3groups.
-         *  That is because one eight(1/8) of original JPEG uses two sectors each so they need 16sectors for all fle.
-         *  1 is sector 1 to 16.
-         *  2 is sector 17 to 32.
-         *  3 is sector 33 to 48.
-         *  DEFINE sector 1  address(0x0001 0000) as g1_data_adr
-         *  DEFINE sector 17 address(0x0011 0000) as g2_data_adr
-         *  DEFINE sector 33 address(0x0021 0000) as g3_data_adr
-         *  If sector  1~16 were broken, make FROM_Write_adr g2_data_adr
-         *  If sector 17~32 were broken, make FROM_Write_adr g3_data_adr
-         *  If sector 33~48 were broken, how should we do?  When we use g3_data_adr, g1_data_adr was also broken.
+         *  Receive designated address of FROM and overwrite FROM_Writer_adr
+         *  DEFINE FROM_Designated_adr
          */
         /*else if(Command == 'C'){
-         *  UDWORD g2_data_adr = 0x00110000;
-         *  UDWORD g3_data_adr = 0x00210000;
-         *  if(g2_data_adr > FROM_Write_adr){
-         *      FROM_Write_adr = g2_data_adr;
-         *  }else if{
-         *      FROM_Write_adr = g3_data_adr;
-         *  }else{
-         *      FROM_Write_adr = g1_data_adr;
-         *  }
+         *  while(RCIF != 1);
+         *  FROM_Designated_adr = RCREG;    //Receive specific address of FROM
          * }*/
         /* Make Sleep mode (Command =='S')
          * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
          * We have to keep MCLR pin High.
+         * Above this is uncorrect because we shouldn't use PIC_SLEEP. 
+         * Sleep mode only FROM, Max2828, Amp
+         */
+        /*else if(Command == 'S')
+         *  flash_Deep_sleep();
+         *  sleep_Max2828   There is no SHDN pin from PIC so we may not make sleep mode
+         *  offAmp();       
          */
         /*Make Wake up mode (Command == 'W')
-         * We make PIC wakeup mode to change MCLR Low.
+         */
+        /*else if(Command == 'W){
+         *  flash_Wake_up();
+         *  offAmp();   //This is in Wakeup mode but we don't have to make Amp on.
+         * }
          */
         else
         {

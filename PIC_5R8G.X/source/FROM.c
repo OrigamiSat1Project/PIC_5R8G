@@ -47,6 +47,8 @@ static UBYTE flash_Send_Cmd(UBYTE, UDWORD, UBYTE);
 static UBYTE flash_SPI_Rx(UWORD, UBYTE *);
 UBYTE flash_Read_Data(UDWORD, UDWORD, UBYTE *);
 UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
+//UBYTE flash_Deep_sleep(void);
+//UBYTE flash_Wake_up(void);
 
 /* 書き込み可能 */
 UBYTE flash_Write_En(void)
@@ -588,3 +590,36 @@ UBYTE flash_Write_Protect(UBYTE WpSts)
 	return FLASH_OK;
 }
 
+/*Deep sleep*/
+/*
+UBYTE flash_Deep_sleep(void)
+{
+	UBYTE				Ret;
+
+	FLASH_SET_CS(FLASH_LOW);								//* CS "L"
+	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
+
+	//* change to Deep sleep mode
+	Ret = flash_Cmd_DP();
+
+	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
+	FLASH_SET_CS(FLASH_HI);									//* CS "H"
+	return Ret;    
+}*/
+
+/*Release Deep sleep*/
+/*
+UBYTE flash_Wake_up(void)
+{
+	UBYTE				Ret;
+
+	FLASH_SET_CS(FLASH_LOW);								//* CS "L"
+	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
+
+	//* Release Deep sleep
+	Ret = flash_Cmd_RES();
+
+	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
+	FLASH_SET_CS(FLASH_HI);									//* CS "H"
+	return Ret;    
+}*/

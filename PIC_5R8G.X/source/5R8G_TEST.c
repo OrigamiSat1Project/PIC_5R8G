@@ -30,7 +30,19 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 #define JPGCOUNT 5000
 #define MaxOfMemory 40  //  TODO : Use Bank function then magnify buffer size
-const UBYTE FooterOfJPEG[] =  {0xff, 0xd9}; 
+const UBYTE FooterOfJPEG[] =  {0xff, 0xd9, 0x0e}; 
+
+/*  How to use receiveEndJpegFlag
+ *  Bit7            Bit6            Bit5        Bit4        Bit3        Bit2        Bit1                Bit0
+ *  8split_End      8split_cnt2     cnt1        cnt0        ----        ----        Flag_0x0E           Flag_0xFF
+ *  
+ *  Initialize                  = 0x00
+ *  Detect JPEG marker 0xFF     = 0x01
+ *  End of receive JPEG         = 0x03  (0b00000011)
+ *  During writing sector 2     = 0x10  (0b00010000)
+ *  During writing sector 8     = 0x70  (0b01110000)
+ *  After 8split_end            = 0x80  (0b10000000)
+ */
 
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
@@ -118,45 +130,46 @@ void main(void){
         {
             flash_Erase(g1_data_adr,S_ERASE);    //delete memory of g1_data_adr sector ( 65536byte )
             //flash_Erase(g2_data_adr,S_ERASE);    //delete memory of g2_data_adr sector ( 65536byte )
-            //FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
-            UBYTE receiveEndJpegFlag = 0x00;
+            FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
+            UBYTE receiveEndJpegFlag = 0x00;    
             sendChar('R');
-            while(receiveEndJpegFlag != 0x11){
+            while(receiveEndJpegFlag != 0x03){
                 for (UINT i = 0; i < MaxOfMemory; i++) {
                     while (RCIF != 1);
                     Buffer[i] = RCREG;
-                    if(receiveEndJpegFlag == 0x00 && RCREG == FooterOfJPEG[0]){
-                        receiveEndJpegFlag = 0x01;
+                    if(receiveEndJpegFlag & 0x01 == 0 && RCREG == FooterOfJPEG[0]){
+                        receiveEndJpegFlag +=1;     //Flag_0xFF in receiveEndJPEGFlag = 1
                         //sendChar('1');
-                    }/*else if (receiveEndJpegFlag == 0x01 && RCREG == FooterOfJPEG[1]){    //No need
-                        //  get JPEG footer
-                        receiveEndJpegFlag = 0x11;
+                    }else if (receiveEndJpegFlag & 0x80 == 0x80 && RCREG == FooterOfJPEG[2]){  //End of receiving JPEG
+                        receiveEndJpegFlag = 0x03;
                         //  save data to FROM before break roop
                         flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
                         FROM_Write_adr += (UDWORD)(MaxOfMemory);
                         sendChar('2');
                         break;
-                    }*/
-                    /*  Jump to next sector of FROM after RCREG reveived EOF(0x0E)
-                        DEFINE Secotr_start_adr in order to remember first address of each sector
-                        DEFINE Jump_next_sector in order to jump to next sector by address += 0x10000
-                        Add 0x10000 to Sector_start_adr and make FROM_Write_adr Sector_start_adr
-                        Maybe we have to make another receiveEndJpegFlag ex.0x12 for distinct 8split end from full JPEG end*/
-                     /*else if (receiveEndJpegFlag == 0x01 && RCREG == FooterOfJPEG[2]){
-                        * const UBYTE FooterOfJPEG[2] = 0x0e;
-                        * UDWORD Sector_start_adr = (UDWORD)0x00001000;
-                        * UDWORD Jump_next_sector = (UDWORD)0x00010000;
-                        * 
-                        * receiveEndJpegFlag = 0x11;        //Quit researvation JPEG 
-                        * //save data before jump to next sector
-                        * flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
-                        * //Jump to next Sector of FROM
-                        * Sector_start_adr += Jump_next_sector;
-                        * FROM_Write_adr = Sector_start_adr;
-                        * break;
-                      }*/
+                    }
+                    /* Comment
+                     * ===================================================================================================
+                     * Jump to next sector of FROM)
+                     * When 8split_end_flag in receiveEndJpegFlag is low, we should jumpt to nect sector by overwrite FROM_Writer_adr
+                     * and +1count 8split_cnt in receiveEndJpegFlag.
+                        ===================================================================================================
+                     * Code
+                     * ===================================================================================================
+                     * else if (receiveEndJpegFlag & 0x01 == 1 && RCREG == FooterOfJPEG[2]){   //when change of FROM sector
+                     *  //save data before jump to next sector
+                     *  flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+                     *  //Jump to next Sector of FROM
+                     *  FROM_Write_adr &= ~0x0f;        //Clear low order 4bit of FROM_Write_adr. Clear the memory address in previous sector
+                     *  FROM_Write_adr += 0x10;         //Jump to next sector by +0b10000
+                     *  receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
+                     *  receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
+                     *  //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag and 8split_cnt will be 0b000.
+                     * }
+                     * ===================================================================================================
+                      */
                     else{
-                        receiveEndJpegFlag = 0x00;
+                        receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag
                     }
                 }
                 flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
@@ -164,44 +177,70 @@ void main(void){
             }
             send_OK();
         }
-        /*  Make initialize mode
-            Only copy the first regulation above and paste*/
-        /*else if(Command == 'I'){     //Initialize mode
-            * init_mpu();
-            * //initbau(BAU_HIGH);                //115200bps
-            * //initbau(BAU_MIDDLE);              //57600bps
-            * initbau(BAU_LOW);                   //14400bps
-            * MAX2828_EN = 1;                     //MAX2828 ON
-            *  __delay_us(100);                    //100us wait
-            *  FLASH_SPI_EI();                     //enable SPI
-            * init_max2828();                     //init MAX2828
-            * Mod_SW = 0;                         //FSK modulation ON
+        /*  
+         * Comment
+         * ======================================================================================
+         * Make initialize mode
+            Only copy the first regulation above and paste
+         * ======================================================================================
+         * Code
+         * ======================================================================================
+         * else if(Command == 'I'){     //Initialize mode
+         * 
+         *   init_mpu();
+         *   //initbau(BAU_HIGH);                //115200bps
+         *   //initbau(BAU_MIDDLE);              //57600bps
+         *   initbau(BAU_LOW);                   //14400bps
+         *   MAX2828_EN = 1;                     //MAX2828 ON
+         *    __delay_us(100);                    //100us wait
+         *    FLASH_SPI_EI();                     //enable SPI
+         *   init_max2828();                     //init MAX2828
+         *   Mod_SW = 0;                         //FSK modulation ON
+         * ======================================================================================
         }*/
-        /*  Add Command C:Change FROM_Write_adr when some sectors of FROM are broken
+        
+        /* Comment
+         * ======================================================================================
+         *  Make Change FROM_Write_adr received from OBC
+         *  Add Command C:Change FROM_Write_adr when some sectors of FROM are broken
          *  Receive designated address of FROM and overwrite FROM_Writer_adr
-         *  DEFINE FROM_Designated_adr
-         */
-        /*else if(Command == 'C'){
+         *  DEFINE FROM_Designated_ad
+         * ======================================================================================r
+         *Code
+         * ======================================================================================
+         *else if(Command == 'C'){
          *  while(RCIF != 1);
          *  FROM_Designated_adr = RCREG;    //Receive specific address of FROM
-         * }*/
-        /* Make Sleep mode (Command =='S')
+         * }
+         * ======================================================================================
+         */
+        /* Comment
+         * ======================================================================================
+         * Make Sleep mode (Command =='S')
          * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
          * We have to keep MCLR pin High.
          * Above this is uncorrect because we shouldn't use PIC_SLEEP. 
          * Sleep mode only FROM, Max2828, Amp
-         */
-        /*else if(Command == 'S')
+         *======================================================================================
+         * Code
+         * ======================================================================================
+         *else if(Command == 'S')
          *  flash_Deep_sleep();
-         *  sleep_Max2828   There is no SHDN pin from PIC so we may not make sleep mode
-         *  offAmp();       
+         *  sleep_Max2828   There is no SHDN pin from PIC so we may not mak e sleep mode
+         *  offAmp();
+         * ======================================================================================
          */
-        /*Make Wake up mode (Command == 'W')
-         */
-        /*else if(Command == 'W){
+        /*Comment
+         * ======================================================================================
+         * Make Wake up mode (Command == 'W')
+         *======================================================================================
+         * Code
+         * ======================================================================================
+         *else if(Command == 'W){
          *  flash_Wake_up();
          *  offAmp();   //This is in Wakeup mode but we don't have to make Amp on.
          * }
+         * ======================================================================================
          */
         else
         {

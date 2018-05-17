@@ -201,32 +201,35 @@ void main(void){
         
         /* Comment
          * ======================================================================================
-         *  Change FROM_Write_adr received from OBC by overwriting g1_data_adr
+         *  Make Change FROM_Write_adr received from OBC
          *  Add Command C:Change FROM_Write_adr when some sectors of FROM are broken
+         *  Receive designated address of FROM and overwrite FROM_Writer_adr
+         *  DEFINE FROM_Designated_ad
          * ======================================================================================r
          *Code
          * ======================================================================================
          *else if(Command == 'C'){
          *  while(RCIF != 1);
-         *  g1_data_adr = RCREG;    //Receive specific address of FROM. In main function : FROM_Write_adr = g1_data_adr
+         *  FROM_Designated_adr = RCREG;    //Receive specific address of FROM
          * }
          * ======================================================================================
          */
-        
         /* Comment
          * ======================================================================================
          * Make Sleep mode (Command =='S')
+         * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
+         * We have to keep MCLR pin High.
+         * Above this is uncorrect because we shouldn't use PIC_SLEEP. 
          * Sleep mode only FROM, Max2828, Amp
          *======================================================================================
          * Code
          * ======================================================================================
          *else if(Command == 'S')
-         *  flash_Deep_sleep();     //Deep sleep mode of FROM
+         *  flash_Deep_sleep();
          *  sleep_Max2828   There is no SHDN pin from PIC so we may not mak e sleep mode
          *  offAmp();
          * ======================================================================================
          */
-        
         /*Comment
          * ======================================================================================
          * Make Wake up mode (Command == 'W')
@@ -234,7 +237,7 @@ void main(void){
          * Code
          * ======================================================================================
          *else if(Command == 'W){
-         *  flash_Wake_up();    //Release from Deep sleep mode of FROM
+         *  flash_Wake_up();
          *  offAmp();   //This is in Wakeup mode but we don't have to make Amp on.
          * }
          * ======================================================================================

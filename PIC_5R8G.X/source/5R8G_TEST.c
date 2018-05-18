@@ -30,7 +30,6 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 #define JPGCOUNT 5000
 #define MaxOfMemory 40  //  TODO : Use Bank function then magnify buffer size
-#define FROM_Designated_adr
 const UBYTE FooterOfJPEG[] =  {0xff, 0xd9, 0x0e}; 
 
 /*  How to use receiveEndJpegFlag
@@ -55,6 +54,8 @@ void main(void){
     UDWORD FROM_Write_adr = g1_data_adr;
     UDWORD FROM_Read_adr  = g1_data_adr;
     UDWORD Roop_adr = g1_data_adr;
+    UDWORD FROM_Jump_next_sector = 0x10000;
+    UDWORD FROM_Designated_adr = g1_data_adr;
     UINT roopcount = 0;
 
     init_mpu();
@@ -138,7 +139,7 @@ void main(void){
              * Code
              * ===================================================================================================
              * const UINT Amount_of_erase_sector 16;
-             * UWORD tmp_adr = g1_data_adr;     //Use only this for statement
+             * UDWORD tmp_adr = g1_data_adr;     //Use only this for statement
              * for (i=1; i<Amount_of_erase_sector; i++){    >
              *      flash_Erase(tmp_adr,S_ERASE);
              *      tmp_adr += 0x10000;         //Jump to next sector's start address
@@ -150,21 +151,22 @@ void main(void){
             FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
             UBYTE receiveEndJpegFlag = 0x00;    
             sendChar('R');
-            while(receiveEndJpegFlag != 0x03){
+            while(receiveEndJpegFlag  & 0x80 != 0x80){
                 for (UINT i = 0; i < MaxOfMemory; i++) {
                     while (RCIF != 1);
                     Buffer[i] = RCREG;
-                    if(receiveEndJpegFlag & 0x01 == 0 && RCREG == FooterOfJPEG[0]){
-                        receiveEndJpegFlag +=1;     //Flag_0xFF in receiveEndJPEGFlag = 1
+                    if(receiveEndJpegFlag & 0x01 == 0x00 && RCREG == FooterOfJPEG[0]){
+                        receiveEndJpegFlag |= 0x01;     //Flag_0xFF in receiveEndJPEGFlag = 1
                         //sendChar('1');
-                    }else if (receiveEndJpegFlag & 0x80 == 0x80 && RCREG == FooterOfJPEG[2]){  //End of receiving JPEG
+                    }/*No need
+                    else if (receiveEndJpegFlag & 0x80 == 0x80 && RCREG == FooterOfJPEG[1]){  //End of receiving JPEG
                         receiveEndJpegFlag = 0x03;
                         //  save data to FROM before break roop
-                        flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+                        flash_Write_Data(FROM_Write_adr, (UDWORD)(i), &Buffer);
                         FROM_Write_adr += (UDWORD)(MaxOfMemory);
                         sendChar('2');
                         break;
-                    }
+                    }*/
                     /* Comment
                      * ===================================================================================================
                      * Jump to next sector of FROM)
@@ -173,15 +175,15 @@ void main(void){
                         ===================================================================================================
                      * Code
                      * ===================================================================================================
-                     * else if (receiveEndJpegFlag & 0x01 == 1 && RCREG == FooterOfJPEG[2]){   //when change of FROM sector
+                     * else if (receiveEndJpegFlag & 0x01 == 0x01 && RCREG == FooterOfJPEG[1]){   //when change of FROM sector
                      *  //save data before jump to next sector
-                     *  flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+                     *  flash_Write_Data(FROM_Write_adr, (UDWORD)(i), &Buffer);
                      *  //Jump to next Sector of FROM
                      *  FROM_Write_adr &= ~0xffff;        //Clear low order 2BYTE of FROM_Write_adr. Clear the memory address in previous sector
                      *  FROM_Write_adr += 0x10000;         //Jump to next sector
                      *  receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
                      *  receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
-                     *  //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag and 8split_cnt will be 0b000.
+                     *  //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag
                      * }
                      * ===================================================================================================
                       */
@@ -205,14 +207,14 @@ void main(void){
          * Code
          * ======================================================================================
          * else if(Command = 'D'){
-         *      UWORD FROM_sector_adr;          //FROM_sector_adr from OBC command
-         *      UINT Amount_of_erase_sector_OBC    //How many sectors do you want to delete
+         *      UDWORD FROM_sector_adr;          //FROM_sector_adr from OBC command
+         *      UBYTE Amount_of_erase_sector_OBC;    //How many sectors do you want to delete
          *      while (RCIF != 1);
-         *      FROM_sector_adr = (UWORD)RCREG;
+         *      FROM_sector_adr = (UDWORD)RCREG;
          *      FROM_sector_adr = FROM_sector<<16;      >   //We have to shift 16bit to move sector_start_address
          *      while (RCIF != 1);
-         *      Amount_of_erase_sector_OBC = (UINT)RCREG
-         *      for (i=1; i<Amount_of_erase_sector_OBC; i++){     > 
+         *      Amount_of_erase_sector_OBC = RCREG;          //Receive by UBYTE ex.) 5Å®0x05, 10Å®0x0a, 15Å®0x0f
+         *      for (UBYTE i=0x00; i<Amount_of_erase_sector_OBC; i++){     > 
          *          flash_Erase(FROM_sector_adr, S_ERASE);
          *          FROM_sector_adr += 0x10000;                //Jump to next sector which you want to delete
          *      }
@@ -252,13 +254,13 @@ void main(void){
          * ======================================================================================
          *else if(Command == 'C'){
          *  const UINT ReceiveAdrCnt = 4;
-         *  for(i=1; i<ReceiveAdrCnt; i++){                 >
+         *  UDWORD tmp_adr;
+         *  for(UINT i=1; i<ReceiveAdrCnt; i++){                 >
          *      while(RCIF != 1);
-         *      tmp_adr = (UWORD) RCREG;
-         *      FROM_Designated_adr |= RCREG;
-         *      FROM_Designated_adr = FROM_Designated_adr<<8;       >
+         *      FROM_Designated_adr |= tmp_adr;
+         *      FROM_Designated_adr = FROM_Designated_adr<<8;       >   //bit shift and clear low under 4bit for next 4bit address
          * }
-         * g1_data_adr = FROM_Designated_adr
+         *  g1_data_adr = FROM_Designated_adr;
          * ======================================================================================
          */
         /* Comment

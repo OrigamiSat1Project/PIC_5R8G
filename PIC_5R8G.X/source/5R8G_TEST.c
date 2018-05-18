@@ -129,7 +129,23 @@ void main(void){
         }
         else if (Command == 'R')
         {
-            flash_Erase(g1_data_adr,S_ERASE);    //delete memory of g1_data_adr sector ( 65536byte )
+            /* Comment
+             * ===================================================================================================
+             * Erase sectors before writing FROM
+             * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
+             * We erase 16 sectors from g1_data_adr in this Code.
+                ===================================================================================================
+             * Code
+             * ===================================================================================================
+             * const UINT Amount_of_erase_sector 16;
+             * UWORD tmp_adr = g1_data_adr;     //Use only this for statement
+             * for (i=1; i<Amount_of_erase_sector; i++){    >
+             *      flash_Erase(tmp_adr,S_ERASE);
+             *      tmp_adr += 0x10000;         //Jump to next sector's start address
+             * }
+             * ===================================================================================================
+              */            
+            //flash_Erase(g1_data_adr,S_ERASE);    //delete memory of g1_data_adr sector ( 65536byte )
             //flash_Erase(g2_data_adr,S_ERASE);    //delete memory of g2_data_adr sector ( 65536byte )
             FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
             UBYTE receiveEndJpegFlag = 0x00;    
@@ -161,8 +177,8 @@ void main(void){
                      *  //save data before jump to next sector
                      *  flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
                      *  //Jump to next Sector of FROM
-                     *  FROM_Write_adr &= ~0x0f;        //Clear low order 4bit of FROM_Write_adr. Clear the memory address in previous sector
-                     *  FROM_Write_adr += 0x10;         //Jump to next sector by +0b10000
+                     *  FROM_Write_adr &= ~0xffff;        //Clear low order 2BYTE of FROM_Write_adr. Clear the memory address in previous sector
+                     *  FROM_Write_adr += 0x10000;         //Jump to next sector
                      *  receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
                      *  receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
                      *  //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag and 8split_cnt will be 0b000.
@@ -178,8 +194,33 @@ void main(void){
             }
             send_OK();
         }
-        /*  
-         * Comment
+
+        /* Comment
+         * ======================================================================================
+         * Make Delete sector mode
+         * We have to delete sectors in order to rewrite sector.
+         * Bulk Erase takes long time (10s) so we should use sector erase.
+         * Receive sector identificate address and how manay sectors want to delete, delete sectors from received sector.
+         * ======================================================================================
+         * Code
+         * ======================================================================================
+         * else if(Command = 'D'){
+         *      UWORD FROM_sector_adr;          //FROM_sector_adr from OBC command
+         *      UINT Amount_of_erase_sector_OBC    //How many sectors do you want to delete
+         *      while (RCIF != 1);
+         *      FROM_sector_adr = (UWORD)RCREG;
+         *      FROM_sector_adr = FROM_sector<<16;      >   //We have to shift 16bit to move sector_start_address
+         *      while (RCIF != 1);
+         *      Amount_of_erase_sector_OBC = (UINT)RCREG
+         *      for (i=1; i<Amount_of_erase_sector_OBC; i++){     > 
+         *          flash_Erase(FROM_sector_adr, S_ERASE);
+         *          FROM_sector_adr += 0x10000;                //Jump to next sector which you want to delete
+         *      }
+         * }
+         * ======================================================================================
+        }*/
+        
+        /* Comment
          * ======================================================================================
          * Make initialize mode
             Only copy the first regulation above and paste
@@ -211,14 +252,13 @@ void main(void){
          * ======================================================================================
          *else if(Command == 'C'){
          *  const UINT ReceiveAdrCnt = 4;
-         *  UWORD tmp_adr;
-         *  for(i=1; i<ReceiveAdrCnt; i++){
+         *  for(i=1; i<ReceiveAdrCnt; i++){                 >
          *      while(RCIF != 1);
          *      tmp_adr = (UWORD) RCREG;
          *      FROM_Designated_adr |= RCREG;
-         *      FROM_Designated_adr = FROM_Designated_adr<<8;
+         *      FROM_Designated_adr = FROM_Designated_adr<<8;       >
          * }
-         * FROM_Write_adr = FROM_Designated_adr
+         * g1_data_adr = FROM_Designated_adr
          * ======================================================================================
          */
         /* Comment

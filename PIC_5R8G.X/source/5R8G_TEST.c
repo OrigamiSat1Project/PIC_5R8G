@@ -30,6 +30,7 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 #define JPGCOUNT 5000
 #define MaxOfMemory 40  //  TODO : Use Bank function then magnify buffer size
+#define FROM_Designated_adr
 const UBYTE FooterOfJPEG[] =  {0xff, 0xd9, 0x0e}; 
 
 /*  How to use receiveEndJpegFlag
@@ -204,14 +205,20 @@ void main(void){
          *  Make Change FROM_Write_adr received from OBC
          *  Add Command C:Change FROM_Write_adr when some sectors of FROM are broken
          *  Receive designated address of FROM and overwrite FROM_Writer_adr
-         *  DEFINE FROM_Designated_ad
+         *  DEFINE FROM_Designated_adr
          * ======================================================================================r
          *Code
          * ======================================================================================
          *else if(Command == 'C'){
-         *  while(RCIF != 1);
-         *  FROM_Designated_adr = RCREG;    //Receive specific address of FROM
+         *  const UINT ReceiveAdrCnt = 4;
+         *  UWORD tmp_adr;
+         *  for(i=1; i<ReceiveAdrCnt; i++){
+         *      while(RCIF != 1);
+         *      tmp_adr = (UWORD) RCREG;
+         *      FROM_Designated_adr |= RCREG;
+         *      FROM_Designated_adr = FROM_Designated_adr<<8;
          * }
+         * FROM_Write_adr = FROM_Designated_adr
          * ======================================================================================
          */
         /* Comment

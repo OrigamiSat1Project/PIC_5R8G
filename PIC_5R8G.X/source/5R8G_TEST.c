@@ -55,7 +55,6 @@ void main(void){
     UDWORD FROM_Read_adr  = g1_data_adr;
     UDWORD Roop_adr = g1_data_adr;
     UDWORD FROM_Jump_next_sector = 0x10000;
-    UDWORD FROM_Designated_adr = g1_data_adr;
     UINT roopcount = 0;
 
     init_mpu();
@@ -134,20 +133,18 @@ void main(void){
              * ===================================================================================================
              * Erase sectors before writing FROM
              * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
-             * We erase 16 sectors from g1_data_adr in this Code.
+             * We erase 16 sectors from Roop_adr in this Code.
                 ===================================================================================================
              * Code
              * ===================================================================================================
              * const UINT Amount_of_erase_sector 16;
-             * UDWORD tmp_adr = g1_data_adr;     //Use only this for statement
-             * for (i=1; i<Amount_of_erase_sector; i++){    >
-             *      flash_Erase(tmp_adr,S_ERASE);
-             *      tmp_adr += 0x10000;         //Jump to next sector's start address
+             * UDWORD tmp_adr_erase = Roop_adr;     //Use only this for statement
+             * for (i=0; i<Amount_of_erase_sector; i++){    >
+             *      flash_Erase(tmp_adr_erase,S_ERASE);
+             *      tmp_adr_erase += 0x10000;         //Jump to next sector's start address
              * }
              * ===================================================================================================
               */            
-            //flash_Erase(g1_data_adr,S_ERASE);    //delete memory of g1_data_adr sector ( 65536byte )
-            //flash_Erase(g2_data_adr,S_ERASE);    //delete memory of g2_data_adr sector ( 65536byte )
             FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
             UBYTE receiveEndJpegFlag = 0x00;    
             sendChar('R');
@@ -158,19 +155,11 @@ void main(void){
                     if(receiveEndJpegFlag & 0x01 == 0x00 && RCREG == FooterOfJPEG[0]){
                         receiveEndJpegFlag |= 0x01;     //Flag_0xFF in receiveEndJPEGFlag = 1
                         //sendChar('1');
-                    }/*No need
-                    else if (receiveEndJpegFlag & 0x80 == 0x80 && RCREG == FooterOfJPEG[1]){  //End of receiving JPEG
-                        receiveEndJpegFlag = 0x03;
-                        //  save data to FROM before break roop
-                        flash_Write_Data(FROM_Write_adr, (UDWORD)(i), &Buffer);
-                        FROM_Write_adr += (UDWORD)(MaxOfMemory);
-                        sendChar('2');
-                        break;
-                    }*/
+                    }
                     /* Comment
                      * ===================================================================================================
-                     * Jump to next sector of FROM)
-                     * When 8split_end_flag in receiveEndJpegFlag is low, we should jumpt to nect sector by overwrite FROM_Writer_adr
+                     * Jump to next sector of FROM
+                     * When 8split_end_flag in receiveEndJpegFlag is low, we should jumpt to next sector by change FROM_Writer_adr
                      * and +1count 8split_cnt in receiveEndJpegFlag.
                         ===================================================================================================
                      * Code
@@ -200,9 +189,9 @@ void main(void){
         /* Comment
          * ======================================================================================
          * Make Delete sector mode
-         * We have to delete sectors in order to rewrite sector.
+         * We have to delete sectors in order to rewrite data in the sectors.
          * Bulk Erase takes long time (10s) so we should use sector erase.
-         * Receive sector identificate address and how manay sectors want to delete, delete sectors from received sector.
+         * Receive sector's identificate address and how many sectors want to delete, delete sectors from received sector.
          * ======================================================================================
          * Code
          * ======================================================================================
@@ -245,22 +234,23 @@ void main(void){
         
         /* Comment
          * ======================================================================================
-         *  Make Change FROM_Write_adr received from OBC
-         *  Add Command C:Change FROM_Write_adr when some sectors of FROM are broken
-         *  Receive designated address of FROM and overwrite FROM_Writer_adr
-         *  DEFINE FROM_Designated_adr
+         *  Make Change Roop_adr received from OBC
+         *  Add Command C:Change Roop_adr when some sectors of FROM are broken
+         *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
          * ======================================================================================r
          *Code
          * ======================================================================================
          *else if(Command == 'C'){
-         *  const UINT ReceiveAdrCnt = 4;
-         *  UDWORD tmp_adr;
-         *  for(UINT i=1; i<ReceiveAdrCnt; i++){                 >
+         *  const UINT ReceiveAdrCnt = 3;
+         *  UDWORD tmp_adr_change;
+         *  for(UINT i=0; i<ReceiveAdrCnt; i++){                 >
          *      while(RCIF != 1);
-         *      FROM_Designated_adr |= tmp_adr;
-         *      FROM_Designated_adr = FROM_Designated_adr<<8;       >   //bit shift and clear low under 4bit for next 4bit address
+         *      tmp_adr_change |= (UDWORD)RCREG;
+         *      tmp_adr_change = tmp_adr_change<<8;       >   //bit shift and clear low under 4bit for next 4bit address
          * }
-         *  g1_data_adr = FROM_Designated_adr;
+         *  while(RCIF != 1);
+         *  tmp_adr_change |= (UDWORD)RCREG;
+         *  Roop_adr = tmp_adr_change;
          * ======================================================================================
          */
         /* Comment

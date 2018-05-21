@@ -33,6 +33,7 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 const UBYTE FooterOfJPEG[] =  {0xff, 0xd9, 0x0e}; 
 
 /*  How to use receiveEndJpegFlag
+ * ===============================================================================================================
  *  Bit7            Bit6            Bit5        Bit4        Bit3        Bit2        Bit1                Bit0
  *  8split_End      8split_cnt2     cnt1        cnt0        ----        ----        Flag_0x0E           Flag_0xFF
  *  
@@ -42,6 +43,7 @@ const UBYTE FooterOfJPEG[] =  {0xff, 0xd9, 0x0e};
  *  During writing sector 2     = 0x10  (0b00010000)
  *  During writing sector 8     = 0x70  (0b01110000)
  *  After 8split_end            = 0x80  (0b10000000)
+ * ===============================================================================================================
  */
 
 void main(void){
@@ -89,9 +91,40 @@ void main(void){
             while(CAM2 == 1);   //  wait 5V SW
             FROM_Read_adr = Roop_adr;
             UINT sendBufferCount = 0;
+            //UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
+            //UBYTE Identify_8split = 0xff;           //Which sectors do you want to downlink. This is a kind of Flag. Defualt: all sectors(8)
+            /*  How to use Identify_8split
+             * ===========================================================================================
+             *  Bit7        Bit6        Bit5        Bit4        Bit3        Bit2        Bit1        Bit0
+             *  8/8         7/8         6/8         5/8         4/8         3/8         2/8         1/8
+             * ===========================================================================================
+             */            
             CREN = Bit_Low;
             TXEN = Bit_High;
             while(FROM_Read_adr < FROM_Write_adr && CAM2 == 0){
+                /* Comment
+                 * =============================================================
+                 * Which sectors do you read by reading Identify_8split.
+                 * Flag is ON : flash_Read_Data
+                 * Flag is OFF : FROM_Read_adr is jumping to next sector's start address.
+                 * =============================================================
+                 * Code
+                 * =============================================================
+                 * if(readFROM_Count >= 8){     //Nest process
+                 *      return 1;
+                 * }
+                 * while(RCIF != 1);
+                 * Identify_8split = RCREG;
+                 * if(Identify_8split & (1<<readFROM_Count)){    >
+                 *      flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
+                 * }
+                 * else{
+                 *      FROM_Read_adr &= ~0xffff;            //Clear under lower 2bytes
+                 *      FROM_Read_adr += 0x10000;           //Jump to next sector's address
+                 * }
+                 * readFROM_Count +=1;
+                 * =============================================================
+                 */
                 flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
                 if(sendBufferCount % JPGCOUNT == 0){
                     offAmp();
@@ -143,10 +176,8 @@ void main(void){
              * for (i=0; i<Amount_of_erase_sector; i++){    >
              *      flash_Erase(tmp_adr_erase,S_ERASE);
              *      tmp_adr_erase += 0x10000;         //Jump to next sector's start address
-             *      //
-             *      if (i % 2 ==1){
-             *          CLRWDT();
-             *          WDT_CLK =~WDT_CLK;
+             *      CLRWDT();
+             *      WDT_CLK =~WDT_CLK;
              *      }
              * }
              * ===================================================================================================
@@ -211,10 +242,8 @@ void main(void){
          *      for (UBYTE i=0x00; i<Amount_of_erase_sector_OBC; i++){     > 
          *          flash_Erase(FROM_sector_adr, S_ERASE);
          *          FROM_sector_adr += 0x10000;                //Jump to next sector which you want to delete
-         *          if(i % 0x02 == 0x01){
-         *              CLRWDT();
-         *              WDT_CLK = ~WDT_CLK;
-         *          }
+         *          CLRWDT();
+         *          WDT_CLK = ~WDT_CLK;
          *      }
          * }
          * ======================================================================================

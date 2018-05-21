@@ -194,14 +194,14 @@ void main(void){
 
         /* Comment
          * ======================================================================================
-         * Make Delete sector mode
+         * Make Erase sector mode
          * We have to delete sectors in order to rewrite data in the sectors.
          * Bulk Erase takes long time (10s) so we should use sector erase.
          * Receive sector's identificate address and how many sectors want to delete, delete sectors from received sector.
          * ======================================================================================
          * Code
          * ======================================================================================
-         * else if(Command = 'D'){
+         * else if(Command = 'E'){
          *      UBYTE Amount_of_erase_sector_OBC;    //How many sectors do you want to delete
          *      while (RCIF != 1);
          *      FROM_sector_adr = (UDWORD)RCREG;

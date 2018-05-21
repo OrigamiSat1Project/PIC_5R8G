@@ -53,6 +53,7 @@ void main(void){
 
     UDWORD FROM_Write_adr = g1_data_adr;
     UDWORD FROM_Read_adr  = g1_data_adr;
+    UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD FROM_Jump_next_sector = 0x10000;
     UINT roopcount = 0;
@@ -137,11 +138,16 @@ void main(void){
                 ===================================================================================================
              * Code
              * ===================================================================================================
-             * const UINT Amount_of_erase_sector 16;
+             * const UINT Amount_of_erase_sector = 16;
              * UDWORD tmp_adr_erase = Roop_adr;     //Use only this for statement
              * for (i=0; i<Amount_of_erase_sector; i++){    >
              *      flash_Erase(tmp_adr_erase,S_ERASE);
              *      tmp_adr_erase += 0x10000;         //Jump to next sector's start address
+             *      //
+             *      if (i % 2 ==1){
+             *          CLRWDT();
+             *          WDT_CLK =~WDT_CLK;
+             *      }
              * }
              * ===================================================================================================
               */            
@@ -196,16 +202,19 @@ void main(void){
          * Code
          * ======================================================================================
          * else if(Command = 'D'){
-         *      UDWORD FROM_sector_adr;          //FROM_sector_adr from OBC command
          *      UBYTE Amount_of_erase_sector_OBC;    //How many sectors do you want to delete
          *      while (RCIF != 1);
          *      FROM_sector_adr = (UDWORD)RCREG;
-         *      FROM_sector_adr = FROM_sector<<16;      >   //We have to shift 16bit to move sector_start_address
+         *      FROM_sector_adr = FROM_sector_adr<<16;      >   //We have to shift 16bit to move sector_start_address
          *      while (RCIF != 1);
          *      Amount_of_erase_sector_OBC = RCREG;          //Receive by UBYTE ex.) 5Å®0x05, 10Å®0x0a, 15Å®0x0f
          *      for (UBYTE i=0x00; i<Amount_of_erase_sector_OBC; i++){     > 
          *          flash_Erase(FROM_sector_adr, S_ERASE);
          *          FROM_sector_adr += 0x10000;                //Jump to next sector which you want to delete
+         *          if(i % 0x02 == 0x01){
+         *              CLRWDT();
+         *              WDT_CLK = ~WDT_CLK;
+         *          }
          *      }
          * }
          * ======================================================================================
@@ -237,20 +246,15 @@ void main(void){
          *  Make Change Roop_adr received from OBC
          *  Add Command C:Change Roop_adr when some sectors of FROM are broken
          *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
+         *  Ground Station can choose only sector start address kind of 0x00ÅõÅõ0000
          * ======================================================================================r
          *Code
          * ======================================================================================
          *else if(Command == 'C'){
-         *  const UINT ReceiveAdrCnt = 3;
-         *  UDWORD tmp_adr_change;
-         *  for(UINT i=0; i<ReceiveAdrCnt; i++){                 >
-         *      while(RCIF != 1);
-         *      tmp_adr_change |= (UDWORD)RCREG;
-         *      tmp_adr_change = tmp_adr_change<<8;       >   //bit shift and clear low under 4bit for next 4bit address
-         * }
          *  while(RCIF != 1);
-         *  tmp_adr_change |= (UDWORD)RCREG;
-         *  Roop_adr = tmp_adr_change;
+         *  FROM_sector_adr = (UDWORD)RCREG
+         *  FROM_sector_adr = FROM_sector_adr<<16;       >   //bit shift and clear low under 4bit for next 4bit address
+         *  Roop_adr = FROM_sector_adr;
          * ======================================================================================
          */
         /* Comment

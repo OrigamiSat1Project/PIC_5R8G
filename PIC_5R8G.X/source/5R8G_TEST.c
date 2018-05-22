@@ -8,6 +8,8 @@
 #include "UART.h"
 #include "time.h"
 #include "FROM.h"
+#include "SECTOR.h"
+#include "ReceiveJPEG.h"
 //#include "stdint.h"
 
 // CONFIG1
@@ -30,8 +32,6 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 
 #define JPGCOUNT 5000
-#define MaxOfMemory 40  //  TODO : Use Bank function then magnify buffer size
-const UBYTE FooterOfJPEG[] =  {0xff, 0x0e}; 
 
 /*  How to use receiveEndJpegFlag
  * ===============================================================================================================
@@ -51,14 +51,14 @@ void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
     //UDWORD			g2_data_adr = (UDWORD)0x00020000;   No need
 
-    UBYTE Buffer[MaxOfMemory];
-    UINT indexOfBuffer = 0;
+    UBYTE Buffer[1];            //Temporarily not MaxOfMemory but 1 because of memory.
+    //UINT indexOfBuffer = 0;
 
     UDWORD FROM_Write_adr = g1_data_adr;
     UDWORD FROM_Read_adr  = g1_data_adr;
     //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
-    UDWORD FROM_Jump_next_sector = 0x10000;
+    //UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
 
     init_module();
@@ -154,56 +154,8 @@ void main(void){
                 send_OK();
                 break;
             case 'R':
-                /* Comment
-                 * ===================================================================================================
-                 * Erase sectors before writing FROM
-                 * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
-                 * We erase 16 sectors from Roop_adr in this Code.
-                    ===================================================================================================
-                 * Code
-                 * ===================================================================================================
-                 * Erase_sectors_before_Write(Roop_adr);
-                 * ===================================================================================================
-                 */            
                 FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
-                UBYTE receiveEndJpegFlag = 0x00;    
-                sendChar('R');
-                while(receiveEndJpegFlag  & 0x80 != 0x80){
-                    for (UINT i = 0; i < MaxOfMemory; i++) {
-                        while (RCIF != 1);
-                        Buffer[i] = RCREG;
-                        if(receiveEndJpegFlag & 0x01 == 0x00 && RCREG == FooterOfJPEG[0]){
-                            receiveEndJpegFlag |= 0x01;     //Flag_0xFF in receiveEndJPEGFlag = 1
-                            //sendChar('1');
-                        }
-                        /* Comment
-                         * ===================================================================================================
-                         * Jump to next sector of FROM
-                         * When 8split_end_flag in receiveEndJpegFlag is low, we should jumpt to next sector by change FROM_Writer_adr
-                         * and +1count 8split_cnt in receiveEndJpegFlag.
-                            ===================================================================================================
-                         * Code
-                         * ===================================================================================================
-                         * else if (receiveEndJpegFlag & 0x01 == 0x01 && RCREG == FooterOfJPEG[1]){   //when change of FROM sector
-                         *  //save data before jump to next sector
-                         *  flash_Write_Data(FROM_Write_adr, (UDWORD)(i), &Buffer);
-                         *  //Jump to next Sector of FROM
-                         *  FROM_Write_adr &= ~0xffff;        //Clear low order 2BYTE of FROM_Write_adr. Clear the memory address in previous sector
-                         *  FROM_Write_adr += 0x10000;         //Jump to next sector
-                         *  receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
-                         *  receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
-                         *  //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag
-                         * }
-                         * ===================================================================================================
-                          */
-                        else{
-                            receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag
-                        }
-                    }
-                    flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
-                    FROM_Write_adr += (UDWORD)(MaxOfMemory);
-                }
-                send_OK();
+                ReceiveJPEG(FROM_Write_adr);
                 break;
             case 'E':
                /* Comment

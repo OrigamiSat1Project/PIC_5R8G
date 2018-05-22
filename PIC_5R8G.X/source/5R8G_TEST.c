@@ -61,15 +61,7 @@ void main(void){
     UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
 
-    init_mpu();
-    //initbau(BAU_HIGH);                //115200bps
-    //initbau(BAU_MIDDLE);              //57600bps
-    initbau(BAU_LOW);                   //14400bps
-    MAX2828_EN = 1;                     //MAX2828 ON
-    __delay_us(100);                    //100us wait
-    FLASH_SPI_EI();                     //enable SPI
-    init_max2828();                     //init MAX2828
-    Mod_SW = 0;                         //FSK modulation ON
+    init_module();
 
     while(1){
         if(CAMERA_POW == 0){
@@ -244,24 +236,7 @@ void main(void){
                }*/
                 break;
             case 'I':
-               /* Comment
-                * ======================================================================================
-                * Make initialize mode
-                   Only copy the first regulation above and paste
-                * ======================================================================================
-                * Code
-                * ======================================================================================
-                *   init_mpu();
-                *   //initbau(BAU_HIGH);                //115200bps
-                *   //initbau(BAU_MIDDLE);              //57600bps
-                *   initbau(BAU_LOW);                   //14400bps
-                *   MAX2828_EN = 1;                     //MAX2828 ON
-                *    __delay_us(100);                    //100us wait
-                *    FLASH_SPI_EI();                     //enable SPI
-                *   init_max2828();                     //init MAX2828
-                *   Mod_SW = 0;                         //FSK modulation ON
-                * ======================================================================================
-                */
+                init_module();
                 break;
             case 'C':
                 /* Comment
@@ -309,18 +284,5 @@ void main(void){
                 offAmp();
                 break;
         }
-
-        /*Comment
-         * ======================================================================================
-         * Make Wake up mode (Command == 'W')
-         *======================================================================================
-         * Code
-         * ======================================================================================
-         *else if(Command[1] == 'W){
-         *  flash_Wake_up();
-         *  offAmp();   //This is in Wakeup mode but we don't have to make Amp on.
-         * }
-         * ======================================================================================
-         */
     }
 }

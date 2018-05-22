@@ -1,16 +1,11 @@
 #include <xc.h>
 //#include "pic16f886.h"
 
-#include "stdio.h"
-#include "string.h"
-#include "InitMPU.h"
-#include "MAX2828.h"
 #include "UART.h"
-#include "time.h"
 #include "FROM.h"
 #include "typedefine.h"
 
-void ReceiveJPEG(UDWORD FROM_Write_adr){
+void ReceiveJPEG(UDWORD Roop_adr){
    /* Comment
     * ===================================================================================================
     * Erase sectors before writing FROM
@@ -24,6 +19,7 @@ void ReceiveJPEG(UDWORD FROM_Write_adr){
     */
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;
+    UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
     sendChar('R');
     while(receiveEndJpegFlag  & 0x80 != 0x80){
         for (UINT i = 0; i < MaxOfMemory; i++) {

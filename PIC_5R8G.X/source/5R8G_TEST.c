@@ -56,10 +56,10 @@ void main(void){
 
     UDWORD FROM_Write_adr = g1_data_adr;
     UDWORD FROM_Read_adr  = g1_data_adr;
-    UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
-    UDWORD FROM_Jump_next_sector = 0x10000;
-    UINT roopcount = 0;
+    //UDWORD FROM_Jump_next_sector = 0x10000;
+    //UINT roopcount = 0;
 
     init_mpu();
     //initbau(BAU_HIGH);                //115200bps
@@ -76,17 +76,18 @@ void main(void){
             offAmp();
         }
         CREN = Bit_High;
-        TXEN = Bit_High;
-        UBYTE Command;
+        TXEN = Bit_Low;
+        UBYTE Command[16];
         
-        while(RCIF != 1);
-        Command = RCREG;
-        while(Command != '5');
-        
-        while(RCIF != 1);
-        Command = RCREG;
+        do{
+            for(UINT i=0;i<16;i++){
+                while(RCIF != 1);
+                Command[i] = RCREG;
+            }
+        }while(Command[0] != '5');
+
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
-        if(Command == 'P')
+        if(Command[1] == 'P')
         {
             sendChar('P');
             while(CAM2 == 1);   //  wait 5V SW
@@ -147,7 +148,7 @@ void main(void){
             offAmp();
             send_OK();
         }
-        else if (Command == 'D')
+        else if (Command[1] == 'D')
         {
             while(CAM2 == 1);   //  wait 5V SW
             while(CAM2 == 0){
@@ -159,7 +160,7 @@ void main(void){
             offAmp();
             send_OK();
         }
-        else if (Command == 'R')
+        else if (Command[1] == 'R')
         {
             /* Comment
              * ===================================================================================================
@@ -230,13 +231,10 @@ void main(void){
          * ======================================================================================
          * Code
          * ======================================================================================
-         * else if(Command = 'E'){
+         * else if(Command[1] == 'E'){
          *      UBYTE Amount_of_erase_sector_OBC;    //How many sectors do you want to delete
          *      while (RCIF != 1);
          *      FROM_sector_adr = (UDWORD)RCREG;
-         *      if(FROM_sector_adr > 0x3f){         //Nest process
-         *          return 1;
-         *      }
          *      FROM_sector_adr = FROM_sector_adr<<16;      >   //We have to shift 16bit to move sector_start_address
          *      while (RCIF != 1);
          *      Amount_of_erase_sector_OBC = RCREG;          //Receive by UBYTE ex.) 5Å®0x05, 10Å®0x0a, 15Å®0x0f
@@ -257,7 +255,7 @@ void main(void){
          * ======================================================================================
          * Code
          * ======================================================================================
-         * else if(Command == 'I'){     //Initialize mode
+         * else if(Command[1] == 'I'){     //Initialize mode
          * 
          *   init_mpu();
          *   //initbau(BAU_HIGH);                //115200bps
@@ -280,12 +278,8 @@ void main(void){
          * ======================================================================================
          *Code
          * ======================================================================================
-         *else if(Command == 'C'){
+         *else if(Command[1] == 'C'){
          *  while(RCIF != 1);
-         *  FROM_sector_adr = (UDWORD)RCREG
-         *  if(FROM_sector_adr > 0x3f){         //Nest process. If FROM_sector_adr > 0x3f(63 sector_star_adr)
-         *      return 1;
-         *  }
          *  FROM_sector_adr = FROM_sector_adr<<16;       >   //bit shift and clear low under 4bit for next 4bit address
          *  Roop_adr = FROM_sector_adr;
          * ======================================================================================
@@ -300,7 +294,7 @@ void main(void){
          *=======================================================================================
          * Code
          * ======================================================================================
-         *else if(Command == 'S')
+         *else if(Command[1] == 'S')
          *  flash_Deep_sleep();
          *  sleep_Max2828   There is no SHDN pin from PIC so we may not mak e sleep mode
          *  offAmp();
@@ -312,7 +306,7 @@ void main(void){
          *======================================================================================
          * Code
          * ======================================================================================
-         *else if(Command == 'W){
+         *else if(Command[1] == 'W){
          *  flash_Wake_up();
          *  offAmp();   //This is in Wakeup mode but we don't have to make Amp on.
          * }

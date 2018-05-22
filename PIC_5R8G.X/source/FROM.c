@@ -611,15 +611,15 @@ UBYTE flash_Deep_sleep(void)
 
 UBYTE flash_Wake_up(void)
 {
-	UBYTE				Ret;
-
-	FLASH_SET_CS(FLASH_LOW);								//* CS "L"
-	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
-
-	//* Release Deep sleep
-	Ret = flash_Cmd_RES();
-
-	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
-	FLASH_SET_CS(FLASH_HI);									//* CS "H"
-	return Ret;    
+//	UBYTE				Ret;
+//
+//	FLASH_SET_CS(FLASH_LOW);								//* CS "L"
+//	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
+//
+//	//* Release Deep sleep
+//	Ret = flash_Cmd_RES();
+//
+//	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
+//	FLASH_SET_CS(FLASH_HI);									//* CS "H"
+//	return Ret;    
 }

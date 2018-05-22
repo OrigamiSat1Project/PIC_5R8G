@@ -1,9 +1,5 @@
-#include "stdio.h"
-#include "string.h"
+#include <xc.h>
 #include "InitMPU.h"
-#include "MAX2828.h"
-#include "UART.h"
-#include "time.h"
 #include "FROM.h"
 
 void Erase_sectors(UBYTE Sector_start_byte, UBYTE Amount_of_erase_sector){
@@ -14,17 +10,14 @@ void Erase_sectors(UBYTE Sector_start_byte, UBYTE Amount_of_erase_sector){
     * Bulk Erase takes long time (10s) so we should use sector erase.
     * Receive sector's identificate address and how many sectors want to delete, delete sectors from received sector.
     * ======================================================================================
-    * Code
-    * ======================================================================================
-    *      UDWORD FROM_sector_adr = (UDWORD)Sector_start_byte<<16;    >   //We have to shift 16bit to move sector_start_address
-    *      for (UBYTE i=0x00; i<Amount_of_erase_sector; i++){     > 
-    *          flash_Erase(FROM_sector_adr, S_ERASE);
-    *          FROM_sector_adr += 0x10000;                //Jump to next sector which you want to delete
-    *          CLRWDT();
-    *          WDT_CLK = ~WDT_CLK;
-    *      }
-    * ======================================================================================
     */
+    UDWORD FROM_sector_adr = (UDWORD)Sector_start_byte<<16;       //We have to shift 16bit to move sector_start_address
+    for (UBYTE i=0x00; i<Amount_of_erase_sector; i++){      
+    flash_Erase(FROM_sector_adr, S_ERASE);
+    FROM_sector_adr += 0x10000;                //Jump to next sector which you want to delete
+    CLRWDT();
+    WDT_CLK = ~WDT_CLK;
+    }
 }
 
 void Erase_sectors_before_Write(UDWORD tmp_adr_erase){
@@ -33,16 +26,12 @@ void Erase_sectors_before_Write(UDWORD tmp_adr_erase){
     * Erase sectors before writing FROM
     * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
     * We erase 16 sectors from Roop_adr in this Code.
-       ===================================================================================================
-    * Code
-    * ===================================================================================================
-    * const UINT Amount_of_erase_sector = 16;
-    * for (i=0; i<Amount_of_erase_sector; i++){    >
-    *      flash_Erase(tmp_adr_erase,S_ERASE);
-    *      tmp_adr_erase += 0x10000;         //Jump to next sector's start address
-    *      CLRWDT();
-    *      WDT_CLK =~WDT_CLK;
-    *      }
-    * ===================================================================================================
-    */ 
+    */
+    const UINT Amount_of_erase_sector = 16;
+    for (UINT i=0; i<Amount_of_erase_sector; i++){
+    flash_Erase(tmp_adr_erase,S_ERASE);
+    tmp_adr_erase += 0x10000;         //Jump to next sector's start address
+    CLRWDT();
+    WDT_CLK =~WDT_CLK;
+    }
 }

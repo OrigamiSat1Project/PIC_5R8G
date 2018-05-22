@@ -210,5 +210,6 @@ UBYTE flash_Write_En(void);
 UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
 
 UBYTE flash_Deep_sleep(void);
+UBYTE flash_Wake_up(void);
 
 #endif /* __FROM_H__ */

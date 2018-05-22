@@ -11,6 +11,7 @@
 #include "SECTOR.h"
 #include "ReceiveJPEG.h"
 #include "Downlink.h"
+#include "CRC16.h"
 //#include "stdint.h"
 
 // CONFIG1
@@ -82,6 +83,27 @@ void main(void){
 
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
         
+        /* Comment
+         * ========================================================================
+         * CRC16 judgement before go to switch-case statement
+         * ========================================================================
+         * Code
+         * ========================================================================
+         * UWORD CRC_check = 0x0000;
+         * CRC_check |= Command[6];
+         * CRC_check = CRC_check<<8;     >
+         * CRC_check = Command[7];
+         * do{
+         *      for(UINT i=0;i<6;i++)    >{
+         *          CRC_calc[i] = Command[i];
+         *      }
+         *      for(UINT i=0;i<2;i++)    >{
+         *          CRC_check[i] = Command[i+6];
+         *      }
+         * }while(*CRC_check != Identify_CRC16(CRC_calc));
+         * ========================================================================
+         */
+        
         switch(Command[1]){
             case 'P':
                 Downlink(Roop_adr);
@@ -113,12 +135,8 @@ void main(void){
                 *  Add Command C:Change Roop_adr when some sectors of FROM are broken
                 *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
                 *  Ground Station can choose only sector start address kind of 0x00ÅõÅõ0000
-                * ======================================================================================
-                * Code
-                * ======================================================================================
-                *  Roop_adr = (UDWORD)Command[2]<<16;       >   //bit shift and clear low under 4bit for next 4bit address
-                * ======================================================================================
                 */
+                Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
                 break;
             case 'S':
                /* Comment

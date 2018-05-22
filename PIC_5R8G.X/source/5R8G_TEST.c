@@ -58,7 +58,7 @@ void main(void){
     UDWORD FROM_Read_adr  = g1_data_adr;
     //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
-    //UDWORD FROM_Jump_next_sector = 0x10000;
+    UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
 
     init_mpu();
@@ -77,229 +77,239 @@ void main(void){
         }
         CREN = Bit_High;
         TXEN = Bit_Low;
-        UBYTE Command[16];
+        UBYTE Command[8];
         
         do{
-            for(UINT i=0;i<16;i++){
+            for(UINT i=0;i<8;i++){
                 while(RCIF != 1);
                 Command[i] = RCREG;
+                if(Command[i] == 0xff) break;
             }
         }while(Command[0] != '5');
 
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
-        if(Command[1] == 'P')
-        {
-            sendChar('P');
-            while(CAM2 == 1);   //  wait 5V SW
-            FROM_Read_adr = Roop_adr;
-            UINT sendBufferCount = 0;
-            //UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
-            //UBYTE Identify_8split = 0xff;           //Which sectors do you want to downlink. This is a kind of Flag. Defualt: all sectors(8)
-            /*  How to use Identify_8split
-             * ===========================================================================================
-             *  Bit7        Bit6        Bit5        Bit4        Bit3        Bit2        Bit1        Bit0
-             *  8/8         7/8         6/8         5/8         4/8         3/8         2/8         1/8
-             * ===========================================================================================
-             */            
-            CREN = Bit_Low;
-            TXEN = Bit_High;
-            while(FROM_Read_adr < FROM_Write_adr && CAM2 == 0){
-                /* Comment
-                 * =============================================================
-                 * Which sectors do you read by reading Identify_8split.
-                 * Flag is ON : flash_Read_Data
-                 * Flag is OFF : FROM_Read_adr is jumping to next sector's start address.
-                 * =============================================================
-                 * Code
-                 * =============================================================
-                 * while(RCIF != 1);
-                 * Identify_8split = RCREG;
-                 * if(Identify_8split & (0x01<<readFROM_Count)){    >
-                 *      flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
-                 * }
-                 * else{
-                 *      FROM_Read_adr &= ~0xffff;            //Clear under lower 2bytes
-                 *      FROM_Read_adr += 0x10000;           //Jump to next sector's address
-                 * }
-                 * readFROM_Count +=1;
-                 * =============================================================
-                 */
-                flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
-                if(sendBufferCount % JPGCOUNT == 0){
-                    offAmp();
-                    __delay_ms(3000);
+        
+        switch(Command[1]){
+            case 'P':
+                sendChar('P');
+                while(CAM2 == 1);   //  wait 5V SW
+                FROM_Read_adr = Roop_adr;
+                UINT sendBufferCount = 0;
+                //UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
+                //UBYTE Identify_8split = 0xff;           //Which sectors do you want to downlink. This is a kind of Flag. Defualt: all sectors(8)
+                /*  How to use Identify_8split
+                 * ===========================================================================================
+                 *  Bit7        Bit6        Bit5        Bit4        Bit3        Bit2        Bit1        Bit0
+                 *  8/8         7/8         6/8         5/8         4/8         3/8         2/8         1/8
+                 * ===========================================================================================
+                 */            
+                CREN = Bit_Low;
+                TXEN = Bit_High;
+                while(FROM_Read_adr < FROM_Write_adr && CAM2 == 0){
+                    /* Comment
+                     * =============================================================
+                     * Which sectors do you read by reading Identify_8split.
+                     * Flag is ON : flash_Read_Data
+                     * Flag is OFF : FROM_Read_adr is jumping to next sector's start address.
+                     * =============================================================
+                     * Code
+                     * =============================================================
+                     * while(RCIF != 1);
+                     * Identify_8split = Command[2];
+                     * if(Identify_8split & (0x01<<readFROM_Count)){    >
+                     *      flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
+                     * }
+                     * else{
+                     *      FROM_Read_adr &= ~0xffff;            //Clear under lower 2bytes
+                     *      FROM_Read_adr += 0x10000;           //Jump to next sector's address
+                     * }
+                     * readFROM_Count +=1;
+                     * =============================================================
+                     */
+                    flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
+                    if(sendBufferCount % JPGCOUNT == 0){
+                        offAmp();
+                        __delay_ms(3000);
+                        if(CAMERA_POW == 1){
+                            onAmp();
+                        }
+                        send_01();  //  send preamble
+                    }
+                    for(UINT i=0;i<MaxOfMemory;i++){
+                        sendChar(Buffer[i]);
+                        //sendChar(0x00);
+                        __delay_us(20);
+                    }
+                    FROM_Read_adr += (UDWORD)(MaxOfMemory);
+                    sendBufferCount ++;
+                    if (sendBufferCount % 20 == 0) {
+                        CLRWDT();
+                        WDT_CLK = ~WDT_CLK;
+                    }
+                }
+                offAmp();
+                send_OK();
+                break;
+            case 'D':
+                while(CAM2 == 1);   //  wait 5V SW
+                while(CAM2 == 0){
                     if(CAMERA_POW == 1){
                         onAmp();
                     }
-                    send_01();  //  send preamble
+                    send_dummy_data();
                 }
-                for(UINT i=0;i<MaxOfMemory;i++){
-                    sendChar(Buffer[i]);
-                    //sendChar(0x00);
-                    __delay_us(20);
-                }
-                FROM_Read_adr += (UDWORD)(MaxOfMemory);
-                sendBufferCount ++;
-                if (sendBufferCount % 20 == 0) {
-                    CLRWDT();
-                    WDT_CLK = ~WDT_CLK;
-                }
-            }
-            offAmp();
-            send_OK();
-        }
-        else if (Command[1] == 'D')
-        {
-            while(CAM2 == 1);   //  wait 5V SW
-            while(CAM2 == 0){
-                if(CAMERA_POW == 1){
-                    onAmp();
-                }
-                send_dummy_data();
-            }
-            offAmp();
-            send_OK();
-        }
-        else if (Command[1] == 'R')
-        {
-            /* Comment
-             * ===================================================================================================
-             * Erase sectors before writing FROM
-             * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
-             * We erase 16 sectors from Roop_adr in this Code.
-                ===================================================================================================
-             * Code
-             * ===================================================================================================
-             * const UINT Amount_of_erase_sector = 16;
-             * UDWORD tmp_adr_erase = Roop_adr;     //Use only this for statement
-             * for (i=0; i<Amount_of_erase_sector; i++){    >
-             *      flash_Erase(tmp_adr_erase,S_ERASE);
-             *      tmp_adr_erase += 0x10000;         //Jump to next sector's start address
-             *      CLRWDT();
-             *      WDT_CLK =~WDT_CLK;
-             *      }
-             * }
-             * ===================================================================================================
-              */            
-            FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
-            UBYTE receiveEndJpegFlag = 0x00;    
-            sendChar('R');
-            while(receiveEndJpegFlag  & 0x80 != 0x80){
-                for (UINT i = 0; i < MaxOfMemory; i++) {
-                    while (RCIF != 1);
-                    Buffer[i] = RCREG;
-                    if(receiveEndJpegFlag & 0x01 == 0x00 && RCREG == FooterOfJPEG[0]){
-                        receiveEndJpegFlag |= 0x01;     //Flag_0xFF in receiveEndJPEGFlag = 1
-                        //sendChar('1');
-                    }
+                offAmp();
+                send_OK();
+                break;
+            case 'R':
                     /* Comment
-                     * ===================================================================================================
-                     * Jump to next sector of FROM
-                     * When 8split_end_flag in receiveEndJpegFlag is low, we should jumpt to next sector by change FROM_Writer_adr
-                     * and +1count 8split_cnt in receiveEndJpegFlag.
-                        ===================================================================================================
-                     * Code
-                     * ===================================================================================================
-                     * else if (receiveEndJpegFlag & 0x01 == 0x01 && RCREG == FooterOfJPEG[1]){   //when change of FROM sector
-                     *  //save data before jump to next sector
-                     *  flash_Write_Data(FROM_Write_adr, (UDWORD)(i), &Buffer);
-                     *  //Jump to next Sector of FROM
-                     *  FROM_Write_adr &= ~0xffff;        //Clear low order 2BYTE of FROM_Write_adr. Clear the memory address in previous sector
-                     *  FROM_Write_adr += 0x10000;         //Jump to next sector
-                     *  receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
-                     *  receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
-                     *  //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag
-                     * }
-                     * ===================================================================================================
-                      */
-                    else{
-                        receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag
+                 * ===================================================================================================
+                 * Erase sectors before writing FROM
+                 * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
+                 * We erase 16 sectors from Roop_adr in this Code.
+                    ===================================================================================================
+                 * Code
+                 * ===================================================================================================
+                 * const UINT Amount_of_erase_sector = 16;
+                 * UDWORD tmp_adr_erase = Roop_adr;     //Use only this for statement
+                 * for (i=0; i<Amount_of_erase_sector; i++){    >
+                 *      flash_Erase(tmp_adr_erase,S_ERASE);
+                 *      tmp_adr_erase += 0x10000;         //Jump to next sector's start address
+                 *      CLRWDT();
+                 *      WDT_CLK =~WDT_CLK;
+                 *      }
+                 * }
+                 * ===================================================================================================
+                  */            
+                FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
+                UBYTE receiveEndJpegFlag = 0x00;    
+                sendChar('R');
+                while(receiveEndJpegFlag  & 0x80 != 0x80){
+                    for (UINT i = 0; i < MaxOfMemory; i++) {
+                        while (RCIF != 1);
+                        Buffer[i] = RCREG;
+                        if(receiveEndJpegFlag & 0x01 == 0x00 && RCREG == FooterOfJPEG[0]){
+                            receiveEndJpegFlag |= 0x01;     //Flag_0xFF in receiveEndJPEGFlag = 1
+                            //sendChar('1');
+                        }
+                        /* Comment
+                         * ===================================================================================================
+                         * Jump to next sector of FROM
+                         * When 8split_end_flag in receiveEndJpegFlag is low, we should jumpt to next sector by change FROM_Writer_adr
+                         * and +1count 8split_cnt in receiveEndJpegFlag.
+                            ===================================================================================================
+                         * Code
+                         * ===================================================================================================
+                         * else if (receiveEndJpegFlag & 0x01 == 0x01 && RCREG == FooterOfJPEG[1]){   //when change of FROM sector
+                         *  //save data before jump to next sector
+                         *  flash_Write_Data(FROM_Write_adr, (UDWORD)(i), &Buffer);
+                         *  //Jump to next Sector of FROM
+                         *  FROM_Write_adr &= ~0xffff;        //Clear low order 2BYTE of FROM_Write_adr. Clear the memory address in previous sector
+                         *  FROM_Write_adr += 0x10000;         //Jump to next sector
+                         *  receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
+                         *  receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
+                         *  //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag
+                         * }
+                         * ===================================================================================================
+                          */
+                        else{
+                            receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag
+                        }
                     }
+                    flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+                    FROM_Write_adr += (UDWORD)(MaxOfMemory);
                 }
-                flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
-                FROM_Write_adr += (UDWORD)(MaxOfMemory);
-            }
-            send_OK();
+                send_OK();
+                break;
+            case 'E':
+               /* Comment
+                * ======================================================================================
+                * Make Erase sector mode
+                * We have to delete sectors in order to rewrite data in the sectors.
+                * Bulk Erase takes long time (10s) so we should use sector erase.
+                * Receive sector's identificate address and how many sectors want to delete, delete sectors from received sector.
+                * ======================================================================================
+                * Code
+                * ======================================================================================
+                *      UBYTE Amount_of_erase_sector_OBC;    //How many sectors do you want to delete
+                *      FROM_sector_adr = (UDWORD)Commnad[2]<<16;    >   //We have to shift 16bit to move sector_start_address
+                *      Amount_of_erase_sector_OBC = Commnad[3];          //Receive by UBYTE ex.) 5Å®0x05, 10Å®0x0a, 15Å®0x0f
+                *      for (UBYTE i=0x00; i<Amount_of_erase_sector_OBC; i++){     > 
+                *          flash_Erase(FROM_sector_adr, S_ERASE);
+                *          FROM_sector_adr += 0x10000;                //Jump to next sector which you want to delete
+                *          CLRWDT();
+                *          WDT_CLK = ~WDT_CLK;
+                *      }
+                * ======================================================================================
+               }*/
+                break;
+            case 'I':
+               /* Comment
+                * ======================================================================================
+                * Make initialize mode
+                   Only copy the first regulation above and paste
+                * ======================================================================================
+                * Code
+                * ======================================================================================
+                *   init_mpu();
+                *   //initbau(BAU_HIGH);                //115200bps
+                *   //initbau(BAU_MIDDLE);              //57600bps
+                *   initbau(BAU_LOW);                   //14400bps
+                *   MAX2828_EN = 1;                     //MAX2828 ON
+                *    __delay_us(100);                    //100us wait
+                *    FLASH_SPI_EI();                     //enable SPI
+                *   init_max2828();                     //init MAX2828
+                *   Mod_SW = 0;                         //FSK modulation ON
+                * ======================================================================================
+                */
+                break;
+            case 'C':
+                /* Comment
+                 * ======================================================================================
+                 *  Make Change Roop_adr received from OBC
+                 *  Add Command C:Change Roop_adr when some sectors of FROM are broken
+                 *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
+                 *  Ground Station can choose only sector start address kind of 0x00ÅõÅõ0000
+                 * ======================================================================================
+                 *Code
+                 * ======================================================================================
+                 *  FROM_sector_adr = (UDWORD)Command[2]<<16;       >   //bit shift and clear low under 4bit for next 4bit address
+                 *  Roop_adr = FROM_sector_adr;
+                 * ======================================================================================
+                 */
+                break;
+            case 'S':
+               /* Comment
+                * ======================================================================================
+                * Make Sleep mode (Command =='S')
+                * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
+                * We have to keep MCLR pin High.
+                * Above this is uncorrect because we shouldn't use PIC_SLEEP. 
+                * Sleep mode only FROM, Amp
+                *=======================================================================================
+                * Code
+                * ======================================================================================
+                *  flash_Deep_sleep();
+                *  offAmp();
+                * ======================================================================================
+                */
+                break;
+            case 'W':
+               /*Comment
+                * ======================================================================================
+                * Make Wake up mode (Command == 'W')
+                *======================================================================================
+                * Code
+                * ======================================================================================
+                *  flash_Wake_up();
+                * ======================================================================================
+                */
+                break;
+            default:
+                offAmp();
+                break;
         }
 
-        /* Comment
-         * ======================================================================================
-         * Make Erase sector mode
-         * We have to delete sectors in order to rewrite data in the sectors.
-         * Bulk Erase takes long time (10s) so we should use sector erase.
-         * Receive sector's identificate address and how many sectors want to delete, delete sectors from received sector.
-         * ======================================================================================
-         * Code
-         * ======================================================================================
-         * else if(Command[1] == 'E'){
-         *      UBYTE Amount_of_erase_sector_OBC;    //How many sectors do you want to delete
-         *      while (RCIF != 1);
-         *      FROM_sector_adr = (UDWORD)RCREG;
-         *      FROM_sector_adr = FROM_sector_adr<<16;      >   //We have to shift 16bit to move sector_start_address
-         *      while (RCIF != 1);
-         *      Amount_of_erase_sector_OBC = RCREG;          //Receive by UBYTE ex.) 5Å®0x05, 10Å®0x0a, 15Å®0x0f
-         *      for (UBYTE i=0x00; i<Amount_of_erase_sector_OBC; i++){     > 
-         *          flash_Erase(FROM_sector_adr, S_ERASE);
-         *          FROM_sector_adr += 0x10000;                //Jump to next sector which you want to delete
-         *          CLRWDT();
-         *          WDT_CLK = ~WDT_CLK;
-         *      }
-         * }
-         * ======================================================================================
-        }*/
-        
-        /* Comment
-         * ======================================================================================
-         * Make initialize mode
-            Only copy the first regulation above and paste
-         * ======================================================================================
-         * Code
-         * ======================================================================================
-         * else if(Command[1] == 'I'){     //Initialize mode
-         * 
-         *   init_mpu();
-         *   //initbau(BAU_HIGH);                //115200bps
-         *   //initbau(BAU_MIDDLE);              //57600bps
-         *   initbau(BAU_LOW);                   //14400bps
-         *   MAX2828_EN = 1;                     //MAX2828 ON
-         *    __delay_us(100);                    //100us wait
-         *    FLASH_SPI_EI();                     //enable SPI
-         *   init_max2828();                     //init MAX2828
-         *   Mod_SW = 0;                         //FSK modulation ON
-         * ======================================================================================
-        }*/
-        
-        /* Comment
-         * ======================================================================================
-         *  Make Change Roop_adr received from OBC
-         *  Add Command C:Change Roop_adr when some sectors of FROM are broken
-         *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-         *  Ground Station can choose only sector start address kind of 0x00ÅõÅõ0000
-         * ======================================================================================
-         *Code
-         * ======================================================================================
-         *else if(Command[1] == 'C'){
-         *  while(RCIF != 1);
-         *  FROM_sector_adr = FROM_sector_adr<<16;       >   //bit shift and clear low under 4bit for next 4bit address
-         *  Roop_adr = FROM_sector_adr;
-         * ======================================================================================
-         */
-        /* Comment
-         * ======================================================================================
-         * Make Sleep mode (Command =='S')
-         * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
-         * We have to keep MCLR pin High.
-         * Above this is uncorrect because we shouldn't use PIC_SLEEP. 
-         * Sleep mode only FROM, Max2828, Amp
-         *=======================================================================================
-         * Code
-         * ======================================================================================
-         *else if(Command[1] == 'S')
-         *  flash_Deep_sleep();
-         *  sleep_Max2828   There is no SHDN pin from PIC so we may not mak e sleep mode
-         *  offAmp();
-         * ======================================================================================
-         */
         /*Comment
          * ======================================================================================
          * Make Wake up mode (Command == 'W')
@@ -312,9 +322,5 @@ void main(void){
          * }
          * ======================================================================================
          */
-        else
-        {
-            offAmp();
-        }
     }
 }

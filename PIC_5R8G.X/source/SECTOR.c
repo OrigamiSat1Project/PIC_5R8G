@@ -26,3 +26,23 @@ void Erase_sectors(UBYTE Sector_start_byte, UBYTE Amount_of_erase_sector){
     * ======================================================================================
     */
 }
+
+void Erase_sectors_before_Write(UDWORD tmp_adr_erase){
+   /* Comment
+    * ===================================================================================================
+    * Erase sectors before writing FROM
+    * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
+    * We erase 16 sectors from Roop_adr in this Code.
+       ===================================================================================================
+    * Code
+    * ===================================================================================================
+    * const UINT Amount_of_erase_sector = 16;
+    * for (i=0; i<Amount_of_erase_sector; i++){    >
+    *      flash_Erase(tmp_adr_erase,S_ERASE);
+    *      tmp_adr_erase += 0x10000;         //Jump to next sector's start address
+    *      CLRWDT();
+    *      WDT_CLK =~WDT_CLK;
+    *      }
+    * ===================================================================================================
+    */ 
+}

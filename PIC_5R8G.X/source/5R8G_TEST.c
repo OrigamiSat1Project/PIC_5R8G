@@ -154,7 +154,7 @@ void main(void){
                 send_OK();
                 break;
             case 'R':
-                    /* Comment
+                /* Comment
                  * ===================================================================================================
                  * Erase sectors before writing FROM
                  * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
@@ -162,17 +162,9 @@ void main(void){
                     ===================================================================================================
                  * Code
                  * ===================================================================================================
-                 * const UINT Amount_of_erase_sector = 16;
-                 * UDWORD tmp_adr_erase = Roop_adr;     //Use only this for statement
-                 * for (i=0; i<Amount_of_erase_sector; i++){    >
-                 *      flash_Erase(tmp_adr_erase,S_ERASE);
-                 *      tmp_adr_erase += 0x10000;         //Jump to next sector's start address
-                 *      CLRWDT();
-                 *      WDT_CLK =~WDT_CLK;
-                 *      }
-                 * }
+                 * Erase_sectors_before_Write(Roop_adr);
                  * ===================================================================================================
-                  */            
+                 */            
                 FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
                 UBYTE receiveEndJpegFlag = 0x00;    
                 sendChar('R');
@@ -223,7 +215,7 @@ void main(void){
                 * ======================================================================================
                 * Code
                 * ======================================================================================
-                * void Erase_sectors(Command[2], Command[3]);
+                * Erase_sectors(Command[2], Command[3]);
                 * ======================================================================================
                 */
                 break;

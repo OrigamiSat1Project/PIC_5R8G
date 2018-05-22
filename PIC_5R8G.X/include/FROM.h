@@ -209,4 +209,6 @@ UBYTE flash_SPI_DataOut(UWORD, UBYTE *);
 UBYTE flash_Write_En(void);
 UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
 
+UBYTE flash_Deep_sleep(void);
+
 #endif /* __FROM_H__ */

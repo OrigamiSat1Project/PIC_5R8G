@@ -19,6 +19,7 @@ extern "C" {
 #define WDT_CLK		(RB6)
 
 void init_mpu(void);
+void init_module(void);
 
 #ifdef	__cplusplus
 }

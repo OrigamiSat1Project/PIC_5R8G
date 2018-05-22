@@ -223,35 +223,26 @@ void main(void){
                 * ======================================================================================
                 * Code
                 * ======================================================================================
-                *      UBYTE Amount_of_erase_sector_OBC;    //How many sectors do you want to delete
-                *      FROM_sector_adr = (UDWORD)Commnad[2]<<16;    >   //We have to shift 16bit to move sector_start_address
-                *      Amount_of_erase_sector_OBC = Commnad[3];          //Receive by UBYTE ex.) 5Å®0x05, 10Å®0x0a, 15Å®0x0f
-                *      for (UBYTE i=0x00; i<Amount_of_erase_sector_OBC; i++){     > 
-                *          flash_Erase(FROM_sector_adr, S_ERASE);
-                *          FROM_sector_adr += 0x10000;                //Jump to next sector which you want to delete
-                *          CLRWDT();
-                *          WDT_CLK = ~WDT_CLK;
-                *      }
+                * void Erase_sectors(Command[2], Command[3]);
                 * ======================================================================================
-               }*/
+                */
                 break;
             case 'I':
                 init_module();
                 break;
             case 'C':
-                /* Comment
-                 * ======================================================================================
-                 *  Make Change Roop_adr received from OBC
-                 *  Add Command C:Change Roop_adr when some sectors of FROM are broken
-                 *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-                 *  Ground Station can choose only sector start address kind of 0x00ÅõÅõ0000
-                 * ======================================================================================
-                 *Code
-                 * ======================================================================================
-                 *  FROM_sector_adr = (UDWORD)Command[2]<<16;       >   //bit shift and clear low under 4bit for next 4bit address
-                 *  Roop_adr = FROM_sector_adr;
-                 * ======================================================================================
-                 */
+               /* Comment
+                * ======================================================================================
+                *  Make Change Roop_adr received from OBC
+                *  Add Command C:Change Roop_adr when some sectors of FROM are broken
+                *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
+                *  Ground Station can choose only sector start address kind of 0x00ÅõÅõ0000
+                * ======================================================================================
+                *Code
+                * ======================================================================================
+                *  Roop_adr = (UDWORD)Command[2]<<16;       >   //bit shift and clear low under 4bit for next 4bit address
+                * ======================================================================================
+                */
                 break;
             case 'S':
                /* Comment

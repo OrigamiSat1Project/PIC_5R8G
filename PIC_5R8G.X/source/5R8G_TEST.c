@@ -8,6 +8,7 @@
 #include "UART.h"
 #include "time.h"
 #include "FROM.h"
+//#include "stdint.h"
 
 // CONFIG1
 #pragma config FOSC = HS        // Oscillator Selection bits (HS oscillator: High-speed crystal/resonator on RA6/OSC2/CLKOUT and RA7/OSC1/CLKIN)
@@ -30,7 +31,7 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 #define JPGCOUNT 5000
 #define MaxOfMemory 40  //  TODO : Use Bank function then magnify buffer size
-const UBYTE FooterOfJPEG[] =  {0xff, 0xd9, 0x0e}; 
+const UBYTE FooterOfJPEG[] =  {0xff, 0x0e}; 
 
 /*  How to use receiveEndJpegFlag
  * ===============================================================================================================
@@ -110,12 +111,9 @@ void main(void){
                  * =============================================================
                  * Code
                  * =============================================================
-                 * if(readFROM_Count >= 8){     //Nest process
-                 *      return 1;
-                 * }
                  * while(RCIF != 1);
                  * Identify_8split = RCREG;
-                 * if(Identify_8split & (1<<readFROM_Count)){    >
+                 * if(Identify_8split & (0x01<<readFROM_Count)){    >
                  *      flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
                  * }
                  * else{
@@ -236,6 +234,9 @@ void main(void){
          *      UBYTE Amount_of_erase_sector_OBC;    //How many sectors do you want to delete
          *      while (RCIF != 1);
          *      FROM_sector_adr = (UDWORD)RCREG;
+         *      if(FROM_sector_adr > 0x3f){         //Nest process
+         *          return 1;
+         *      }
          *      FROM_sector_adr = FROM_sector_adr<<16;      >   //We have to shift 16bit to move sector_start_address
          *      while (RCIF != 1);
          *      Amount_of_erase_sector_OBC = RCREG;          //Receive by UBYTE ex.) 5¨0x05, 10¨0x0a, 15¨0x0f
@@ -276,12 +277,15 @@ void main(void){
          *  Add Command C:Change Roop_adr when some sectors of FROM are broken
          *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
          *  Ground Station can choose only sector start address kind of 0x00››0000
-         * ======================================================================================r
+         * ======================================================================================
          *Code
          * ======================================================================================
          *else if(Command == 'C'){
          *  while(RCIF != 1);
          *  FROM_sector_adr = (UDWORD)RCREG
+         *  if(FROM_sector_adr > 0x3f){         //Nest process. If FROM_sector_adr > 0x3f(63 sector_star_adr)
+         *      return 1;
+         *  }
          *  FROM_sector_adr = FROM_sector_adr<<16;       >   //bit shift and clear low under 4bit for next 4bit address
          *  Roop_adr = FROM_sector_adr;
          * ======================================================================================

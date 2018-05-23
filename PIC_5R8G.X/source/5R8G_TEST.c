@@ -66,16 +66,19 @@ void main(void){
     init_module();
 
     while(1){
-        if(CAMERA_POW == 0){
-            offAmp();
-        }
+        //FIXME for simulator
+//        if(CAMERA_POW == 0){
+//            offAmp();
+//        }
         CREN = Bit_High;
+        //FIXME for debug when intefrate with OBC
         TXEN = Bit_Low;
         UBYTE Command[8];
-        Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
+        Command[0] = 0x21;      //If all command[] is 0x00, that can pass CRC16 check filter. 0x01 is SOF, not suitable
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
             do{
                 for(UINT i=0;i<8;i++){
+                    //FIXME for simulator
                     while(RCIF != 1);
                     Command[i] = RCREG;
                     if(Command[i] == 0xff) break;

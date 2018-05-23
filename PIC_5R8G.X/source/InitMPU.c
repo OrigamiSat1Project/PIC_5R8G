@@ -38,7 +38,8 @@ void init_module(void){
     MAX2828_EN = 1;                     //MAX2828 ON
     __delay_us(100);                    //100us wait
     FLASH_SPI_EI();                     //enable SPI
-    init_max2828();                     //init MAX2828
+    //FIXME for debug by simulator
+    //init_max2828();                     //init MAX2828
     Mod_SW = 0;                         //FSK modulation ON
 }
     

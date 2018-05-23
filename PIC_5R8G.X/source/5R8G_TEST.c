@@ -87,22 +87,8 @@ void main(void){
          * ========================================================================
          * CRC16 judgement before go to switch-case statement
          * ========================================================================
-         * Code
-         * ========================================================================
-         * UWORD CRC_check = 0x0000;
-         * CRC_check |= Command[6];
-         * CRC_check = CRC_check<<8;     >
-         * CRC_check = Command[7];
-         * do{
-         *      for(UINT i=0;i<6;i++)    >{
-         *          CRC_calc[i] = Command[i];
-         *      }
-         *      for(UINT i=0;i<2;i++)    >{
-         *          CRC_check[i] = Command[i+6];
-         *      }
-         * }while(*CRC_check != Identify_CRC16(CRC_calc));
-         * ========================================================================
          */
+        while(Identify_CRC16(Command) != CRC_check(Command, 6));
         
         switch(Command[1]){
             case 'P':

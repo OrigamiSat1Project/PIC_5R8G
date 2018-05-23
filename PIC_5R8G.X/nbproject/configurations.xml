@@ -12,10 +12,9 @@
       <itemPath>include/UART.h</itemPath>
       <itemPath>include/pic16f886.h</itemPath>
       <itemPath>include/SECTOR.h</itemPath>
-      <itemPath>source/ReceiveJPEG.h</itemPath>
-      <itemPath>source/Downlink.h</itemPath>
-      <itemPath>source/CRC16.h</itemPath>
       <itemPath>include/CRC16.h</itemPath>
+      <itemPath>include/Downlink.h</itemPath>
+      <itemPath>include/ReceiveJPEG.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"

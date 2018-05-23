@@ -63,6 +63,7 @@ void main(void){
     //UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
 
+    MAX2828_LD = HI;
     init_module();
 
     while(1){
@@ -70,7 +71,7 @@ void main(void){
             offAmp();
         }
         CREN = Bit_High;
-        TXEN = Bit_Low;
+        TXEN = Bit_High;
         UBYTE Command[8];
         Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
@@ -80,9 +81,17 @@ void main(void){
                     Command[i] = RCREG;
                     if(Command[i] == 0xff) break;
                 }
+                for(UINT j=0;j<8;j++){
+                    __delay_ms(10);
+                    sendChar(Command[j]);
+                    __delay_ms(10);
+                }
+                
             }while(Command[0] != '5');
         }
-        
+        __delay_ms(10);
+        sendChar('3');
+        __delay_ms(10);
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
         
         /* Comment
@@ -126,7 +135,9 @@ void main(void){
                 Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
                 //FIXME : send 1byte by UART in order to check Roop_adr
                 UBYTE Roop_adr_check = (UBYTE)(Roop_adr >>16);
-                sendChar((UBYTE)(Roop_adr >> 16));
+                __delay_ms(10);
+                sendChar(Roop_adr_check);
+                __delay_ms(10);
                 break;
             case 'S':
                /* Comment

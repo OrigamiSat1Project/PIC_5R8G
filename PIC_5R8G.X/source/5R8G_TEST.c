@@ -72,15 +72,16 @@ void main(void){
         CREN = Bit_High;
         TXEN = Bit_Low;
         UBYTE Command[8];
+        while(Identify_CRC16(Command) != CRC_check(Command, 6)){
+            do{
+                for(UINT i=0;i<8;i++){
+                    while(RCIF != 1);
+                    Command[i] = RCREG;
+                    if(Command[i] == 0xff) break;
+                }
+            }while(Command[0] != '5');
+        }
         
-        do{
-            for(UINT i=0;i<8;i++){
-                while(RCIF != 1);
-                Command[i] = RCREG;
-                if(Command[i] == 0xff) break;
-            }
-        }while(Command[0] != '5');
-
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
         
         /* Comment
@@ -88,7 +89,6 @@ void main(void){
          * CRC16 judgement before go to switch-case statement
          * ========================================================================
          */
-        while(Identify_CRC16(Command) != CRC_check(Command, 6));
         
         switch(Command[1]){
             case 'P':

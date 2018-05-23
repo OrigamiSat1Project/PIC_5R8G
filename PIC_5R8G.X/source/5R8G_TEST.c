@@ -72,6 +72,7 @@ void main(void){
         CREN = Bit_High;
         TXEN = Bit_Low;
         UBYTE Command[8];
+        Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
             do{
                 for(UINT i=0;i<8;i++){
@@ -123,6 +124,9 @@ void main(void){
                 *  Ground Station can choose only sector start address kind of 0x00››0000
                 */
                 Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
+                //FIXME : send 1byte by UART in order to check Roop_adr
+                UBYTE Roop_adr_check = (UBYTE)(Roop_adr >>16);
+                sendChar((UBYTE)(Roop_adr >> 16));
                 break;
             case 'S':
                /* Comment

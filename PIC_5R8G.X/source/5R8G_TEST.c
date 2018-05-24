@@ -61,16 +61,38 @@ void main(void){
         //FIXME for debug when intefrate with OBC
         TXEN = Bit_Low;
         UBYTE Command[8];
-        Command[0] = 0x21;      //If all command[] is 0x00, that can pass CRC16 check filter. 0x01 is SOF, not suitable
+        Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
+        /* Comment
+         * =====================================================================
+         * 1. check first RCREG = 5
+         * 2. Command[] = RCREG
+         * 3. Check by CRC16
+         * =====================================================================
+         * Code
+         * =====================================================================
+         * while(Identify_CRC16(Command) != CRC_check(Command, 6)){
+         *      while(RCIF != 1);
+         *      while(RCREG != '5');
+         *      Command[0] = RCREG;
+         *      for (UINT i=1; i<8; i++){         >
+         *          while(RCIF != 1);
+         *          COmmand[i] = RCREG;
+         *      }
+         * }
+         * =====================================================================
+         */
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-            do{
-                for(UINT i=0;i<8;i++){
-                    //FIXME for simulator
-                    while(RCIF != 1);
-                    Command[i] = RCREG;
-                    if(Command[i] == 0xff) break;
-                }
-            }while(Command[0] != '5');
+            //  sync with commands by OBC
+            while(Command[0] != '5'){
+                while(RCIF != 1);
+                Command[0] = RCREG;
+            }
+            for(UINT i=1;i<8;i++){
+                while(RCIF != 1);
+                Command[i] = RCREG;
+                //  FIXME : need break function if receiving magic words
+                //if(Command[i] == 0xff) break;
+            }
         }
         
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)

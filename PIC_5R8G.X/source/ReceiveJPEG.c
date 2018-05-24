@@ -2,7 +2,9 @@
 //#include "pic16f886.h"
 
 #include "UART.h"
+#include "time.h"
 #include "FROM.h"
+#include "MAX2828.h"
 #include "typedefine.h"
 
 void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
@@ -71,6 +73,9 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
          receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
          receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
          //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag
+         // FIXME : for dubug
+         sendChar(receiveEndJpegFlag);
+         sendChar((UBYTE)(FROM_Write_adr >> 16));
          }
         else{
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag
@@ -85,6 +90,19 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
         }
     }
     send_OK();
+    //  FIXME : for debug
+    delay_ms(3000);
+    offAmp();
+    while(CAM2 == 1);   //  wait 5V SW
+    TXEN = Bit_High;
+    UDWORD FROM_Read_adr = Roop_adr;
+    while(FROM_Read_adr <= FROM_Write_adr){
+        flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
+        for(UINT i=0;i<MaxOfMemory;i++){
+            sendChar(Buffer[i]);
+        }
+        FROM_Read_adr += (UDWORD)(MaxOfMemory);
+    }
 }
 
 void Receive_thumbnail_JPEG(UDWORD Roop_adr){

@@ -46,7 +46,7 @@ void main(void){
     //UDWORD FROM_Read_adr  = g1_data_adr;
     //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00?申?申?申?申0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
-    UDWORD Jump_adr = 0x20000;
+    UDWORD Jump_adr = 0x020000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
 
@@ -54,14 +54,14 @@ void main(void){
 
     while(1){
         //FIXME for simulator
-//        if(CAMERA_POW == 0){
-//            offAmp();
-//        }
+        if(CAMERA_POW == 0){
+            offAmp();
+        }
         CREN = Bit_High;
-        //FIXME for debug when intefrate with OBC
-        TXEN = Bit_Low;
+        //FIXME for debug when integrate with OBC
+        TXEN = Bit_High;
         UBYTE Command[8];
-        Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
+        Command[0] = 0x21;      //If all command[] is 0x00, that can pass CRC16 check filter.
         /* Comment
          * =====================================================================
          * 1. check first RCREG = 5
@@ -94,6 +94,11 @@ void main(void){
                 //if(Command[i] == 0xff) break;
             }
         }
+        
+        //  FIXME : for debug
+        for(UINT i=0;i<8;i++){
+            sendChar(Command[i]);
+        }
 
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
 
@@ -116,11 +121,14 @@ void main(void){
                     send_dummy_data();
                 }
                 offAmp();
+                //  FIXME : for debug
                 send_OK();
                 break;
             case 'R':
                 switch(Command[2]){
                     case '8':
+                        //  FIXME : for debug
+                        sendChar(0x88);
                         Receive_8split_JPEG(Roop_adr, Jump_adr);
                         break;
                     case 'S':
@@ -137,6 +145,8 @@ void main(void){
                 init_module();
                 break;
             case 'C':
+                //  FIXME : for debug
+                sendChar(0xcc);
                /* Comment
                 * ======================================================================================
                 *  Make Change Roop_adr received from OBC
@@ -144,9 +154,10 @@ void main(void){
                 *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
                 *  Ground Station can choose only sector start address kind of 0x00?申?申?申?申0000
                 */
+                //  FIXME : for debug
+                sendChar(Command[2]);
                 Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
                 //FIXME : send 1byte by UART in order to check Roop_adr
-                UBYTE Roop_adr_check = (UBYTE)(Roop_adr >>16);
                 sendChar((UBYTE)(Roop_adr >> 16));
                 break;
             case 'S':
@@ -177,6 +188,8 @@ void main(void){
                 */
                 break;
             default:
+                //  FIXME : for debug
+                sendChar(0xff);
                 offAmp();
                 break;
         }

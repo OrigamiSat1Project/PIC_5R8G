@@ -42,42 +42,47 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
  *  After Writing              = 0x80  (0b10000000)
  * ===============================================================================================================
  */
-    
+    UINT index_of_Buffer = 0;
     while((receiveEndJpegFlag  & 0x80) != 0x80){
-        for (UINT i = 0; i < MaxOfMemory; i++) {
-           while (RCIF != 1);
-           Buffer[i] = RCREG;
-           if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[i] == FooterOfJPEG[0]){
-               receiveEndJpegFlag |= 0x01;     //Flag_0xFF in receiveEndJPEGFlag = 1
-               //sendChar('1');
-           }
-           /* Comment
-            * ===================================================================================================
-            * Jump to next sector of FROM
-            * When 8split_end_flag in receiveEndJpegFlag is low, we should jumpt to next sector by change FROM_Writer_adr
-            * and +1count 8split_cnt in receiveEndJpegFlag.
-            * ===================================================================================================
-            */
-            else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[i] == FooterOfJPEG[1]){   //when change of FROM sector
-            //save data before jump to next sector
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(i), &Buffer);
-            /* Comment
-             * ==================================================================== 
-             * Jump to next group's first sector
-             * ====================================================================
-             */
-            FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
-            receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
-            receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
-            //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag
-            }
-           else{
-               receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag
-           }
-       }
+        
+        while (RCIF != 1);
+        Buffer[index_of_Buffer] = RCREG;
+        if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
+            receiveEndJpegFlag |= 0x01;     //Flag_0xFF in receiveEndJPEGFlag = 1
+            //sendChar('1');
+        }
+        /* Comment
+         * ===================================================================================================
+         * Jump to next sector of FROM
+         * When 8split_end_flag in receiveEndJpegFlag is low, we should jumpt to next sector by change FROM_Writer_adr
+         * and +1count 8split_cnt in receiveEndJpegFlag.
+         * ===================================================================================================
+         */
+         else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1]){   //when change of FROM sector
+         //save data before jump to next sector
+         //FIXME : for simulators
+         //flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+         /* Comment
+          * ==================================================================== 
+          * Jump to next group's first sector
+          * ====================================================================
+          */
+         FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
+         receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
+         receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
+         //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag
+         }
+        else{
+            receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag
+        }
+        index_of_Buffer++;
         //FIXME for simulator
-       flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
-       FROM_Write_adr += (UDWORD)(MaxOfMemory);
+        //FIXME : for simulators
+        if(index_of_Buffer == MaxOfMemory){
+            //flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            FROM_Write_adr += (UDWORD)(MaxOfMemory);
+            index_of_Buffer = 0;
+        }
     }
     send_OK();
 }

@@ -44,7 +44,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÔøΩÔøΩÔøΩÔøΩ0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x20000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
@@ -94,15 +94,15 @@ void main(void){
                 //if(Command[i] == 0xff) break;
             }
         }
-        
+
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
-        
+
         /* Comment
          * ========================================================================
          * CRC16 judgement before go to switch-case statement
          * ========================================================================
          */
-        
+
         switch(Command[1]){
             case 'P':
                 Downlink(Roop_adr);
@@ -142,7 +142,7 @@ void main(void){
                 *  Make Change Roop_adr received from OBC
                 *  Add Command C:Change Roop_adr when some sectors of FROM are broken
                 *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-                *  Ground Station can choose only sector start address kind of 0x00ÅõÅõ0000
+                *  Ground Station can choose only sector start address kind of 0x00ÔøΩÔøΩÔøΩÔøΩ0000
                 */
                 Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
                 //FIXME : send 1byte by UART in order to check Roop_adr
@@ -155,7 +155,7 @@ void main(void){
                 * Make Sleep mode (Command =='S')
                 * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
                 * We have to keep MCLR pin High.
-                * Above this is uncorrect because we shouldn't use PIC_SLEEP. 
+                * Above this is uncorrect because we shouldn't use PIC_SLEEP.
                 * Sleep mode only FROM, Amp
                 *=======================================================================================
                 * Code

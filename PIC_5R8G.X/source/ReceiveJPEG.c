@@ -18,7 +18,7 @@ void ReceiveJPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     * ===================================================================================================
     */
     UBYTE Buffer[MaxOfMemory];
-    UBYTE receiveEndJpegFlag = 0x10;
+    UBYTE receiveEndJpegFlag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
     //FIXME for simulator
     //sendChar('R');
@@ -60,18 +60,13 @@ void ReceiveJPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             */
             else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[i] == FooterOfJPEG[1]){   //when change of FROM sector
             //save data before jump to next sector
-            //FIXME for simulator
-            //flash_Write_Data(FROM_Write_adr, (UDWORD)(i), &Buffer);
-            FROM_Write_adr &= 0xffff0000 ;        //Clear low order 2BYTE of FROM_Write_adr. Clear the memory address in previous sector
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(i), &Buffer);
             /* Comment
              * ==================================================================== 
              * Jump to next group's first sector
              * ====================================================================
-             * Code
-             * ====================================================================
-             * FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
-             * ====================================================================
              */
+            FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
             //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag
@@ -81,7 +76,7 @@ void ReceiveJPEG(UDWORD Roop_adr, UDWORD Jump_adr){
            }
        }
         //FIXME for simulator
-       //flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+       flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
        FROM_Write_adr += (UDWORD)(MaxOfMemory);
     }
     send_OK();

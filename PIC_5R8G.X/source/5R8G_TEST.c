@@ -60,6 +60,7 @@ void main(void){
     //UDWORD FROM_Read_adr  = g1_data_adr;
     //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00››0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
+    UDWORD Jump_adr = 0x20000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
 
@@ -132,18 +133,38 @@ void main(void){
                 *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
                 *  Ground Station can choose only sector start address kind of 0x00››0000
                 */
+                switch(Command[2]){
+                    case 'R':
+                        //  sector size limit
+                        if(Command[3] >= 0x47){
+                            Command[3] = 0x45;
+                        }
+                        Roop_adr = (UDWORD)Command[3]<<16;          //bit shift and clear low under 4bit for next 4bit address
+                        //FIXME : send 1byte by UART in order to check Roop_adr
+                        UBYTE Roop_adr_check = (UBYTE)(Roop_adr >>16);
+                        __delay_ms(10);
+                        sendChar(Roop_adr_check);
+                        __delay_ms(10);
+                        break;
+                    case 'J':
+                        if(Command[3] >= 0x08){
+                            Command[3] = 0x07;
+                        }
+                        Jump_adr = (UDWORD)Command[3]<<16;
+                        //FIXME : send 1byte by UART in order to check Roop_adr
+                        UBYTE Jump_adr_check = (UBYTE)(Jump_adr >>16);
+                        __delay_ms(10);
+                        sendChar(Jump_adr_check);
+                        __delay_ms(10);
+                        break;
+                }
                 //  TODO : you need nesting
                 /*
                 if(Command[2] >= 0x47){
                     Command[2] == 0x45;
                 }
                 */
-                Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
-                //FIXME : send 1byte by UART in order to check Roop_adr
-                UBYTE Roop_adr_check = (UBYTE)(Roop_adr >>16);
-                __delay_ms(10);
-                sendChar(Roop_adr_check);
-                __delay_ms(10);
+                
                 break;
             case 'S':
                /* Comment

@@ -64,100 +64,14 @@ void main(void){
     //UINT roopcount = 0;
 
     init_module();
-
-    while(1){
-        if(CAMERA_POW == 0){
-            offAmp();
-        }
-        CREN = Bit_High;
-        TXEN = Bit_Low;
-        UBYTE Command[8];
-        Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
-        while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-            do{
-                for(UINT i=0;i<8;i++){
-                    while(RCIF != 1);
-                    Command[i] = RCREG;
-                    if(Command[i] == 0xff) break;
-                }
-            }while(Command[0] != '5');
-        }
-        
-        //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
-        
-        /* Comment
-         * ========================================================================
-         * CRC16 judgement before go to switch-case statement
-         * ========================================================================
-         */
-        
-        switch(Command[1]){
-            case 'P':
-                Downlink(Roop_adr);
-                break;
-            case 'D':
-                while(CAM2 == 1);   //  wait 5V SW
-                while(CAM2 == 0){
-                    if(CAMERA_POW == 1){
-                        onAmp();
-                    }
-                    send_dummy_data();
-                }
-                offAmp();
-                send_OK();
-                break;
-            case 'R':
-                ReceiveJPEG(Roop_adr);
-                break;
-            case 'E':
-                Erase_sectors(Command[2], Command[3]);
-                break;
-            case 'I':
-                init_module();
-                break;
-            case 'C':
-               /* Comment
-                * ======================================================================================
-                *  Make Change Roop_adr received from OBC
-                *  Add Command C:Change Roop_adr when some sectors of FROM are broken
-                *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-                *  Ground Station can choose only sector start address kind of 0x00››0000
-                */
-                Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
-                //FIXME : send 1byte by UART in order to check Roop_adr
-                UBYTE Roop_adr_check = (UBYTE)(Roop_adr >>16);
-                sendChar((UBYTE)(Roop_adr >> 16));
-                break;
-            case 'S':
-               /* Comment
-                * ======================================================================================
-                * Make Sleep mode (Command =='S')
-                * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
-                * We have to keep MCLR pin High.
-                * Above this is uncorrect because we shouldn't use PIC_SLEEP. 
-                * Sleep mode only FROM, Amp
-                *=======================================================================================
-                * Code
-                *=======================================================================================
-                flash_Deep_sleep();
-                offAmp();
-                break;
-                * =======================================================================================
-                */
-            case 'W':
-               /*Comment
-                * ======================================================================================
-                * Make Wake up mode (Command == 'W')
-                *======================================================================================
-                * Code
-                * =======================================================================================
-                * flash_Wake_up();
-                * =======================================================================================
-                */
-                break;
-            default:
-                offAmp();
-                break;
-        }
+    offAmp();
+    CREN = Bit_High;
+    TXEN = Bit_Low;
+    
+    while(1){    
+        BUSY = 1;
+        delay_ms(1000);
+        BUSY = 0;
+        delay_ms(1000);
     }
 }

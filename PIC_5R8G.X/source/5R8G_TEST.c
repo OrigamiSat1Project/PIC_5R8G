@@ -44,7 +44,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ï¿½ï¿½ï¿½ï¿½0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00?¿½?¿½?¿½?¿½0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x20000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
@@ -120,10 +120,10 @@ void main(void){
                 break;
             case 'R':
                 switch(Command[2]){
-                    case 'S':
+                    case '8':
                         Receive_8split_JPEG(Roop_adr, Jump_adr);
                         break;
-                    case '8':
+                    case 'S':
                         Receive_thumbnail_JPEG(Roop_adr);
                         break;
                     default:
@@ -142,7 +142,7 @@ void main(void){
                 *  Make Change Roop_adr received from OBC
                 *  Add Command C:Change Roop_adr when some sectors of FROM are broken
                 *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-                *  Ground Station can choose only sector start address kind of 0x00ï¿½ï¿½ï¿½ï¿½0000
+                *  Ground Station can choose only sector start address kind of 0x00?¿½?¿½?¿½?¿½0000
                 */
                 Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
                 //FIXME : send 1byte by UART in order to check Roop_adr

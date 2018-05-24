@@ -5,7 +5,7 @@
 #include "FROM.h"
 #include "typedefine.h"
 
-void ReceiveJPEG(UDWORD Roop_adr){
+void ReceiveJPEG(UDWORD Roop_adr, UDWORD Jump_adr){
    /* Comment
     * ===================================================================================================
     * Erase sectors before writing FROM
@@ -18,10 +18,30 @@ void ReceiveJPEG(UDWORD Roop_adr){
     * ===================================================================================================
     */
     UBYTE Buffer[MaxOfMemory];
-    UBYTE receiveEndJpegFlag = 0x00;
+    UBYTE receiveEndJpegFlag = 0x10;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
     //FIXME for simulator
     //sendChar('R');
+    
+    /*  How to use receiveEndJpegFlag
+ * ===============================================================================================================
+ *  Bit7            Bit6            Bit5        Bit4        Bit3        Bit2        Bit1                Bit0
+ *  8split_End      8split_cnt2     cnt1        cnt0        ----        ----        Flag_0x0E           Flag_0xFF
+ *  
+ *  Initialize                 = 0x00  (0b00000000)
+ *  Detect JPEG marker 0xFF    = 0x01
+ *  End of receive JPEG        = 0x03  (0b00000011)
+ *  During writing group 1     = 0x00  (0b00000000)
+ *  During writing group 2     = 0x10  (0b00010000)
+ *  During writing group 3     = 0x20  (0b00100000)
+ *  During writing group 4     = 0x30  (0b00110000)
+ *  During writing group 5     = 0x40  (0b01000000)
+ *  During writing group 6     = 0x50  (0b01010000)
+ *  During writing group 7     = 0x60  (0b01100000)
+ *  During writing group 8     = 0x70  (0b01110000)
+ *  After Writing              = 0x80  (0b10000000)
+ * ===============================================================================================================
+ */
     
     while((receiveEndJpegFlag  & 0x80) != 0x80){
         for (UINT i = 0; i < MaxOfMemory; i++) {
@@ -42,14 +62,16 @@ void ReceiveJPEG(UDWORD Roop_adr){
             //save data before jump to next sector
             //FIXME for simulator
             //flash_Write_Data(FROM_Write_adr, (UDWORD)(i), &Buffer);
-            //Jump to next Sector of FROM
             FROM_Write_adr &= 0xffff0000 ;        //Clear low order 2BYTE of FROM_Write_adr. Clear the memory address in previous sector
-            //Jump to next part of sector ex.1¨3¨5¨7¨9¨B¨D¨F
-            if((FROM_Write_adr >> 16) % 2 == 1){
-                FROM_Write_adr += 0x20000;
-            }else{
-                FROM_Write_adr += 0x10000;
-            }
+            /* Comment
+             * ==================================================================== 
+             * Jump to next group's first sector
+             * ====================================================================
+             * Code
+             * ====================================================================
+             * FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
+             * ====================================================================
+             */
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag in receiveEndJpegFlag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
             //After writing 8 sector, 8split_End =1 in receiveEndJpegFlag

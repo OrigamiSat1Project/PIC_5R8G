@@ -35,20 +35,6 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 #define JPGCOUNT 5000
 
-/*  How to use receiveEndJpegFlag
- * ===============================================================================================================
- *  Bit7            Bit6            Bit5        Bit4        Bit3        Bit2        Bit1                Bit0
- *  8split_End      8split_cnt2     cnt1        cnt0        ----        ----        Flag_0x0E           Flag_0xFF
- *  
- *  Initialize                  = 0x00
- *  Detect JPEG marker 0xFF     = 0x01
- *  End of receive JPEG         = 0x03  (0b00000011)
- *  During writing sector 2     = 0x10  (0b00010000)
- *  During writing sector 8     = 0x70  (0b01110000)
- *  After 8split_end            = 0x80  (0b10000000)
- * ===============================================================================================================
- */
-
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
     //UDWORD			g2_data_adr = (UDWORD)0x00020000;   No need
@@ -60,6 +46,7 @@ void main(void){
     //UDWORD FROM_Read_adr  = g1_data_adr;
     //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
+    UDWORD Jump_adr = 0x20000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
 
@@ -110,7 +97,7 @@ void main(void){
                 send_OK();
                 break;
             case 'R':
-                ReceiveJPEG(Roop_adr);
+                ReceiveJPEG(Roop_adr, Jump_adr);
                 break;
             case 'E':
                 Erase_sectors(Command[2], Command[3]);

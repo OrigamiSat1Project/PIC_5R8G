@@ -5,7 +5,7 @@
 
 #include "typedefine.h"
 
-void ReceiveJPEG(UDWORD);
+void ReceiveJPEG(UDWORD, UDWORD);
 
 #endif	/* RECEIVEJPEG_H */
 

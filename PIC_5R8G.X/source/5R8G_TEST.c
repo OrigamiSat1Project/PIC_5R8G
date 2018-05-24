@@ -39,7 +39,7 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
  * ===============================================================================================================
  *  Bit7            Bit6            Bit5        Bit4        Bit3        Bit2        Bit1                Bit0
  *  8split_End      8split_cnt2     cnt1        cnt0        ----        ----        Flag_0x0E           Flag_0xFF
- *  
+ *
  *  Initialize                  = 0x00
  *  Detect JPEG marker 0xFF     = 0x01
  *  End of receive JPEG         = 0x03  (0b00000011)
@@ -75,32 +75,49 @@ void main(void){
         TXEN = Bit_High;
         UBYTE Command[8];
         Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
+        /* Comment
+         * =====================================================================
+         * 1. check first RCREG = 5
+         * 2. Command[] = RCREG
+         * 3. Check by CRC16
+         * =====================================================================
+         * Code
+         * =====================================================================
+         * while(Identify_CRC16(Command) != CRC_check(Command, 6)){
+         *      while(RCIF != 1);
+         *      while(RCREG != '5');
+         *      Command[0] = RCREG;
+         *      for (UINT i=1; i<8; i++){         >
+         *          while(RCIF != 1);
+         *          COmmand[i] = RCREG;
+         *      }
+         * }
+         * =====================================================================
+         */
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-            do{
-                for(UINT i=0;i<8;i++){
-                    while(RCIF != 1);
-                    Command[i] = RCREG;
-                    if(Command[i] == 0xff) break;
-                }
-                for(UINT j=0;j<8;j++){
-                    __delay_ms(10);
-                    sendChar(Command[j]);
-                    __delay_ms(10);
-                }
-                
-            }while(Command[0] != '5');
+            //  sync with commands by OBC
+            while(Command[0] != '5'){
+                while(RCIF != 1);
+                Command[0] = RCREG;
+            }
+            for(UINT i=1;i<8;i++){
+                while(RCIF != 1);
+                Command[i] = RCREG;
+                //  FIXME : need break function if receiving magic words
+                //if(Command[i] == 0xff) break;
+            }
         }
         __delay_ms(10);
         sendChar('3');
         __delay_ms(10);
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
-        
+
         /* Comment
          * ========================================================================
          * CRC16 judgement before go to switch-case statement
          * ========================================================================
          */
-        
+
         switch(Command[1]){
             case 'P':
                 Downlink(Roop_adr);
@@ -164,7 +181,7 @@ void main(void){
                     Command[2] == 0x45;
                 }
                 */
-                
+
                 break;
             case 'S':
                /* Comment
@@ -172,7 +189,7 @@ void main(void){
                 * Make Sleep mode (Command =='S')
                 * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
                 * We have to keep MCLR pin High.
-                * Above this is uncorrect because we shouldn't use PIC_SLEEP. 
+                * Above this is uncorrect because we shouldn't use PIC_SLEEP.
                 * Sleep mode only FROM, Amp
                 *=======================================================================================
                 * Code

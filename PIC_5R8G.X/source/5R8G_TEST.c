@@ -174,6 +174,8 @@ void main(void){
                         sendChar(Jump_adr_check);
                         __delay_ms(10);
                         break;
+                    default:
+                        break;
                 }
                 //  TODO : you need nesting
                 /*

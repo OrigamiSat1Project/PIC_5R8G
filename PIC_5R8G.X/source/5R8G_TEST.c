@@ -119,7 +119,16 @@ void main(void){
                 send_OK();
                 break;
             case 'R':
-                ReceiveJPEG(Roop_adr, Jump_adr);
+                switch(Command[2]){
+                    case 'S':
+                        Receive_8split_JPEG(Roop_adr, Jump_adr);
+                        break;
+                    case '8':
+                        Receive_thumbnail_JPEG(Roop_adr);
+                        break;
+                    default:
+                        break;
+                }
                 break;
             case 'E':
                 Erase_sectors(Command[2], Command[3]);

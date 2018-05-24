@@ -5,7 +5,8 @@
 
 #include "typedefine.h"
 
-void ReceiveJPEG(UDWORD, UDWORD);
+void Receive_8split_JPEG(UDWORD, UDWORD);
+void Receive_thumbnail_JPEG(UDWORD);
 
 #endif	/* RECEIVEJPEG_H */
 

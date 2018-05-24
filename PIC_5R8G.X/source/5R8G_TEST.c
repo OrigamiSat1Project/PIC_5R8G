@@ -44,7 +44,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÔøΩÔøΩÔøΩÔøΩ0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x20000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
@@ -61,26 +61,48 @@ void main(void){
         //FIXME for debug when intefrate with OBC
         TXEN = Bit_Low;
         UBYTE Command[8];
-        Command[0] = 0x21;      //If all command[] is 0x00, that can pass CRC16 check filter. 0x01 is SOF, not suitable
+        Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
+        /* Comment
+         * =====================================================================
+         * 1. check first RCREG = 5
+         * 2. Command[] = RCREG
+         * 3. Check by CRC16
+         * =====================================================================
+         * Code
+         * =====================================================================
+         * while(Identify_CRC16(Command) != CRC_check(Command, 6)){
+         *      while(RCIF != 1);
+         *      while(RCREG != '5');
+         *      Command[0] = RCREG;
+         *      for (UINT i=1; i<8; i++){         >
+         *          while(RCIF != 1);
+         *          COmmand[i] = RCREG;
+         *      }
+         * }
+         * =====================================================================
+         */
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-            do{
-                for(UINT i=0;i<8;i++){
-                    //FIXME for simulator
-                    while(RCIF != 1);
-                    Command[i] = RCREG;
-                    if(Command[i] == 0xff) break;
-                }
-            }while(Command[0] != '5');
+            //  sync with commands by OBC
+            while(Command[0] != '5'){
+                while(RCIF != 1);
+                Command[0] = RCREG;
+            }
+            for(UINT i=1;i<8;i++){
+                while(RCIF != 1);
+                Command[i] = RCREG;
+                //  FIXME : need break function if receiving magic words
+                //if(Command[i] == 0xff) break;
+            }
         }
-        
+
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
-        
+
         /* Comment
          * ========================================================================
          * CRC16 judgement before go to switch-case statement
          * ========================================================================
          */
-        
+
         switch(Command[1]){
             case 'P':
                 Downlink(Roop_adr);
@@ -111,7 +133,7 @@ void main(void){
                 *  Make Change Roop_adr received from OBC
                 *  Add Command C:Change Roop_adr when some sectors of FROM are broken
                 *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-                *  Ground Station can choose only sector start address kind of 0x00ÅõÅõ0000
+                *  Ground Station can choose only sector start address kind of 0x00ÔøΩÔøΩÔøΩÔøΩ0000
                 */
                 Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
                 //FIXME : send 1byte by UART in order to check Roop_adr
@@ -124,7 +146,7 @@ void main(void){
                 * Make Sleep mode (Command =='S')
                 * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
                 * We have to keep MCLR pin High.
-                * Above this is uncorrect because we shouldn't use PIC_SLEEP. 
+                * Above this is uncorrect because we shouldn't use PIC_SLEEP.
                 * Sleep mode only FROM, Amp
                 *=======================================================================================
                 * Code

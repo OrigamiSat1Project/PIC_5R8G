@@ -1,4 +1,4 @@
-/*** �}�C�R����IO�|�[�g�ݒ� ***/
+/*** マイコンのIOポート設定 ***/
 
 #include <xc.h>
 #include "InitMPU.h"
@@ -7,34 +7,34 @@
 #include "time.h"
 #include "FROM.h"
 
-/*** �}�C�R������������ ***/
+/*** マイコン初期化処理 ***/
 void init_mpu(void)
 {
-	//�|�[�g�̏�����
+	//ポートの初期化
 	PORTA = 0x00;
 	PORTB = 0x00;
 	PORTC = 0x00;	
 	
-	//AD�ݒ�i�S�ăf�W�^�����́j
-	ANSEL  = 0x00;	//AD�ݒ�
-	ANSELH = 0x00;	//AD�ݒ�
+	//AD設定（全てデジタル入力）
+	ANSEL  = 0x00;	//AD設定
+	ANSELH = 0x00;	//AD設定
 	
-	//�|�[�g���o�͐ݒ�	
-	TRISA  = 0xC0;	//���o�͐ݒ�
-	TRISB  = 0x2B;	//���o�͐ݒ�
-    TRISC  = 0x84;	//���o�͐ݒ�
+	//ポート入出力設定	
+	TRISA  = 0xC0;	//入出力設定
+	TRISB  = 0x2B;	//入出力設定
+    	TRISC  = 0x84;	//入出力設定
 	
-	//�|�[�g�����l�ݒ�		
-	PORTA  = 0x21;	//�����l�ݒ�
-	PORTB  = 0x94;	//�����l�ݒ�
-	PORTC  = 0x41;	//�����l�ݒ�
+	//ポート初期値設定		
+	PORTA  = 0x21;	//初期値設定
+	PORTB  = 0x94;	//初期値設定
+	PORTC  = 0x41;	//初期値設定
 }
 
 void init_module(void){
     init_mpu();
-    //initbau(BAU_HIGH);                //115200bps
+    initbau(BAU_HIGH);                //115200bps
     //initbau(BAU_MIDDLE);              //57600bps
-    initbau(BAU_LOW);                   //14400bps
+    //initbau(BAU_LOW);                   //14400bps
     MAX2828_EN = 1;                     //MAX2828 ON
     __delay_us(100);                    //100us wait
     FLASH_SPI_EI();                     //enable SPI

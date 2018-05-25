@@ -108,15 +108,12 @@ void main(void){
                 switch(Command[2]){
                     case '8':
                         //  FIXME : for debug
-                        sendChar(0x88);
+                        sendChar(0x99);
                         Receive_8split_JPEG(Roop_adr, Jump_adr);
                         break;
                     case 'T':
-                        sendChar(0x99);
                         Receive_thumbnail_JPEG(Roop_adr);
                         break;
-                    //case 'S':
-                        //void Send_JPEG_UART(Roop_adr,Command[3]);
                     default:
                         break;
                 }

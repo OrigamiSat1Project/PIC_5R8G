@@ -105,12 +105,11 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr){
     */
     Erase_sectors_before_Write(Roop_adr);
     
-    
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
     //FIXME for simulator
-    //sendChar('R');
+    sendChar('R');
     
    /*  How to use receiveEndJpegFlag
     * ====================================================================================================
@@ -119,8 +118,8 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr){
     * ====================================================================================================
     */
     UINT index_of_Buffer = 0;
-    send_OK();
-    while((receiveEndJpegFlag  & 0x10) != 0x10){
+    while((receiveEndJpegFlag  & 0x10) != 0x10)
+    {
         while (RCIF != 1);
         Buffer[index_of_Buffer] = RCREG;
         if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
@@ -130,14 +129,15 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr){
         else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            index_of_Buffer = 0;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
-            index_of_Buffer = 0;
             //FIXME : debug
+            offAmp();
+            TXEN = Bit_High;
             sendChar(receiveEndJpegFlag);
             sendChar((UBYTE)(FROM_Write_adr >> 16));
-            break;
-        }
+    }
         else
         {
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag

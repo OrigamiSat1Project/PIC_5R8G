@@ -53,7 +53,6 @@ void main(void){
     init_module();
 
     while(1){
-        //FIXME for simulator
         if(CAMERA_POW == 0){
             offAmp();
         }
@@ -62,44 +61,25 @@ void main(void){
         TXEN = Bit_High;
         UBYTE Command[8];
         Command[0] = 0x21;      //If all command[] is 0x00, that can pass CRC16 check filter.
-        /* Comment
-         * =====================================================================
-         * 1. check first RCREG = 5
-         * 2. Command[] = RCREG
-         * 3. Check by CRC16
-         * =====================================================================
-         * Code
-         * =====================================================================
-         * while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-         *      while(RCIF != 1);
-         *      while(RCREG != '5');
-         *      Command[0] = RCREG;
-         *      for (UINT i=1; i<8; i++){         >
-         *          while(RCIF != 1);
-         *          COmmand[i] = RCREG;
-         *      }
-         * }
-         * =====================================================================
-         */
         //FIXME : for simulator
-//        while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-//            //  sync with commands by OBC
-//            while(Command[0] != '5'){
-//                while(RCIF != 1);
-//                Command[0] = RCREG;
-//            }
-//            for(UINT i=1;i<8;i++){
-//                while(RCIF != 1);
-//                Command[i] = RCREG;
-//                //  FIXME : need break function if receiving magic words
-//                //if(Command[i] == 0xff) break;
-//            }
-//        }
-//        
-//        //  FIXME : for debug
-//        for(UINT i=0;i<8;i++){
-//            sendChar(Command[i]);
-//        }
+        while(Identify_CRC16(Command) != CRC_check(Command, 6)){
+            //  sync with commands by OBC
+            while(Command[0] != '5'){
+                while(RCIF != 1);
+                Command[0] = RCREG;
+            }
+            for(UINT i=1;i<8;i++){
+                while(RCIF != 1);
+                Command[i] = RCREG;
+                //  FIXME : need break function if receiving magic words
+                //if(Command[i] == 0xff) break;
+            }
+        }
+        
+        //  FIXME : for debug
+        for(UINT i=0;i<8;i++){
+            sendChar(Command[i]);
+        }
 
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
 
@@ -108,10 +88,6 @@ void main(void){
          * CRC16 judgement before go to switch-case statement
          * ========================================================================
          */
-        for (UINT i=0; i<8; i++){
-            //while(RCIF != 1);
-            Command[i] = RCREG;
-        }
         switch(Command[1]){
             case 'P':
                 Downlink(Roop_adr);
@@ -136,8 +112,11 @@ void main(void){
                         Receive_8split_JPEG(Roop_adr, Jump_adr);
                         break;
                     case 'T':
+                        sendChar(0x99);
                         Receive_thumbnail_JPEG(Roop_adr);
                         break;
+                    //case 'S':
+                        //void Send_JPEG_UART(Roop_adr,Command[3]);
                     default:
                         break;
                 }

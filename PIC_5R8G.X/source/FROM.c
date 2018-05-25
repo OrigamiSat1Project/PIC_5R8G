@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "typedefine.h"
+#include "UART.h"
 #include "FROM.h"
 #include "time.h"
 
@@ -233,6 +234,8 @@ UBYTE flash_Write_Page(UDWORD WAddr, UWORD WCnt, UBYTE * pData)
 /* Data write processing */
 UBYTE flash_Write_Data(UDWORD WAddr, UDWORD WCnt, UBYTE * pData)
 {
+    //  TODO : this should be used
+    //BUSY = 1;
 	UDWORD				EndWAddr;						/* Writing end address					*/
 	UDWORD				WPagCnt;						/* Writing page count					*/
 	UDWORD				WByteCnt;						/* 1page writing byte count				*/
@@ -312,7 +315,8 @@ UBYTE flash_Write_Data(UDWORD WAddr, UDWORD WCnt, UBYTE * pData)
 			return Ret;
 		}
 	}
-
+    //  TODO : this should be used
+    //BUSY = 0;
 	return FLASH_OK;
 }
 

@@ -39,7 +39,7 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
  * ===============================================================================================================
  *  Bit7            Bit6            Bit5        Bit4        Bit3        Bit2        Bit1                Bit0
  *  8split_End      8split_cnt2     cnt1        cnt0        ----        ----        Flag_0x0E           Flag_0xFF
- *  
+ *
  *  Initialize                  = 0x00
  *  Detect JPEG marker 0xFF     = 0x01
  *  End of receive JPEG         = 0x03  (0b00000011)
@@ -58,7 +58,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÔøΩÔøΩÔøΩÔøΩ0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     //UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
@@ -67,8 +67,8 @@ void main(void){
     offAmp();
     CREN = Bit_High;
     TXEN = Bit_Low;
-    
-    while(1){    
+
+    while(1){
         BUSY = 1;
         delay_ms(1000);
         BUSY = 0;

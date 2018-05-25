@@ -116,7 +116,13 @@ void main(void){
         
         switch(Command[1]){
             case 'P':
-                Downlink(Roop_adr);
+                switch(Command[2]){
+                    case '8':
+                        Downlink(Roop_adr, Command[3]);
+                        break;
+                    case 'S':
+                        break;
+                }
                 break;
             case 'D':
                 while(CAM2 == 1);   //  wait 5V SW

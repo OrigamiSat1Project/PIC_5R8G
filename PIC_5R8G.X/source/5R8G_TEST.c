@@ -81,24 +81,25 @@ void main(void){
          * }
          * =====================================================================
          */
-        while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-            //  sync with commands by OBC
-            while(Command[0] != '5'){
-                while(RCIF != 1);
-                Command[0] = RCREG;
-            }
-            for(UINT i=1;i<8;i++){
-                while(RCIF != 1);
-                Command[i] = RCREG;
-                //  FIXME : need break function if receiving magic words
-                //if(Command[i] == 0xff) break;
-            }
-        }
-        
-        //  FIXME : for debug
-        for(UINT i=0;i<8;i++){
-            sendChar(Command[i]);
-        }
+        //FIXME : for simulator
+//        while(Identify_CRC16(Command) != CRC_check(Command, 6)){
+//            //  sync with commands by OBC
+//            while(Command[0] != '5'){
+//                while(RCIF != 1);
+//                Command[0] = RCREG;
+//            }
+//            for(UINT i=1;i<8;i++){
+//                while(RCIF != 1);
+//                Command[i] = RCREG;
+//                //  FIXME : need break function if receiving magic words
+//                //if(Command[i] == 0xff) break;
+//            }
+//        }
+//        
+//        //  FIXME : for debug
+//        for(UINT i=0;i<8;i++){
+//            sendChar(Command[i]);
+//        }
 
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
 
@@ -107,7 +108,10 @@ void main(void){
          * CRC16 judgement before go to switch-case statement
          * ========================================================================
          */
-
+        for (UINT i=0; i<8; i++){
+            //while(RCIF != 1);
+            Command[i] = RCREG;
+        }
         switch(Command[1]){
             case 'P':
                 Downlink(Roop_adr);
@@ -131,7 +135,7 @@ void main(void){
                         sendChar(0x88);
                         Receive_8split_JPEG(Roop_adr, Jump_adr);
                         break;
-                    case 'S':
+                    case 'T':
                         Receive_thumbnail_JPEG(Roop_adr);
                         break;
                     default:

@@ -50,25 +50,17 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
  */
 
 void main(void){
-    UDWORD			g1_data_adr = (UDWORD)0x00010000;
-    //UDWORD			g2_data_adr = (UDWORD)0x00020000;   No need
 
-    //UBYTE Buffer[MaxOfMemory];
-    //UINT indexOfBuffer = 0;
-
-    //UDWORD FROM_Write_adr = g1_data_adr;
-    //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00����0000. Use in 'C' and 'D' command
-    UDWORD Roop_adr = g1_data_adr;
-    //UDWORD FROM_Jump_next_sector = 0x10000;
-    //UINT roopcount = 0;
-
-    init_module();
-    offAmp();
-    CREN = Bit_High;
-    TXEN = Bit_Low;
+    init_mpu();
     
     while(1){    
+        //char latA;
+        //latA = 0x1F;	//一旦latAに書き込む
+        //PORTA = latA;	//PORTAを丸ごと書き換える
+        //__delay_ms(30);
+        ////一旦latAを書き換える
+        //latA = (latA & 0xFE) | 0x00;	//ビット0に値をセット
+        //PORTA = latA;	//PORTAを丸ごと書き換える
         BUSY = 1;
         delay_ms(1000);
         BUSY = 0;

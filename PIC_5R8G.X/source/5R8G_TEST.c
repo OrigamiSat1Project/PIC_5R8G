@@ -54,15 +54,10 @@ void main(void){
     init_mpu();
 
     while(1){
-        //char latA;
-        //latA = 0x1F;	//一旦latAに書き込む
-        //PORTA = latA;	//PORTAを丸ごと書き換える
-        //__delay_ms(30);
-        ////一旦latAを書き換える
-        //latA = (latA & 0xFE) | 0x00;	//ビット0に値をセット
-        //PORTA = latA;	//PORTAを丸ごと書き換える
+        //  BUSY HIGH
         BUSY = 1;
-        delay_ms(1000);
+        delay_ms(3000);
+        //  BUSY LOW
         BUSY = 0;
         delay_ms(1000);
     }

@@ -51,39 +51,39 @@ UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
 UBYTE flash_Deep_sleep(void);
 UBYTE flash_Wake_up(void);
 
-/* èëÇ´çûÇ›â¬î\ */
+/* Êõ∏„ÅçËæº„ÅøÂèØËÉΩ */
 UBYTE flash_Write_En(void)
 {
 	UBYTE				Ret;
 
 	FLASH_SET_CS(FLASH_LOW);								/* CS "L"							*/
-	delay_us(FLASH_T_CS_HOLD);								/* 1us ÉEÉFÉCÉg						*/
+	delay_us(FLASH_T_CS_HOLD);								/* 1us „Ç¶„Çß„Ç§„Éà						*/
 
 	/* Writing enable command transmission */
 	Ret = flash_Cmd_WREN();
 
-	delay_us(FLASH_T_CS_HOLD);								/* 1us ÉEÉFÉCÉg						*/
+	delay_us(FLASH_T_CS_HOLD);								/* 1us „Ç¶„Çß„Ç§„Éà						*/
 	FLASH_SET_CS(FLASH_HI);									/* CS "H"							*/
 	return Ret;
 }
 
-/* èëÇ´çûÇ›ïsâ¬ */
+/* Êõ∏„ÅçËæº„Åø‰∏çÂèØ */
 static UBYTE flash_Write_Di(void)
 {
 	UBYTE				Ret;
 
 	FLASH_SET_CS(FLASH_LOW);								/* CS "L"							*/
-	delay_us(FLASH_T_CS_HOLD);								/* 1us ÉEÉFÉCÉg						*/
+	delay_us(FLASH_T_CS_HOLD);								/* 1us „Ç¶„Çß„Ç§„Éà						*/
 
 	/* Writing disable command transmission */
 	Ret = flash_Cmd_WRDI();
 
-	delay_us(FLASH_T_CS_HOLD);								/* 1us ÉEÉFÉCÉg						*/
+	delay_us(FLASH_T_CS_HOLD);								/* 1us „Ç¶„Çß„Ç§„Éà						*/
 	FLASH_SET_CS(FLASH_HI);									/* CS "H"							*/
 	return Ret;
 }
 
-/* Busy ÇÃÇΩÇﬂprocessäÆóπë“ã@ */
+/* Busy „ÅÆ„Åü„ÇÅprocessÂÆå‰∫ÜÂæÖÊ©ü */
 static UBYTE flash_Wait_Busy(UWORD BusyTime, UWORD BusyCnt)
 {
 	UBYTE				RxBuf;								/* Receive temp buffer				*/
@@ -128,7 +128,7 @@ static UBYTE flash_Wait_Busy(UWORD BusyTime, UWORD BusyCnt)
 	return FLASH_ERR;
 }
 
-/* ÉGÉìÉfÉBÉAÉìÇÃïœä∑ä÷êî */
+/* „Ç®„É≥„Éá„Ç£„Ç¢„É≥„ÅÆÂ§âÊèõÈñ¢Êï∞ */
 void flash_ExchgLong(UDWORD ChgData)
 {
 	EXCHG_LONG Tmp;
@@ -149,7 +149,7 @@ void flash_ExchgLong(UDWORD ChgData)
 #endif	/* #ifdef MTL_MCU_LITTLE */
 }
 
-/* SPIëóêMä÷êî */
+/* SPIÈÄÅ‰ø°Èñ¢Êï∞ */
 UBYTE flash_SPI_DataOut(UWORD TxCnt, UBYTE * pData)
 {
 	UWORD				TxWait;								/* Transmission waiting counter			*/
@@ -158,9 +158,9 @@ UBYTE flash_SPI_DataOut(UWORD TxCnt, UBYTE * pData)
 	TxWait = FLASH_SPI_TX_WAIT;
 	for (; TxCnt != 0; TxCnt--)								/* Loop for transmission byte			*/
 	{							
-		FLASH_SPI_BUF = *pData;								/* ëóêMÉfÅ[É^ÇÉZÉbÉg						*/
+		FLASH_SPI_BUF = *pData;								/* ÈÄÅ‰ø°„Éá„Éº„Çø„Çí„Çª„ÉÉ„Éà						*/
 
-		while (FLASH_SPI_IF == FLASH_LOW)					/* ëóêMäÆóπÉtÉâÉOë“Çø						*/
+		while (FLASH_SPI_IF == FLASH_LOW)					/* ÈÄÅ‰ø°ÂÆå‰∫Ü„Éï„É©„Ç∞ÂæÖ„Å°						*/
 		{
 			TxWait--;
 			if (TxWait == 0)								/* Transmission waiting time over		*/
@@ -169,17 +169,17 @@ UBYTE flash_SPI_DataOut(UWORD TxCnt, UBYTE * pData)
 			}
 			delay_us(FLASH_T_UART_WAIT);
 		}
-		FLASH_SPI_IF = FLASH_LOW;									/* ëóêMäÆóπÉtÉâÉOè¡ãé						*/
+		FLASH_SPI_IF = FLASH_LOW;									/* ÈÄÅ‰ø°ÂÆå‰∫Ü„Éï„É©„Ç∞Ê∂àÂéª						*/
 
-		while (FLASH_SPI_BF == FLASH_LOW);							/* éÛêMäÆóπÉtÉâÉOë“Çø						*/
-		Rxbuf = FLASH_SPI_BUF;									/* éÛêMÉfÅ[É^ÇÃãÛì«Ç›						*/
+		while (FLASH_SPI_BF == FLASH_LOW);							/* Âèó‰ø°ÂÆå‰∫Ü„Éï„É©„Ç∞ÂæÖ„Å°						*/
+		Rxbuf = FLASH_SPI_BUF;									/* Âèó‰ø°„Éá„Éº„Çø„ÅÆÁ©∫Ë™≠„Åø						*/
 
 		pData++;
 	}
 	return FLASH_OK;
 }
 
-/* ÉRÉ}ÉìÉhëóêMä÷êî */
+/* „Ç≥„Éû„É≥„ÉâÈÄÅ‰ø°Èñ¢Êï∞ */
 UBYTE flash_Send_Cmd(UBYTE Cmd, UDWORD Arg, UBYTE CmdSize)
 {
 	/* The specified command is stored in the buffer */
@@ -204,7 +204,7 @@ UBYTE flash_Write_Page(UDWORD WAddr, UWORD WCnt, UBYTE * pData)
 	}
 
 	FLASH_SET_CS(FLASH_LOW);							/* CS "L"								*/
-	delay_us(FLASH_T_CS_HOLD);							/* 1us ÉEÉFÉCÉg							*/
+	delay_us(FLASH_T_CS_HOLD);							/* 1us „Ç¶„Çß„Ç§„Éà							*/
 
 	/* Write command transmission */
 	Ret = flash_Cmd_WRITE(WAddr);
@@ -222,7 +222,7 @@ UBYTE flash_Write_Page(UDWORD WAddr, UWORD WCnt, UBYTE * pData)
 		return Ret;
 	}
 
-	delay_us(FLASH_T_CS_HOLD);							/* 1us ÉEÉFÉCÉg							*/
+	delay_us(FLASH_T_CS_HOLD);							/* 1us „Ç¶„Çß„Ç§„Éà							*/
 	FLASH_SET_CS(FLASH_HI);								/* CS "H"								*/
 
 	/* Write busy completion waiting */
@@ -234,8 +234,8 @@ UBYTE flash_Write_Page(UDWORD WAddr, UWORD WCnt, UBYTE * pData)
 /* Data write processing */
 UBYTE flash_Write_Data(UDWORD WAddr, UDWORD WCnt, UBYTE * pData)
 {
-    //  TODO : this should be used
-    //BUSY = 1;
+	// SW BUSY to High during FROM writing
+    	BUSY = 1;
 	UDWORD				EndWAddr;						/* Writing end address					*/
 	UDWORD				WPagCnt;						/* Writing page count					*/
 	UDWORD				WByteCnt;						/* 1page writing byte count				*/
@@ -315,12 +315,11 @@ UBYTE flash_Write_Data(UDWORD WAddr, UDWORD WCnt, UBYTE * pData)
 			return Ret;
 		}
 	}
-    //  TODO : this should be used
-    //BUSY = 0;
+    	BUSY = 0;
 	return FLASH_OK;
 }
 
-/* SPIéÛêMä÷êî */
+/* SPIÂèó‰ø°Èñ¢Êï∞ */
 static UBYTE flash_SPI_Rx(UWORD RxCnt, UBYTE * pData)
 {
 	UWORD				RxWait;								/* Receive waiting counter				*/
@@ -330,7 +329,7 @@ static UBYTE flash_SPI_Rx(UWORD RxCnt, UBYTE * pData)
 	{
 		/* Receive dummy data -> Transmission buffer register */
 		FLASH_SPI_BUF = FLASH_DUMMY_DATA;					/* Receive dummy data setting			*/
-		/* éÛêMäÆóπÇµÇƒÇ¢ÇÈÇ©É`ÉFÉbÉN */
+		/* Âèó‰ø°ÂÆå‰∫Ü„Åó„Å¶„ÅÑ„Çã„Åã„ÉÅ„Çß„ÉÉ„ÇØ */
 		while (FLASH_SPI_BF == FLASH_LOW)							/* Loop for receive completion			*/
 		{
 			RxWait--;
@@ -343,7 +342,7 @@ static UBYTE flash_SPI_Rx(UWORD RxCnt, UBYTE * pData)
 		*pData = (UBYTE)FLASH_SPI_BUF;						/* Receive data storage					*/
 		pData++;
 
-		if(FLASH_SPI_IF == FLASH_HI)								/* äÑÇËçûÇ›ÉtÉâÉOè¡ãé					*/
+		if(FLASH_SPI_IF == FLASH_HI)								/* Ââ≤„ÇäËæº„Åø„Éï„É©„Ç∞Ê∂àÂéª					*/
 		{
 			FLASH_SPI_IF = FLASH_LOW;
 		}
@@ -601,12 +600,12 @@ UBYTE flash_Deep_sleep(void)
 //	UBYTE				Ret;
 //
 //	FLASH_SET_CS(FLASH_LOW);								//* CS "L"
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ÉEÉFÉCÉg
+//	delay_us(FLASH_T_CS_HOLD);								//* 1us „Ç¶„Çß„Ç§„Éà
 //
 //	//* change to Deep sleep mode
 //	Ret = flash_Cmd_DP();
 //
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ÉEÉFÉCÉg
+//	delay_us(FLASH_T_CS_HOLD);								//* 1us „Ç¶„Çß„Ç§„Éà
 //	FLASH_SET_CS(FLASH_HI);									//* CS "H"
 //	return Ret;    
 }
@@ -618,12 +617,12 @@ UBYTE flash_Wake_up(void)
 //	UBYTE				Ret;
 //
 //	FLASH_SET_CS(FLASH_LOW);								//* CS "L"
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ÉEÉFÉCÉg
+//	delay_us(FLASH_T_CS_HOLD);								//* 1us „Ç¶„Çß„Ç§„Éà
 //
 //	//* Release Deep sleep
 //	Ret = flash_Cmd_RES();
 //
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ÉEÉFÉCÉg
+//	delay_us(FLASH_T_CS_HOLD);								//* 1us „Ç¶„Çß„Ç§„Éà
 //	FLASH_SET_CS(FLASH_HI);									//* CS "H"
 //	return Ret;    
 }

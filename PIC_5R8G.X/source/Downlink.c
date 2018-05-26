@@ -18,6 +18,9 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      */
     sendChar('P');
     while(CAM2 == 1);   //  wait 5V SW
+//    if(CAMERA_POW == 1){
+//        onAmp();
+//    }
     UINT sendBufferCount = 0;
     const UINT JPGCOUNT = 5000;
     UBYTE Buffer[MaxOfMemory];
@@ -40,6 +43,8 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * Flag is OFF : FROM_Read_adr is jumping to next sector's start address.
      * =============================================================
      */
+    //FIXME ; debug
+    send_01();
     while(CAM2 == 0){
         if(readFROM_Count >= 8) readFROM_Count = 0;
         FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
@@ -53,23 +58,29 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                 else if(receiveEndJpegFlag = 0x01 && Buffer[i] == FooterOfJPEG[1]){
                     receiveEndJpegFlag &= 0x00;
                     readFROM_Count ++;
+                    //FIXME : debug
+                    send_01();
+                    sendChar((UBYTE)(FROM_Read_adr >> 16));
+                    send_01();
                     break;
                 }
                 else{
                     receiveEndJpegFlag &= 0x00;
                 }
             }
-            
-             //  for rest
-            if(sendBufferCount % JPGCOUNT == 0){
-                offAmp();
-                __delay_ms(3000);
-                if(CAMERA_POW == 1){
-                    onAmp();
-                }
-                send_01();  //  send preamble
-            }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
+
+//             //  for rest
+//            if(sendBufferCount % JPGCOUNT == 0){
+//                offAmp();
+//                __delay_ms(3000);
+//                if(CAMERA_POW == 1){
+//                    onAmp();
+//                }
+//                send_01();  //  send preamble
+//            }
+            
+            //  WDT dealing
             sendBufferCount ++;
             if (sendBufferCount % 20 == 0) {
                 CLRWDT();
@@ -87,5 +98,6 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
 void downlink(UBYTE buf){
     sendChar(buf);
     //  TODO : to be optimisation
-    __delay_us(20);
+    //FIXME : debug by uart
+    //__delay_us(20);
 }

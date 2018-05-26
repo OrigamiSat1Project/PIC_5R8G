@@ -121,7 +121,8 @@ void main(void){
                     case '8':
                         Downlink(Roop_adr, Jump_adr, Command[3]);
                         break;
-                    case 'S':
+                    case 'T':
+                        Downlink(Roop_adr, Jump_adr, 0x01);
                         break;
                 }
                 break;

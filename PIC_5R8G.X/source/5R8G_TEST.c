@@ -71,6 +71,8 @@ void main(void){
             offAmp();
         }
         CREN = Bit_High;
+        //  FIXME : for debug
+        //TXEN = Bit_Low;
         TXEN = Bit_High;
         UBYTE Command[8];
         Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.

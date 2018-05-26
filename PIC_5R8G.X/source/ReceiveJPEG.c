@@ -17,7 +17,8 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
        ===================================================================================================
     */
     Erase_sectors_before_Write(Roop_adr);
-    
+    //FIXME : debug
+    sendChar(0xee);
     
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;

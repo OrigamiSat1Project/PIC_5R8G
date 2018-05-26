@@ -135,7 +135,6 @@ void main(void){
                 *  Ground Station can choose only sector start address kind of 0x00?申?申?申?申0000
                 */
                 //  FIXME : for debug
-                sendChar(Command[2]);
                 Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
                 //FIXME : send 1byte by UART in order to check Roop_adr
                 sendChar((UBYTE)(Roop_adr >> 16));

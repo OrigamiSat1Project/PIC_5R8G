@@ -113,7 +113,6 @@ void main(void){
          * CRC16 judgement before go to switch-case statement
          * ========================================================================
          */
-        
         switch(Command[1]){
             case 'P':
                 Downlink(Roop_adr);

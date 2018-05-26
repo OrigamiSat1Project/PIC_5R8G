@@ -7,7 +7,8 @@
 #include "time.h"
 #include "FROM.h"
 
-void downlink(UBYTE);
+void downlinkChar(UBYTE);
+void downlinkRest(UBYTE);
 
 void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     /*  How to use Identify_8split
@@ -16,12 +17,13 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      *  8/8     7/8     6/8     5/8     4/8     3/8     2/8     1/8
      * ========================================================================
      */
+    sendChar(0x50);
     while(CAM2 == 1);   //  wait 5V SW
     if(CAMERA_POW == 1){
         onAmp();
     }
-    UINT sendBufferCount = 0;
-    const UINT JPGCOUNT = 5000;
+    UINT sendBufferCount = 1;
+    const UINT JPGCOUNT = 300;
     UBYTE Buffer[MaxOfMemory];
     UDWORD FROM_Read_adr = Roop_adr;
     UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
@@ -52,7 +54,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
         if((Identify_8split & (0x01<<readFROM_Count)) == (0x01<<readFROM_Count)){
             flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
             for(UINT i=0; i<MaxOfMemory; i++){
-                downlink(Buffer[i]);
+                downlinkChar(Buffer[i]);
                 if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[i] == FooterOfJPEG[0]){
                     receiveEndJpegFlag |= 0x01;
                 }
@@ -60,7 +62,9 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                     receiveEndJpegFlag &= 0x00;
                     readFROM_Count ++;
                     FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
-                    send_01();
+                    downlinkRest('1');
+                    sendBufferCount = 1;
+                    __delay_ms(3000);
                     break;
                 }
                 else{
@@ -69,14 +73,11 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
 
+            //  FIXME : TIMER2
              //  for rest
             if(sendBufferCount % JPGCOUNT == 0){
-                offAmp();
-                __delay_ms(3000);
-                if(CAMERA_POW == 1){
-                    onAmp();
-                }
-                send_01();  //  send preamble
+                downlinkRest('A');
+                sendBufferCount = 0;
             }
             
             //  WDT dealing
@@ -96,7 +97,25 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     TXEN = Bit_Low;
 }
 
-void downlink(UBYTE buf){
+void downlinkChar(UBYTE buf){
     sendChar(buf);
     __delay_us(20);
+}
+
+void downlinkRest(UBYTE c){
+    if (c == '1'){
+        send_01();
+    }else{
+        send_AB();
+    }
+    offAmp();
+    __delay_ms(5000);
+    if(CAMERA_POW == 1){
+        onAmp();
+    }
+    if (c == '1'){
+        send_01();
+    }else{
+        send_AB();
+    }
 }

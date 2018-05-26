@@ -60,7 +60,7 @@ void main(void){
     //UDWORD FROM_Read_adr  = g1_data_adr;
     //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
-    UDWORD Jump_adr = 0x020000;
+    UDWORD Jump_adr = 0x20000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
 
@@ -71,7 +71,7 @@ void main(void){
             offAmp();
         }
         CREN = Bit_High;
-        TXEN = Bit_Low;
+        TXEN = Bit_High;
         UBYTE Command[8];
         Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
         /* Comment

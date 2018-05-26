@@ -46,21 +46,26 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     //FIXME ; debug
     send_01();
     while(CAM2 == 0){
-        if(readFROM_Count >= 8) readFROM_Count = 0;
-        FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
-        if(Identify_8split & (0x01<<readFROM_Count)){
+        if(readFROM_Count >= 8){
+            readFROM_Count = 0;
+            FROM_Read_adr = Roop_adr;
+            receiveEndJpegFlag = 0x00;
+        }
+        if((Identify_8split & (0x01<<readFROM_Count)) == (0x01<<readFROM_Count)){
             flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
             for(UINT i=0; i<MaxOfMemory; i++){
                 downlink(Buffer[i]);
-                if(receiveEndJpegFlag = 0x00 && Buffer[i] == FooterOfJPEG[0]){
+                if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[i] == FooterOfJPEG[0]){
                     receiveEndJpegFlag |= 0x01;
                 }
-                else if(receiveEndJpegFlag = 0x01 && Buffer[i] == FooterOfJPEG[1]){
+                else if((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[i] == FooterOfJPEG[1]){
                     receiveEndJpegFlag &= 0x00;
                     readFROM_Count ++;
+                    FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
                     //FIXME : debug
                     send_01();
                     sendChar((UBYTE)(FROM_Read_adr >> 16));
+                    sendChar((UBYTE)readFROM_Count);
                     send_01();
                     break;
                 }
@@ -88,7 +93,12 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             }
         }
         else{
+            send_01();
             readFROM_Count ++;
+            FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
+            sendChar((UBYTE)(FROM_Read_adr >> 16));
+            sendChar((UBYTE)readFROM_Count);
+            send_01();
         }
     }
     offAmp();

@@ -5,6 +5,6 @@
 
 #include "typedefine.h"
 
-void Downlink(UDWORD, UBYTE);
+void Downlink(UDWORD, UDWORD, UBYTE);
 
 #endif	/* DOWNLINK_H */

@@ -64,10 +64,10 @@ void main(void){
 
     while(1){
         //  BUSY HIGH
-        BUSY = 1;
+        BUSY = 0;
         delay_ms(3000);
         //  BUSY LOW
-        BUSY = 0;
+        BUSY = 1;
         delay_ms(1000);
     }
 }

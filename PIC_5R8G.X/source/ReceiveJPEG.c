@@ -55,7 +55,10 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
         }
         else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
         {
+            //XXX : FIXME : debug with OBC
+            //BUSY = 0;
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            //BUSY = 1;
             index_of_Buffer = 0;
             
             //  Jump to next group's first sector & change flag
@@ -74,9 +77,12 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             index_of_Buffer++;
         }
         if(index_of_Buffer == MaxOfMemory){
+            //XXX : FIXME : debug with OBC
+            //BUSY = 0;
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
+            //BUSY = 1;
         }
     }
     //  FIXME : for debug
@@ -129,7 +135,10 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr){
         }
         else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
         {
+            //XXX : FIXME : BUSY signal with OBC
+            BUSY = 0;
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            BUSY = 1;
             index_of_Buffer = 0;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
@@ -145,7 +154,10 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr){
             index_of_Buffer++;
         }
         if(index_of_Buffer == MaxOfMemory){
+            //XXX : FIXME : BUSY signal with OBC
+            BUSY = 0;
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            BUSY =1;
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
         }

@@ -1,6 +1,7 @@
 #include <xc.h>
 #include "InitMPU.h"
 #include "FROM.h"
+#include "UART.h"
 
 void Erase_sectors(UBYTE Sector_start_byte, UBYTE Amount_of_erase_sector){
    /* Comment
@@ -27,6 +28,8 @@ void Erase_sectors_before_Write(UDWORD tmp_adr_erase){
     * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
     * We erase 16 sectors from Roop_adr in this Code.
     */
+    //XXX BUSY signal during erase sectors
+    BUSY = 0;
     //  FIXME : this is hardcoding. 
     const UINT Amount_of_erase_sector = 16;
     for (UINT i=0; i<Amount_of_erase_sector; i++){
@@ -35,4 +38,5 @@ void Erase_sectors_before_Write(UDWORD tmp_adr_erase){
         CLRWDT();
         WDT_CLK =~WDT_CLK;
     }
+    BUSY = 1;
 }

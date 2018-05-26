@@ -58,7 +58,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00¬Å‚Ä∫¬Å‚Ä∫0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00¬Å‚?∫¬Å‚?∫0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x20000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
@@ -148,7 +148,7 @@ void main(void){
                 *  Make Change Roop_adr received from OBC
                 *  Add Command C:Change Roop_adr when some sectors of FROM are broken
                 *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-                *  Ground Station can choose only sector start address kind of 0x00¬Å‚Ä∫¬Å‚Ä∫0000
+                *  Ground Station can choose only sector start address kind of 0x00¬Å‚?∫¬Å‚?∫0000
                 */
                 switch(Command[2]){
                     case 'R':
@@ -173,6 +173,14 @@ void main(void){
                         __delay_ms(10);
                         sendChar(Jump_adr_check);
                         __delay_ms(10);
+                        break;
+                    case 'B':
+                        if((Command[3] != BAU_LOW ) &&
+                           (Command[3] != BAU_MIDDLE) &&
+                           (Command[3] != BAU_HIGH)){
+                            break;
+                        }
+                        change_downlink_baurate(Command[3]);
                         break;
                     default:
                         break;

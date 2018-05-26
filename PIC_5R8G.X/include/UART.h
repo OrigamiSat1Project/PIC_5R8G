@@ -11,6 +11,8 @@
 #define BAU_MIDDLE  0x1F		//57.6kbps
 #define BAU_HIGH	0x0F		//115.2kbps
 
+#define BAU_WITH_OBC BAU_LOW
+
 #define cam1		0x00
 #define cam2		0x01
 
@@ -59,6 +61,7 @@ typedef union{
 
 void onAmp(void);
 void offAmp(void);
+void change_downlink_baurate(UBYTE);
 
 //extern bank2 volatile CamDataBuf	Rbuf2;		//画像データ用バッファ
 //extern bank3 volatile CamDataBuf	Rbuf3;		//画像データ用バッファ

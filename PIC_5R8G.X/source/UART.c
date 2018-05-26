@@ -45,7 +45,7 @@ const UBYTE STR[] = {"ABCDEFGH\r\n"};
 //関数の宣言
 //static void		initbau(void);
 void            initbau(UBYTE);
-UBYTE    getUartData(void);
+UBYTE           getUartData(void);
 void            sendChar(UBYTE);
 void            send_01(void);
 void            send_OK(void);
@@ -61,8 +61,13 @@ static void		loadCamPack(UDWORD *);
 static UBYTE	mk_pn9(void);
 static void		set_pn9(void);
 
+//  TODO : this should be tested by simulator & debug
+static UBYTE BAU_WHEN_DOWNLINK = BAU_WITH_OBC;
+
 //  Switch on power of amplifier
-void onAmp(void){
+void onAmp(){
+    initbau(BAU_WHEN_DOWNLINK);
+    __delay_ms(10);
     CAMERA_POW = 0;
     CAMERA_SEL = 0;
     max2828_txon();
@@ -71,6 +76,8 @@ void onAmp(void){
 
 //  Switch off power of amplifier
 void offAmp(void){
+    initbau(BAU_WITH_OBC);
+    __delay_ms(10);
     CAMERA_POW = 1;
     CAMERA_SEL = 1;
     MAX2828_TXEN = 0;
@@ -347,6 +354,12 @@ void sendModData(UDWORD RAddr)
 //UARTの初期化
 void initbau(UBYTE bau)
 {
+    if((bau != BAU_LOW ) &&
+       (bau != BAU_MIDDLE) &&
+       (bau != BAU_HIGH))
+    {
+            bau = BAU_WITH_OBC;
+    }
 	/*ボーレート設定*/
 	BRGH    = Bit_High;		//ボーレート高速モード
 	BAUDCTL = 0x08;			//16倍速
@@ -838,4 +851,8 @@ void send_dummy_data(void){
         }
         clock_in_tst ++;
     }
+}
+
+void change_downlink_baurate(UBYTE bau){
+    BAU_WHEN_DOWNLINK = bau;
 }

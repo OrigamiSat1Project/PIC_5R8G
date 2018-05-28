@@ -3,6 +3,7 @@
 #include <stddef.h>
 
 #include "typedefine.h"
+#include "UART.h"
 #include "FROM.h"
 #include "time.h"
 
@@ -50,39 +51,39 @@ UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
 UBYTE flash_Deep_sleep(void);
 UBYTE flash_Wake_up(void);
 
-/* 書き込み可能 */
+/* Write Enable */
 UBYTE flash_Write_En(void)
 {
 	UBYTE				Ret;
 
 	FLASH_SET_CS(FLASH_LOW);								/* CS "L"							*/
-	delay_us(FLASH_T_CS_HOLD);								/* 1us ウェイト						*/
+	delay_us(FLASH_T_CS_HOLD);								/* 1us wait				*/
 
 	/* Writing enable command transmission */
 	Ret = flash_Cmd_WREN();
 
-	delay_us(FLASH_T_CS_HOLD);								/* 1us ウェイト						*/
+	delay_us(FLASH_T_CS_HOLD);								/* 1us wait             */
 	FLASH_SET_CS(FLASH_HI);									/* CS "H"							*/
 	return Ret;
 }
 
-/* 書き込み不可 */
+/* Write disable */
 static UBYTE flash_Write_Di(void)
 {
 	UBYTE				Ret;
 
 	FLASH_SET_CS(FLASH_LOW);								/* CS "L"							*/
-	delay_us(FLASH_T_CS_HOLD);								/* 1us ウェイト						*/
+	delay_us(FLASH_T_CS_HOLD);								/* 1us wait						*/
 
 	/* Writing disable command transmission */
 	Ret = flash_Cmd_WRDI();
 
-	delay_us(FLASH_T_CS_HOLD);								/* 1us ウェイト						*/
+	delay_us(FLASH_T_CS_HOLD);								/* 1us wait						*/
 	FLASH_SET_CS(FLASH_HI);									/* CS "H"							*/
 	return Ret;
 }
 
-/* Busy のためprocess完了待機 */
+/*Waiting for BUSY process*/
 static UBYTE flash_Wait_Busy(UWORD BusyTime, UWORD BusyCnt)
 {
 	UBYTE				RxBuf;								/* Receive temp buffer				*/
@@ -127,7 +128,7 @@ static UBYTE flash_Wait_Busy(UWORD BusyTime, UWORD BusyCnt)
 	return FLASH_ERR;
 }
 
-/* エンディアンの変換関数 */
+/* 繧ｨ繝ｳ繝?繧｣繧｢繝ｳ縺ｮ螟画鋤髢｢謨ｰ */
 void flash_ExchgLong(UDWORD ChgData)
 {
 	EXCHG_LONG Tmp;
@@ -148,7 +149,7 @@ void flash_ExchgLong(UDWORD ChgData)
 #endif	/* #ifdef MTL_MCU_LITTLE */
 }
 
-/* SPI送信関数 */
+/* SPI騾∽ｿ｡髢｢謨ｰ */
 UBYTE flash_SPI_DataOut(UWORD TxCnt, UBYTE * pData)
 {
 	UWORD				TxWait;								/* Transmission waiting counter			*/
@@ -157,9 +158,9 @@ UBYTE flash_SPI_DataOut(UWORD TxCnt, UBYTE * pData)
 	TxWait = FLASH_SPI_TX_WAIT;
 	for (; TxCnt != 0; TxCnt--)								/* Loop for transmission byte			*/
 	{							
-		FLASH_SPI_BUF = *pData;								/* 送信データをセット						*/
+		FLASH_SPI_BUF = *pData;								/* 騾∽ｿ｡繝?繝ｼ繧ｿ繧偵そ繝?繝?						*/
 
-		while (FLASH_SPI_IF == FLASH_LOW)					/* 送信完了フラグ待ち						*/
+		while (FLASH_SPI_IF == FLASH_LOW)					/* 騾∽ｿ｡螳御ｺ?繝輔Λ繧ｰ蠕?縺｡						*/
 		{
 			TxWait--;
 			if (TxWait == 0)								/* Transmission waiting time over		*/
@@ -168,17 +169,17 @@ UBYTE flash_SPI_DataOut(UWORD TxCnt, UBYTE * pData)
 			}
 			delay_us(FLASH_T_UART_WAIT);
 		}
-		FLASH_SPI_IF = FLASH_LOW;									/* 送信完了フラグ消去						*/
+		FLASH_SPI_IF = FLASH_LOW;									/* 騾∽ｿ｡螳御ｺ?繝輔Λ繧ｰ豸亥悉						*/
 
-		while (FLASH_SPI_BF == FLASH_LOW);							/* 受信完了フラグ待ち						*/
-		Rxbuf = FLASH_SPI_BUF;									/* 受信データの空読み						*/
+		while (FLASH_SPI_BF == FLASH_LOW);							/* 蜿嶺ｿ｡螳御ｺ?繝輔Λ繧ｰ蠕?縺｡						*/
+		Rxbuf = FLASH_SPI_BUF;									/* 蜿嶺ｿ｡繝?繝ｼ繧ｿ縺ｮ遨ｺ隱ｭ縺ｿ						*/
 
 		pData++;
 	}
 	return FLASH_OK;
 }
 
-/* コマンド送信関数 */
+/* 繧ｳ繝槭Φ繝蛾?∽ｿ｡髢｢謨ｰ */
 UBYTE flash_Send_Cmd(UBYTE Cmd, UDWORD Arg, UBYTE CmdSize)
 {
 	/* The specified command is stored in the buffer */
@@ -203,7 +204,7 @@ UBYTE flash_Write_Page(UDWORD WAddr, UWORD WCnt, UBYTE * pData)
 	}
 
 	FLASH_SET_CS(FLASH_LOW);							/* CS "L"								*/
-	delay_us(FLASH_T_CS_HOLD);							/* 1us ウェイト							*/
+	delay_us(FLASH_T_CS_HOLD);							/* 1us 繧ｦ繧ｧ繧､繝?							*/
 
 	/* Write command transmission */
 	Ret = flash_Cmd_WRITE(WAddr);
@@ -221,7 +222,7 @@ UBYTE flash_Write_Page(UDWORD WAddr, UWORD WCnt, UBYTE * pData)
 		return Ret;
 	}
 
-	delay_us(FLASH_T_CS_HOLD);							/* 1us ウェイト							*/
+	delay_us(FLASH_T_CS_HOLD);							/* 1us 繧ｦ繧ｧ繧､繝?							*/
 	FLASH_SET_CS(FLASH_HI);								/* CS "H"								*/
 
 	/* Write busy completion waiting */
@@ -233,6 +234,8 @@ UBYTE flash_Write_Page(UDWORD WAddr, UWORD WCnt, UBYTE * pData)
 /* Data write processing */
 UBYTE flash_Write_Data(UDWORD WAddr, UDWORD WCnt, UBYTE * pData)
 {
+	// SW BUSY to High during FROM writing
+    BUSY = 0;
 	UDWORD				EndWAddr;						/* Writing end address					*/
 	UDWORD				WPagCnt;						/* Writing page count					*/
 	UDWORD				WByteCnt;						/* 1page writing byte count				*/
@@ -312,11 +315,11 @@ UBYTE flash_Write_Data(UDWORD WAddr, UDWORD WCnt, UBYTE * pData)
 			return Ret;
 		}
 	}
-
+    BUSY = 1;
 	return FLASH_OK;
 }
 
-/* SPI受信関数 */
+/* SPI蜿嶺ｿ｡髢｢謨ｰ */
 static UBYTE flash_SPI_Rx(UWORD RxCnt, UBYTE * pData)
 {
 	UWORD				RxWait;								/* Receive waiting counter				*/
@@ -326,7 +329,7 @@ static UBYTE flash_SPI_Rx(UWORD RxCnt, UBYTE * pData)
 	{
 		/* Receive dummy data -> Transmission buffer register */
 		FLASH_SPI_BUF = FLASH_DUMMY_DATA;					/* Receive dummy data setting			*/
-		/* 受信完了しているかチェック */
+		/* 蜿嶺ｿ｡螳御ｺ?縺励※縺?繧九°繝√ぉ繝?繧ｯ */
 		while (FLASH_SPI_BF == FLASH_LOW)							/* Loop for receive completion			*/
 		{
 			RxWait--;
@@ -339,7 +342,7 @@ static UBYTE flash_SPI_Rx(UWORD RxCnt, UBYTE * pData)
 		*pData = (UBYTE)FLASH_SPI_BUF;						/* Receive data storage					*/
 		pData++;
 
-		if(FLASH_SPI_IF == FLASH_HI)								/* 割り込みフラグ消去					*/
+		if(FLASH_SPI_IF == FLASH_HI)								/* 蜑ｲ繧願ｾｼ縺ｿ繝輔Λ繧ｰ豸亥悉					*/
 		{
 			FLASH_SPI_IF = FLASH_LOW;
 		}
@@ -407,6 +410,8 @@ UBYTE flash_Erase(UDWORD EAddr, UBYTE Etype)
 	UBYTE				StsReg;								/* Status buffer						*/
 #endif	/* #ifdef FLASH_WEL_CHK */
 	UBYTE				Ret;
+    // SW BUSY to High during FROM writing
+    //BUSY = 0;
 
 	/* Writing enable(WEL set) */
 	Ret = flash_Write_En();
@@ -452,6 +457,8 @@ UBYTE flash_Erase(UDWORD EAddr, UBYTE Etype)
 	{
 		return Ret;
 	}
+    
+    //BUSY = 1;
 
 	return FLASH_OK;
 }
@@ -597,12 +604,12 @@ UBYTE flash_Deep_sleep(void)
 //	UBYTE				Ret;
 //
 //	FLASH_SET_CS(FLASH_LOW);								//* CS "L"
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
+//	delay_us(FLASH_T_CS_HOLD);								//* 1us 繧ｦ繧ｧ繧､繝?
 //
 //	//* change to Deep sleep mode
 //	Ret = flash_Cmd_DP();
 //
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
+//	delay_us(FLASH_T_CS_HOLD);								//* 1us 繧ｦ繧ｧ繧､繝?
 //	FLASH_SET_CS(FLASH_HI);									//* CS "H"
 //	return Ret;    
 }
@@ -614,12 +621,12 @@ UBYTE flash_Wake_up(void)
 //	UBYTE				Ret;
 //
 //	FLASH_SET_CS(FLASH_LOW);								//* CS "L"
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
+//	delay_us(FLASH_T_CS_HOLD);								//* 1us 繧ｦ繧ｧ繧､繝?
 //
 //	//* Release Deep sleep
 //	Ret = flash_Cmd_RES();
 //
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイト
+//	delay_us(FLASH_T_CS_HOLD);								//* 1us 繧ｦ繧ｧ繧､繝?
 //	FLASH_SET_CS(FLASH_HI);									//* CS "H"
 //	return Ret;    
 }

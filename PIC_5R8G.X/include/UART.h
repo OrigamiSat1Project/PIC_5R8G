@@ -33,19 +33,6 @@
 
 //static UBYTE getUartData(void);
 
-//ä÷êîÇÃêÈåæ
-/* */
-void setupCam(UBYTE);
-//void getPicture(void);
-void getPicSize(void);
-void getPicData(void);
-UBYTE CheckSendPort(void);
-void savePicData(void);
-UBYTE savePicSize(void);
-void sendModData(UDWORD);
-void send_pn9(void);
-void send_55(void);
-
 void send_tst_str(void);
 void initbau(UBYTE);
 void sendChar(UBYTE);

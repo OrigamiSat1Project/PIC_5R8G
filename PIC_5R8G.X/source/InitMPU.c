@@ -1,4 +1,4 @@
-/*** マイコンのIOポート設定 ***/
+/*** 繝槭う繧ｳ繝ｳ縺ｮIO繝昴?ｼ繝郁ｨｭ螳? ***/
 
 #include <xc.h>
 #include "InitMPU.h"
@@ -7,34 +7,34 @@
 #include "time.h"
 #include "FROM.h"
 
-/*** マイコン初期化処理 ***/
+/*** 繝槭う繧ｳ繝ｳ蛻晄悄蛹門?ｦ逅? ***/
 void init_mpu(void)
 {
-	//ポートの初期化
+	//繝昴?ｼ繝医?ｮ蛻晄悄蛹?
 	PORTA = 0x00;
 	PORTB = 0x00;
 	PORTC = 0x00;	
 	
-	//AD設定（全てデジタル入力）
-	ANSEL  = 0x00;	//AD設定
-	ANSELH = 0x00;	//AD設定
+	//AD險ｭ螳夲ｼ亥?ｨ縺ｦ繝?繧ｸ繧ｿ繝ｫ蜈･蜉幢ｼ?
+	ANSEL  = 0x00;	//AD險ｭ螳?
+	ANSELH = 0x00;	//AD險ｭ螳?
 	
-	//ポート入出力設定	
-	TRISA  = 0xC0;	//入出力設定
-	TRISB  = 0x2B;	//入出力設定
-    TRISC  = 0x84;	//入出力設定
+	//繝昴?ｼ繝亥?･蜃ｺ蜉幄ｨｭ螳?	
+	TRISA  = 0xC0;	//蜈･蜃ｺ蜉幄ｨｭ螳?
+	TRISB  = 0x2B;	//蜈･蜃ｺ蜉幄ｨｭ螳?
+    	TRISC  = 0x84;	//蜈･蜃ｺ蜉幄ｨｭ螳?
 	
-	//ポート初期値設定		
-	PORTA  = 0x21;	//初期値設定
-	PORTB  = 0x94;	//初期値設定
-	PORTC  = 0x41;	//初期値設定
+	//繝昴?ｼ繝亥?晄悄蛟､險ｭ螳?		
+	PORTA  = 0x21;	//蛻晄悄蛟､險ｭ螳?
+	PORTB  = 0x94;	//蛻晄悄蛟､險ｭ螳?
+	PORTC  = 0x41;	//蛻晄悄蛟､險ｭ螳?
 }
 
 void init_module(void){
     init_mpu();
-    //initbau(BAU_HIGH);                //115200bps
+    initbau(BAU_HIGH);                //115200bps
     //initbau(BAU_MIDDLE);              //57600bps
-    initbau(BAU_LOW);                   //14400bps
+    //initbau(BAU_LOW);                   //14400bps
     MAX2828_EN = 1;                     //MAX2828 ON
     __delay_us(100);                    //100us wait
     FLASH_SPI_EI();                     //enable SPI

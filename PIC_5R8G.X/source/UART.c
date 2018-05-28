@@ -11,38 +11,20 @@
 #include "InitMPU.h"
 
 
-//•Ï”‚ÌéŒ¾
-static UBYTE send_buf[6];	//‘—M—pƒoƒbƒtƒ@
-static UBYTE rData[12];		//óM—pƒoƒbƒtƒ@
-static USLONG dlength;		//ƒf[ƒ^’·
+//ï¿½Ïï¿½ï¿½ÌéŒ¾
+static UBYTE send_buf[6];	//ï¿½ï¿½ï¿½Mï¿½pï¿½oï¿½bï¿½tï¿½@
+static UBYTE rData[12];		//ï¿½ï¿½ï¿½Mï¿½pï¿½oï¿½bï¿½tï¿½@
+static USLONG dlength;		//ï¿½fï¿½[ï¿½^ï¿½ï¿½
 
-extern UDWORD               g_data_adr;	//FROMã‚ÌƒAƒhƒŒƒX(ƒf[ƒ^—p)
+extern UDWORD               g_data_adr;	//FROMï¿½ï¿½ï¿½ÌƒAï¿½hï¿½ï¿½ï¿½X(ï¿½fï¿½[ï¿½^ï¿½p)
 
-static bank2 volatile CamDataBuf	Rbuf2;	//‰æ‘œƒf[ƒ^—pƒoƒbƒtƒ@
-static bank3 volatile CamDataBuf	Rbuf3;	//‰æ‘œƒf[ƒ^—pƒoƒbƒtƒ@
+//static bank2 volatile CamDataBuf	Rbuf2;	//ï¿½æ‘œï¿½fï¿½[ï¿½^ï¿½pï¿½oï¿½bï¿½tï¿½@
+//static bank3 volatile CamDataBuf	Rbuf3;	//ï¿½æ‘œï¿½fï¿½[ï¿½^ï¿½pï¿½oï¿½bï¿½tï¿½@
 
-//’è”‚ÌéŒ¾
-const UBYTE syncWord[6]   = {0xAA,0x0D,0x00,0x00,0x00,0x00};
-const UBYTE ACK0[6]       = {0xAA,0x0E,0x00,0x00,0x00,0x00};
-const UBYTE AckEnd[6]     = {0xAA,0x0E,0x00,0x00,0xF0,0xF0};
-const UBYTE InitCam[6]    = {0xAA,0x01,0x04,0x07,0x00,0x07};
-const UBYTE changeSize[6] = {0xAA,0x06,0x08,0x80,0x00,0x00};	//1ƒpƒPƒbƒg=128ƒoƒCƒg
-const UBYTE SnapShot[6]   = {0xAA,0x05,0x00,0x00,0x00,0x00};
-const UBYTE GetPicCom[6]  = {0xAA,0x04,0x01,0x00,0x00,0x00};
-
-const UBYTE PRBS9[64] =	   {0x21, 0x86, 0x9c, 0x6a, 0xd8, 0xcb, 0x4e, 0x14,
-							0x6a, 0xf9, 0x4d, 0xd2, 0x7e, 0xb2, 0x32, 0x03,
-							0xc6, 0x14, 0x4b, 0x7f, 0xd1, 0xb8, 0xa6, 0x79,
-							0x7c, 0x17, 0xac, 0xed, 0x06, 0xad, 0xaf, 0x0a,
-							0x94, 0x7a, 0xba, 0x03, 0xe7, 0x92, 0xd7, 0x15,
-							0x09, 0x73, 0xe8, 0x6d, 0x16, 0xee, 0xe1, 0x3f,
-							0x78, 0x1f, 0x9d, 0x09, 0x52, 0x6e, 0xf1, 0x7c,
-							0x36, 0x2a, 0x71, 0x6c, 0x75, 0x64, 0x44, 0x80
-};
 
 const UBYTE STR[] = {"ABCDEFGH\r\n"};
 
-//ŠÖ”‚ÌéŒ¾
+//ï¿½Öï¿½ï¿½ÌéŒ¾
 //static void		initbau(void);
 void            initbau(UBYTE);
 UBYTE           getUartData(void);
@@ -51,16 +33,6 @@ void            send_01(void);
 void            send_AB(void);
 void            send_OK(void);
 void            send_NG(void);
-static void		syncCam(void);
-static void		sendCom(const UBYTE *);
-static void		changePackageSize(void);
-static void		snap(void);
-static USLONG	sendGetPicCom(void);
-static void		sendAckID(UBYTE *);
-static void		saveCamPack(UDWORD *);
-static void		loadCamPack(UDWORD *);
-static UBYTE	mk_pn9(void);
-static void		set_pn9(void);
 
 //  TODO : this should be tested by simulator & debug
 static UBYTE BAU_WHEN_DOWNLINK = BAU_WITH_OBC;
@@ -87,273 +59,127 @@ void offAmp(void){
 
 }
 
-//*** SENDƒ|[ƒg‚Ìƒ`ƒFƒbƒN ***
-//UBYTE return 0F–¢ŒŸo@A1FŒŸo
-UBYTE CheckSendPort(void)
-{
-	static UBYTE	cha = (UBYTE)0;
-
-	if(SEND == 0)
-	{
-		if(cha < 30)
-		{
-			cha++;
-			return 0;
-		}
-		else if(cha >= 30)
-		{
-			cha = 0;
-			return 1;
-		}
-	}
-	cha = 0;
-	return 0;
-}
-
-////ƒJƒƒ‰‚ÌƒZƒbƒgƒAƒbƒv
-//void setupCam(UBYTE cam)
+////ï¿½æ‘œï¿½fï¿½[ï¿½^ï¿½Û‘ï¿½
+//void savePicData(void)
 //{
-//	//ƒJƒƒ‰‚Ì‘I‘ğ
-//	if(cam)
+//	UBYTE idCount1 = 0;			//ï¿½pï¿½bï¿½Pï¿½[ï¿½WID(LSB)
+//	UBYTE idCount2 = 0;			//ï¿½pï¿½bï¿½Pï¿½[ï¿½WID(MSB)
+//	UWORD i = 0;
+////	UBYTE Ret;
+//	UDWORD w_adr;
+//
+//	w_adr = g_data_adr;
+//	//ACK0ï¿½ğ‘—Mï¿½oï¿½bï¿½tï¿½@ï¿½Éƒï¿½ï¿½[ï¿½h
+//	for(i=0;i<6;i++)
 //	{
-//		CAMERA_SEL = Bit_Low;		//ƒJƒƒ‰2‚ğ‘I‘ğ
+//		send_buf[i] = ACK0[i];
+//	}
+//
+//	while(dlength > 122)
+//	{
+//		//IDï¿½Jï¿½Eï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Z
+//		send_buf[4] = idCount1;
+//		send_buf[5] = idCount2;
+//
+//		sendAckID(send_buf);		//ACK(ï¿½fï¿½[ï¿½^ï¿½æ“¾ID)ï¿½ï¿½ï¿½M
+//
+//		//ï¿½æ‘œï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½M
+//		for(i=0;i<64;i++)
+//		{
+//			Rbuf2.Data[i] = getUartData();
+//		}
+//
+//		for(i=0;i<64;i++)
+//		{
+//			Rbuf3.Data[i] = getUartData();
+//		}
+//
+//		saveCamPack(&w_adr);
+//
+//		dlength -= 122;
+//
+//		//ï¿½Cï¿½ï¿½ï¿½[ï¿½Wï¿½fï¿½[ï¿½^IDï¿½Ì‰ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½
+//		if(idCount1 == 0xFF)	//ï¿½pï¿½bï¿½Pï¿½[ï¿½WIDï¿½ï¿½LSBï¿½ï¿½FFï¿½È‚çŒ…ï¿½ã‚ªï¿½ï¿½
+//		{
+//			idCount1 = 0;
+//			idCount2++;
+//		}
+//		else
+//		{
+//			idCount1++;
+//		}
+//	}
+//
+//	/***ï¿½ÅIï¿½pï¿½bï¿½Pï¿½[ï¿½Wï¿½Ìï¿½ï¿½ï¿½***/
+//	if(dlength != 0)
+//	{
+//		//IDï¿½Jï¿½Eï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Z
+//		send_buf[4] = idCount1;
+//		send_buf[5] = idCount2;
+//
+//		sendAckID(send_buf);		//ACK(ï¿½fï¿½[ï¿½^ï¿½æ“¾ID)ï¿½ï¿½ï¿½M
+//
+//		if(dlength > 58)
+//		{
+//			for(i=0;i<64;i++)
+//			{
+//				Rbuf2.Data[i] = getUartData();
+//			}
+//			dlength = dlength - 60;
+//
+//			for(i=0;i<(dlength+2);i++)
+//			{
+//				Rbuf3.Data[i] = getUartData();
+//			}
+//
+//			for(i=(dlength+2);i<64;i++)
+//			{
+//				Rbuf3.Data[i] = 0xFF;
+//			}
+//			saveCamPack(&w_adr);
+//		}
+//		else if(dlength == 58)
+//		{
+//			for(i=0;i<64;i++)
+//			{
+//				Rbuf2.Data[i] = getUartData();
+//			}
+//
+//			for(i=0;i<64;i++)
+//			{
+//				Rbuf3.Data[i] = 0xFF;
+//			}
+//
+//			saveCamPack(&w_adr);
+//		}
+//		else
+//		{
+//			for(i=0;i<(dlength+6);i++)
+//			{
+//				Rbuf2.Data[i] = getUartData();
+//			}
+//			for(i=(dlength+6);i<64;i++)
+//			{
+//				Rbuf2.Data[i] = 0xFF;
+//			}
+//
+//			for(i=0;i<64;i++)
+//			{
+//				Rbuf3.Data[i] = 0xFF;
+//			}
+//
+//			saveCamPack(&w_adr);
+//		}
+//
+//		sendCom(AckEnd);
 //	}
 //	else
 //	{
-//		CAMERA_SEL = Bit_High;		//ƒJƒƒ‰1‚ğ‘I‘ğ
+//		sendCom(AckEnd);
 //	}
-//
-//	CAMERA_POW = Bit_High;			//ƒJƒƒ‰“dŒ¹ON
-//
-//	initbau(BAU_LOW);				//MPU UART‰Šúİ’è
-//	__delay_ms(1000);				//1sƒEƒFƒCƒg
-//	syncCam();						//ƒJƒƒ‰‚Æ‚Ì“¯Šú
-//
-//	BAULATE = BAU_HIGH;				//MPU‚Ìƒ{[ƒŒ[ƒg‚ğ115.2kbps‚É•ÏX
-//
-//	changePackageSize();			//ƒpƒbƒP[ƒWƒTƒCƒY‚ğ128BYTE‚Éİ’è
 //}
 
-//‰æ‘œƒf[ƒ^ƒTƒCƒY‚Ìæ“¾
-void getPicSize(void)
-{
-	snap();							//B‰e
-	dlength = sendGetPicCom();		//ƒf[ƒ^’·‚Ìæ“¾
-}
-
-//‰æ‘œƒf[ƒ^ƒTƒCƒY‚Ì•Û‘¶
-UBYTE savePicSize(void)
-{
-	EXCHG_LONG len;
-	EXCHG_LONG tmp;
-	UBYTE i = 0;
-	UBYTE j = 3;
-	UBYTE Ret;
-
-	len.us = (UDWORD)dlength;
-	for(i=0;i<4;i++)
-	{
-		tmp.uc[j] = len.uc[i];
-		j--;
-	}
-	Ret = flash_Write_Page(0UL,(UWORD)4,tmp.uc);
-	return Ret;
-}
-
-//‰æ‘œƒf[ƒ^•Û‘¶
-void savePicData(void)
-{
-	UBYTE idCount1 = 0;			//ƒpƒbƒP[ƒWID(LSB)
-	UBYTE idCount2 = 0;			//ƒpƒbƒP[ƒWID(MSB)
-	UWORD i = 0;
-//	UBYTE Ret;
-	UDWORD w_adr;
-
-	w_adr = g_data_adr;
-	//ACK0‚ğ‘—Mƒoƒbƒtƒ@‚Éƒ[ƒh
-	for(i=0;i<6;i++)
-	{
-		send_buf[i] = ACK0[i];
-	}
-
-	while(dlength > 122)
-	{
-		//IDƒJƒEƒ“ƒg‰ÁZ
-		send_buf[4] = idCount1;
-		send_buf[5] = idCount2;
-
-		sendAckID(send_buf);		//ACK(ƒf[ƒ^æ“¾ID)‘—M
-
-		//‰æ‘œƒf[ƒ^óM
-		for(i=0;i<64;i++)
-		{
-			Rbuf2.Data[i] = getUartData();
-		}
-
-		for(i=0;i<64;i++)
-		{
-			Rbuf3.Data[i] = getUartData();
-		}
-
-		saveCamPack(&w_adr);
-
-		dlength -= 122;
-
-		//ƒCƒ[ƒWƒf[ƒ^ID‚Ì‰ÁZˆ—
-		if(idCount1 == 0xFF)	//ƒpƒbƒP[ƒWID‚ÌLSB‚ªFF‚È‚çŒ…ã‚ª‚è
-		{
-			idCount1 = 0;
-			idCount2++;
-		}
-		else
-		{
-			idCount1++;
-		}
-	}
-
-	/***ÅIƒpƒbƒP[ƒW‚Ìˆ—***/
-	if(dlength != 0)
-	{
-		//IDƒJƒEƒ“ƒg‰ÁZ
-		send_buf[4] = idCount1;
-		send_buf[5] = idCount2;
-
-		sendAckID(send_buf);		//ACK(ƒf[ƒ^æ“¾ID)‘—M
-
-		if(dlength > 58)
-		{
-			for(i=0;i<64;i++)
-			{
-				Rbuf2.Data[i] = getUartData();
-			}
-			dlength = dlength - 60;
-
-			for(i=0;i<(dlength+2);i++)
-			{
-				Rbuf3.Data[i] = getUartData();
-			}
-
-			for(i=(dlength+2);i<64;i++)
-			{
-				Rbuf3.Data[i] = 0xFF;
-			}
-			saveCamPack(&w_adr);
-		}
-		else if(dlength == 58)
-		{
-			for(i=0;i<64;i++)
-			{
-				Rbuf2.Data[i] = getUartData();
-			}
-
-			for(i=0;i<64;i++)
-			{
-				Rbuf3.Data[i] = 0xFF;
-			}
-
-			saveCamPack(&w_adr);
-		}
-		else
-		{
-			for(i=0;i<(dlength+6);i++)
-			{
-				Rbuf2.Data[i] = getUartData();
-			}
-			for(i=(dlength+6);i<64;i++)
-			{
-				Rbuf2.Data[i] = 0xFF;
-			}
-
-			for(i=0;i<64;i++)
-			{
-				Rbuf3.Data[i] = 0xFF;
-			}
-
-			saveCamPack(&w_adr);
-		}
-
-		sendCom(AckEnd);
-	}
-	else
-	{
-		sendCom(AckEnd);
-	}
-}
-
-/* •Ï’²ƒf[ƒ^‘—M */
-void sendModData(UDWORD RAddr)
-{
-	UBYTE 		Ret;
-	UBYTE		i;
-	UBYTE		j;
-	EXCHG_LONG	len;
-	EXCHG_LONG	tmp;
-
-	initbau(BAU_HIGH);								//UART‚Ì‰Šú‰»
-//	BAULATE = BAU_HIGH;						//115.2kbps‚Éİ’è
-	CREN = Bit_Low;							//óM‹Ö~
-
-	//ƒf[ƒ^’·æ“¾
-	Ret = flash_Read_Data(0UL,4,len.uc);	//ƒf[ƒ^’·‚ğFROM‚©‚ç“Ç‚İo‚µ
-	j = 3;
-	for(i=0;i<4;i++)						//ƒGƒ“ƒfƒBƒAƒ“‚Ì•ÏŠ·
-	{
-		tmp.uc[i] = len.uc[j];
-		j--;
-	}
-	dlength = (USLONG)tmp.us;
-
-	Mod_SW = Bit_Low;						//•Ï’²ON
-	max2828_txon();
-	PA_SW  = Bit_High;
-
-	delay_ms(1);
-
-	//•Ï’²ƒf[ƒ^æ“¾E‘—M
-	while(dlength > 122)
-	{
-		loadCamPack(&RAddr);				//‰æ‘œƒf[ƒ^‚ğFROM‚©‚çƒoƒbƒtƒ@‚É“Ç‚İo‚µ
-
-		//ƒoƒbƒtƒ@“à‚Ìƒf[ƒ^‚ğUART‘—M
-		for(i=0;i<64;i++)
-		{
-			sendChar(Rbuf2.Data[i]);
-		}
-		for(i=0;i<64;i++)
-		{
-			sendChar(Rbuf3.Data[i]);
-		}
-		dlength -= 122;
-	}
-	//ÅIƒpƒPƒbƒg‚Ì‘—M
-	loadCamPack(&RAddr);
-	for(i=0;i<64;i++)
-	{
-		sendChar(Rbuf2.Data[i]);
-	}
-	for(i=0;i<64;i++)
-	{
-		sendChar(Rbuf3.Data[i]);
-	}
-
-	PA_SW = Bit_Low;
-	MAX2828_TXEN = Bit_Low;
-	Mod_SW = Bit_High;						//•Ï’²OFF
-}
-
-//UART‚Ì‰Šú‰»
-//static void initbau(void)
-//{
-//	/*ƒ{[ƒŒ[ƒgİ’è*/
-//	BRGH    = Bit_High;		//ƒ{[ƒŒ[ƒg‚‘¬ƒ‚[ƒh
-//	BAUDCTL = 0x08;			//16”{‘¬
-//	BAULATE = BAU_LOW;		//14.4kbps
-//	SPEN    = Bit_High;		//ƒVƒŠƒAƒ‹ƒ|[ƒgİ’è
-//	TXEN    = Bit_High;		//‘—M‹–‰Â
-//	CREN    = Bit_High;		//óM‹–‰Â
-//}
-
-//UART‚Ì‰Šú‰»
+//UARTï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½
 void initbau(UBYTE bau)
 {
     if((bau != BAU_LOW ) &&
@@ -362,358 +188,25 @@ void initbau(UBYTE bau)
     {
             bau = BAU_WITH_OBC;
     }
-	/*ƒ{[ƒŒ[ƒgİ’è*/
-	BRGH    = Bit_High;		//ƒ{[ƒŒ[ƒg‚‘¬ƒ‚[ƒh
-	BAUDCTL = 0x08;			//16”{‘¬
+	/*ï¿½{ï¿½[ï¿½ï¿½ï¿½[ï¿½gï¿½İ’ï¿½*/
+	BRGH    = Bit_High;		//ï¿½{ï¿½[ï¿½ï¿½ï¿½[ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½h
+	BAUDCTL = 0x08;			//16ï¿½{ï¿½ï¿½
 	BAULATE = bau;
-	SPEN    = Bit_High;		//ƒVƒŠƒAƒ‹ƒ|[ƒgİ’è
+	SPEN    = Bit_High;		//ï¿½Vï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½|ï¿½[ï¿½gï¿½İ’ï¿½
 }
 
-//ƒpƒbƒP[ƒWƒTƒCƒY•ÏXŠÖ”
-static void changePackageSize(void)
-{
-	UBYTE i = 0;
-
-	sendCom(changeSize);	//ƒpƒbƒP[ƒWƒTƒCƒY‚ğ128BYTE‚É•ÏX
-
-	//ACK‚Ì‹ó“Ç‚İ
-	for(i=0;i<6;i++)
-	{
-		rData[i] = getUartData();
-	}
-}
-
-//B‰eƒRƒ}ƒ“ƒh‘—M
-static void snap(void)
-{
-	UBYTE i = 0;
-
-	sendCom(SnapShot);	//ƒpƒbƒP[ƒWƒTƒCƒY‚ğ128BYTE‚É•ÏX
-
-	//Ack‚Ì‹ó“Ç‚İ
-	for(i=0;i<6;i++)
-	{
-		rData[i] = getUartData();
-	}
-}
-
-//ƒf[ƒ^’·æ“¾
-static USLONG sendGetPicCom(void)
-{
-	UBYTE i = 0;
-
-	sendCom(GetPicCom);	//Jpegˆ³kƒRƒ}ƒ“ƒh‘—M
-
-	for(i=0;i<12;i++)
-	{
-		rData[i] = getUartData();
-	}
-
-	return ((USLONG)rData[11]<<16)+((USLONG)rData[10]<<8)+(USLONG)rData[9];	//ƒf[ƒ^’·‚ÌŒvZ
-}
-
-//ƒJƒƒ‰“¯ŠúŠÖ”
-static void syncCam(void)
-{
-	UBYTE i = 0;
-	UBYTE j = 0;
-
-	for(i = 0;i < 60;i++)
-	{
-		if(RCIF)	//óMƒoƒbƒtƒ@‚Éƒf[ƒ^‚ª‚ ‚é‚Æ‚«
-		{
-			for(j = 0;j < 12;j ++)
-			{
-				rData[j] = getUartData();
-			}
-			j = 0;
-
-			sendCom(ACK0);		//ACK0‘—M
-			delay_ms(1);
-
-			sendCom(InitCam);	//ƒJƒƒ‰İ’è(115.2kbps,VGA)
-			delay_ms(1);
-
-			//ACK‚Ì‹ó“Ç‚İ
-			for(j = 0;j < 6;j++)
-			{
-				rData[j] = getUartData();
-			}
-
-			delay_ms(50);		//50msƒEƒFƒCƒg
-
-			return;
-		}
-		else
-		{
-			sendCom(syncWord);	//“¯Šúƒ[ƒh‘—M
-			delay_ms(1);
-		}
-	}
-}
-
-//1BYTEóMŠÖ”
-static UBYTE getUartData(void)
-{
-	UBYTE rbuf;
-	while(RCIF != 1);	//óMŠ„‚İ‘Ò‚¿
-	if(FERR == 1)		//ƒtƒŒ[ƒ~ƒ“ƒOƒGƒ‰[ˆ—
-	{
-		rbuf = RCREG;
-		return '?';
-	}
-	else if(OERR == 1)	//ƒI[ƒo[ƒ‰ƒ“ƒGƒ‰[ˆ—
-	{
-		CREN = 0;
-		CREN = 1;
-		return '?';
-	}
-	return RCREG;
-}
-
-//1Byte‘—MŠÖ”
+//1Byteï¿½ï¿½ï¿½Mï¿½Öï¿½
 void sendChar(UBYTE c)
 {
 	while(TXIF != 1);
 	TXREG = c;
 }
 
-//ƒJƒƒ‰ƒRƒ}ƒ“ƒh‘—MŠÖ”
-static void sendCom(const UBYTE *com)
-{
-	UBYTE i = 0;
-
-	for(i = 0;i < 6;i++)
-	{
-		sendChar(com[i]);
-	}
-	while(!TRMT);	//111125 ‘—MI—¹‚Ü‚Åwait
-}
-
-//ƒf[ƒ^æ“¾—pACK‘—M
-static void sendAckID(UBYTE *id)
-{
-	UBYTE i = 0;
-
-	for(i = 0;i < 6;i++)
-	{
-		sendChar(id[i]);
-	}
-	while(!TRMT);
-}
-
-/* 1ƒpƒPƒbƒg•ª‚Ìƒf[ƒ^save */
-static void saveCamPack(UDWORD * WAddr)
-{
-	UBYTE Ret;
-
-	Ret = flash_Write_Page((UDWORD)*WAddr,(UWORD)64,(UBYTE *)Rbuf2.Data);
-	*WAddr += (UDWORD)64;
-	Ret = flash_Write_Page((UDWORD)*WAddr,(UWORD)64,(UBYTE *)Rbuf3.Data);
-	*WAddr += (UDWORD)64;
-}
-
-/* 1ƒpƒPƒbƒg•ª‚Ìƒf[ƒ^load */
-static void loadCamPack(UDWORD * RAddr)
-{
-	UBYTE Ret;
-
-	Ret = flash_Read_Data((UDWORD)*RAddr,64UL,(UBYTE *)Rbuf2.Data);
-	*RAddr += 64UL;
-	Ret = flash_Read_Data((UDWORD)*RAddr,64UL,(UBYTE *)Rbuf3.Data);
-	*RAddr += 64UL;
-}
-
-/*-----------------------------------------------------------------------*/
-
-//‰æ‘œƒf[ƒ^æ“¾(’¼Ú•Ï’²—p)
-void getPicData(void)
-{
-	UBYTE idCount1 = 0;			//ƒpƒbƒP[ƒWID(LSB)
-	UBYTE idCount2 = 0;			//ƒpƒbƒP[ƒWID(MSB)
-	UWORD i = 0;
-
-	//ACK0‚ğ‘—Mƒoƒbƒtƒ@‚Éƒ[ƒh
-	for(i=0;i<6;i++)
-	{
-		send_buf[i] = ACK0[i];
-	}
-	i = 0;
-
-	while(dlength > 122)
-	{
-		//IDƒJƒEƒ“ƒg‰ÁZ
-		send_buf[4] = idCount1;
-		send_buf[5] = idCount2;
-
-		sendAckID(send_buf);		//ACK(ƒf[ƒ^æ“¾ID)‘—M
-
-		//‰æ‘œƒf[ƒ^óM
-		for(i=0;i<64;i++)
-		{
-			Rbuf2.Data[i] = getUartData();
-		}
-		i = 0;
-		for(i=0;i<64;i++)
-		{
-			Rbuf3.Data[i] = getUartData();
-		}
-		i = 0;
-
-		dlength -= 122;
-
-		//ƒCƒ[ƒWƒf[ƒ^ID‚Ì‰ÁZˆ—
-		if(idCount1 == 0xFF)	//ƒpƒbƒP[ƒWID‚ÌLSB‚ªFF‚È‚çŒ…ã‚ª‚è
-		{
-			idCount1 = 0;
-			idCount2++;
-		}
-		else
-		{
-			idCount1++;
-		}
-	}
-
-	/***ÅIƒpƒbƒP[ƒW‚Ìˆ—***/
-	if(dlength != 0)
-	{
-		//IDƒJƒEƒ“ƒg‰ÁZ
-		send_buf[4] = idCount1;
-		send_buf[5] = idCount2;
-
-		sendAckID(send_buf);		//ACK(ƒf[ƒ^æ“¾ID)‘—M
-
-		if(dlength > 58)
-		{
-			for(i=0;i<64;i++)
-			{
-				Rbuf2.Data[i] = getUartData();
-			}
-			i = 0;
-			dlength = dlength - 60;
-			for(i=0;i<(dlength+2);i++)
-			{
-				Rbuf3.Data[i] = getUartData();
-			}
-			for(i=(dlength+2);i<64;i++)
-			{
-				Rbuf3.Data[i] = 0xFF;
-			}
-		}
-		else if(dlength == 58)
-		{
-			for(i=0;i<64;i++)
-			{
-				Rbuf2.Data[i] = getUartData();
-			}
-			i = 0;
-			for(i=0;i<64;i++)
-			{
-				Rbuf3.Data[i] = 0xFF;
-			}
-		}
-		else
-		{
-			for(i=0;i<(dlength+6);i++)
-			{
-				Rbuf2.Data[i] = getUartData();
-			}
-			for(i=(dlength+6);i<64;i++)
-			{
-				Rbuf2.Data[i] = 0xFF;
-			}
-			i = 0;
-			for(i=0;i<64;i++)
-			{
-				Rbuf3.Data[i] = 0xFF;
-			}
-		}
-
-		sendCom(AckEnd);
-	}
-	else
-	{
-		sendCom(AckEnd);
-	}
-}
-
-//•¶š—ñ‘—MŠÖ”
-/*
-void sendString(const UBYTE* p)
-{
-	while(*p)
-		sendChar(*p++);
-}
-*/
-
-static UBYTE mk_pn9(void)
-{
-	static UWORD	reg = 0x0021;
-	UWORD			out,fb;
-
-	out = reg & 0x0001;
-	fb = (reg ^ (reg >> 4U)) & 0x0001;
-	reg = (reg >> 1) | (fb << 8);
-
-	return((UBYTE)out);
-}
-
-static void set_pn9(void){
-	UBYTE i;
-
-    send_buf[0] = 0x00;
-	for(i = 0; i < 8; i++){
-		send_buf[0] |= mk_pn9() << i;
-	}
-
-//	return(send_buf[0]);
-}
-
-/* PN9ƒf[ƒ^‘—M */
-void send_pn9(void)
-{
-//	UWORD i;
-	UBYTE i;
-
-	initbau(BAU_HIGH);								//UART‚Ì‰Šú‰» 115.2kbps
-//	initbau(BAU_LOW);								//14.4kbps
-//	initbau(0x5F);									//19.2kbps
-//	initbau(0x1F);									//57.6kbps
-	CREN = Bit_Low;									//óM‹Ö~
-
-//	Mod_SW = Bit_Low;						//•Ï’²ON
-//	max2828_txon();
-//	PA_SW  = Bit_High;
-
-//	delay_ms(1);
-
-	while(1){
-//	for(i = 0; i < 10000; i++){
-//        set_pn9();
-//		sendChar(send_buf[0]);
-		for(i=0; i<64; i++){
-			send_buf[0] = PRBS9[i];
-			sendChar(send_buf[0]);
-		}
-		i = 0;
-	}
-}
-
-void send_55(void){
-	initbau(BAU_HIGH);								//UART‚Ì‰Šú‰» 115.2kbps
-	CREN = Bit_Low;									//óM‹Ö~
-	send_buf[0] = 0x55;
-//	send_buf[0] = 0x00;
-	while(1){
-		sendChar(send_buf[0]);
-	}
-}
-
 void send_tst_str(void){
     CREN = Bit_Low;
     TXEN = Bit_High;
 	UINT clock_in_tst = 0;
-//	initbau(BAU_HIGH);								//UART‚Ì‰Šú‰» 115.2kbps
+//	initbau(BAU_HIGH);								//UARTï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ 115.2kbps
 //	initbau(0x1F);									//57.6kbps
 //	initbau(0x5F);									//19.2kbps
     CAMERA_POW = 0;
@@ -830,7 +323,7 @@ void echo_back(void){
     CREN = Bit_High;
     TXEN = Bit_High;
     __delay_ms(1000);
-    //flash_Erase(g_data_adr,S_ERASE);    //g_data_adr‚Ìsector65536byte•ªíœ
+    //flash_Erase(g_data_adr,S_ERASE);    //g_data_adrï¿½ï¿½sector65536byteï¿½ï¿½ï¿½íœ
     while(1){
         while(RCIF != 1);
         testbuf1 = RCREG;

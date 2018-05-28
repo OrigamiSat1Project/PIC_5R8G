@@ -66,7 +66,7 @@ void main(void){
 
     MAX2828_LD = HI;
     init_module();
-
+    UINT j0=0;
     while(1){
         if(CAMERA_POW == 0){
             offAmp();
@@ -74,7 +74,7 @@ void main(void){
         CREN = Bit_High;
         TXEN = Bit_High;
         UBYTE Command[8];
-        Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
+        Command[0] = 0x21;      //If all command[] is 0x00, that can pass CRC16 check filter.
         /* Comment
          * =====================================================================
          * 1. check first RCREG = 5
@@ -95,41 +95,57 @@ void main(void){
          * =====================================================================
          */
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
+            for(UINT i=0;i<8;i++){
+                Command[i] = 0x21;
+            }
             //  sync with commands by OBC
             while(Command[0] != '5'){
                 while(RCIF != 1);
                 Command[0] = RCREG;
+                sendChar(Command[0]);
             }
             //  TODO : Add time restrict 
             for(UINT i=1;i<8;i++){
                 while(RCIF != 1);
                 Command[i] = RCREG;
+                sendChar(Command[i]);
                 //  FIXME : need break function if receiving magic words
                 //if(Command[i] == 0xff) break;
             }
         }
         //  FIXME : for debug
+        send_OK();
         for(UINT j=0;j<8;j++){
             sendChar(Command[j]);
         }
+        sendChar(getDownlinkBAU());
+        send_CRLF();
         
         
-        UINT j0=0;
+        
         switch(Command[1]){
             case 'P':
                 Downlink(Roop_adr);
                 break;
             case 'D':
+                //  FIXME : for debug
+                sendChar(getDownlinkBAU());
+                sendChar(BAULATE);
                 while(CAM2 == 1);   //  wait 5V SW
                 while(CAM2 == 0){
+                    //  FIXME : for debug
                     //if(CAMERA_POW == 1){
-                    if(j0=0){
+                    if(j0==0){
                         onAmp();
                         j0=1;
+                        sendChar(BAULATE);
+                        send_CRLF();
+                        
                     }
                     send_dummy_data();
                 }
                 offAmp();
+                j0=0;
                 send_OK();
                 break;
             case 'R':
@@ -170,6 +186,8 @@ void main(void){
                             break;
                         }
                         change_downlink_baurate(Command[3]);
+                        //  FIXME : for debug
+                        sendChar(getDownlinkBAU());
                         break;
                     default:
                         break;

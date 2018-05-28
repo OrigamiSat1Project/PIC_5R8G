@@ -43,7 +43,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½?ï¿½ï¿½0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00??¿½?¿½??¿½?¿½??¿½?¿½??¿½?¿½0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x020000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
@@ -75,6 +75,8 @@ void main(void){
                 sendChar(Command[i]);
             }
         }
+        //FIXME : debug
+        send_OK();
 
         switch(Command[1]){
             case 'P':
@@ -103,9 +105,11 @@ void main(void){
                 switch(Command[2]){
                     case '8':
                         Receive_8split_JPEG(Roop_adr, Jump_adr);
+                        send_OK();
                         break;
                     case 'T':
-                        Receive_thumbnail_JPEG(Roop_adr);
+                        Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
+                        send_OK();
                         break;
                     default:
                         break;
@@ -125,6 +129,7 @@ void main(void){
                             Command[3] = 0x45;
                         }
                         Roop_adr = (UDWORD)Command[3]<<16;
+                        send_OK();
                         break;
                     case 'J':
                         if(Command[3] >= 0x08){
@@ -139,6 +144,7 @@ void main(void){
                             break;
                         }
                         change_downlink_baurate(Command[3]);
+                        send_OK();
                         break;
                     default:
                         break;

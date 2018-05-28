@@ -16,7 +16,9 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     * We erase 16 sectors from Roop_adr in this Code.
        ===================================================================================================
     */
-    Erase_sectors_before_Write(Roop_adr);
+    sendChar(0x01);
+    Erase_sectors_before_Write(Roop_adr, Jump_adr);
+    sendChar(0x02);
     
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;
@@ -58,6 +60,8 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
+            sendChar(receiveEndJpegFlag);
+            sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
         else
         {
@@ -72,7 +76,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     }
 }
 
-void Receive_thumbnail_JPEG(UDWORD Roop_adr){
+void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
    /* Comment
     * ===================================================================================================
     * Erase sectors before writing FROM
@@ -80,7 +84,9 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr){
     * We erase 16 sectors from Roop_adr in this Code.
        ===================================================================================================
     */
-    Erase_sectors_before_Write(Roop_adr);
+    sendChar(0x01);
+    Erase_sectors_before_Write(Roop_adr, Jump_adr);
+    sendChar(0x02);
     
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;
@@ -95,23 +101,29 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr){
     UINT index_of_Buffer = 0;
     while((receiveEndJpegFlag  & 0x10) != 0x10)
     {
+        sendChar(0x21);
         while (RCIF != 1);
         Buffer[index_of_Buffer] = RCREG;
+        sendChar(Buffer[index_of_Buffer]);
         if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
             receiveEndJpegFlag |= 0x01;
             index_of_Buffer++;
+            sendChar(0xff);
         }
         else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
         {
+            sendChar(0x0e);
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
-    }
+            sendChar(0x0f);
+        }
         else
         {
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag
             index_of_Buffer++;
+            sendChar(0x11);
         }
         if(index_of_Buffer == MaxOfMemory){
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);

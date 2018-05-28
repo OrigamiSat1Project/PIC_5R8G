@@ -6,6 +6,6 @@
 #include "typedefine.h"
 
 void Erase_sectors(UBYTE, UBYTE);
-void Erase_sectors_before_Write(UDWORD);
+void Erase_sectors_before_Write(UDWORD, UDWORD);
 
 #endif	/* SECTOR_H */

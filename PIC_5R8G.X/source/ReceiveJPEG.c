@@ -16,9 +16,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     * We erase 16 sectors from Roop_adr in this Code.
        ===================================================================================================
     */
-    sendChar(0x01);
     Erase_sectors_before_Write(Roop_adr, Jump_adr);
-    sendChar(0x02);
     
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;
@@ -44,6 +42,10 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
  * ===============================================================================================================
  */
     UINT index_of_Buffer = 0;
+    //FIXME : 
+    sendChar(0x88);
+    CREN = Bit_High;    //It is needed for integration with OBC
+    //TXEN = Bit_High;
     while((receiveEndJpegFlag  & 0x80) != 0x80){
         while (RCIF != 1);
         Buffer[index_of_Buffer] = RCREG;
@@ -84,9 +86,7 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     * We erase 16 sectors from Roop_adr in this Code.
        ===================================================================================================
     */
-    sendChar(0x01);
     Erase_sectors_before_Write(Roop_adr, Jump_adr);
-    sendChar(0x02);
     
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;
@@ -98,32 +98,36 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     *  ----      ----     ----    finish_cnt        ----        ----        Flag_0x0E           Flag_0xFF
     * ====================================================================================================
     */
+    //FIXME : 
+    sendChar(0xbb);
+    CREN = Bit_High;
+    TXEN = Bit_High;
     UINT index_of_Buffer = 0;
     while((receiveEndJpegFlag  & 0x10) != 0x10)
     {
-        sendChar(0x21);
         while (RCIF != 1);
         Buffer[index_of_Buffer] = RCREG;
-        sendChar(Buffer[index_of_Buffer]);
         if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
             receiveEndJpegFlag |= 0x01;
             index_of_Buffer++;
-            sendChar(0xff);
         }
         else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
         {
-            sendChar(0x0e);
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
-            sendChar(0x0f);
+            //FIXME : debug
+            offAmp();
+            TXEN = Bit_High;
+            sendChar(receiveEndJpegFlag);
+            sendChar((UBYTE)(FROM_Write_adr >> 16));
+            
         }
         else
         {
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag
             index_of_Buffer++;
-            sendChar(0x11);
         }
         if(index_of_Buffer == MaxOfMemory){
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);

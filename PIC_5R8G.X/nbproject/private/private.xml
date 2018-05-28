@@ -4,11 +4,9 @@
     <editor-bookmarks xmlns="http://www.netbeans.org/ns/editor-bookmarks/2" lastBookmarkId="0"/>
     <open-files xmlns="http://www.netbeans.org/ns/projectui-open-files/2">
         <group>
-            <file>file:/C:/Users/Newton/Documents/PIC_5R8G/PIC_5R8G.X/source/UART.c</file>
-            <file>file:/C:/Users/Newton/Documents/PIC_5R8G/PIC_5R8G.X/source/InitMPU.c</file>
+            <file>file:/C:/Users/Newton/Documents/PIC_5R8G/PIC_5R8G.X/source/Downlink.c</file>
             <file>file:/C:/Users/Newton/Documents/PIC_5R8G/PIC_5R8G.X/source/ReceiveJPEG.c</file>
-            <file>file:/C:/Users/Newton/Documents/PIC_5R8G/PIC_5R8G.X/include/UART.h</file>
-            <file>file:/C:/Users/Newton/Documents/PIC_5R8G/PIC_5R8G.X/source/MAX2828.c</file>
+            <file>file:/C:/Users/Newton/Documents/PIC_5R8G/PIC_5R8G.X/source/SECTOR.c</file>
             <file>file:/C:/Users/Newton/Documents/PIC_5R8G/PIC_5R8G.X/source/5R8G_TEST.c</file>
             <file>file:/C:/Users/Newton/Documents/PIC_5R8G/PIC_5R8G.X/source/FROM.c</file>
         </group>

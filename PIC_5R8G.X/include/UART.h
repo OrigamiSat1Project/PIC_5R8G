@@ -50,6 +50,7 @@ void send_tst_str(void);
 void initbau(UBYTE);
 void sendChar(UBYTE);
 void send_01(void);
+void send_AB(void);
 void send_OK(void);
 void send_NG(void);
 void send_CRLF(void);

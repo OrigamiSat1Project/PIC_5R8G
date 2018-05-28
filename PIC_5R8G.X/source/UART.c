@@ -48,6 +48,7 @@ void            initbau(UBYTE);
 UBYTE           getUartData(void);
 void            sendChar(UBYTE);
 void            send_01(void);
+void            send_AB(void);
 void            send_OK(void);
 void            send_NG(void);
 static void		syncCam(void);
@@ -780,6 +781,18 @@ void send_01(void){
         sendChar('0');
         __delay_us(20);
         sendChar('1');
+        __delay_us(20);
+    }
+    sendChar('\r');
+    sendChar('\n');
+}
+
+void send_AB(void){
+    UBYTE Preamblecount = 0;
+    for(Preamblecount=0 ;Preamblecount <100; Preamblecount++){
+        sendChar('A');
+        __delay_us(20);
+        sendChar('B');
         __delay_us(20);
     }
     sendChar('\r');

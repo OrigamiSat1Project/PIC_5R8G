@@ -63,10 +63,7 @@ void main(void){
     UDWORD Jump_adr = 0x20000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
-
-    MAX2828_LD = HI;
     init_module();
-    UINT j0=0;
     while(1){
         if(CAMERA_POW == 0){
             offAmp();
@@ -74,26 +71,9 @@ void main(void){
         CREN = Bit_High;
         TXEN = Bit_High;
         UBYTE Command[8];
-        Command[0] = 0x21;      //If all command[] is 0x00, that can pass CRC16 check filter.
-        /* Comment
-         * =====================================================================
-         * 1. check first RCREG = 5
-         * 2. Command[] = RCREG
-         * 3. Check by CRC16
-         * =====================================================================
-         * Code
-         * =====================================================================
-         * while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-         *      while(RCIF != 1);
-         *      while(RCREG != '5');
-         *      Command[0] = RCREG;
-         *      for (UINT i=1; i<8; i++){         >
-         *          while(RCIF != 1);
-         *          COmmand[i] = RCREG;
-         *      }
-         * }
-         * =====================================================================
-         */
+        Command[0] = 0x21;
+
+//        send_OK();
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
             for(UINT i=0;i<8;i++){
                 Command[i] = 0x21;
@@ -109,43 +89,22 @@ void main(void){
                 while(RCIF != 1);
                 Command[i] = RCREG;
                 sendChar(Command[i]);
-                //  FIXME : need break function if receiving magic words
-                //if(Command[i] == 0xff) break;
             }
         }
-        //  FIXME : for debug
-        send_OK();
-        for(UINT j=0;j<8;j++){
-            sendChar(Command[j]);
-        }
-        sendChar(getDownlinkBAU());
-        send_CRLF();
-        
-        
         
         switch(Command[1]){
             case 'P':
                 Downlink(Roop_adr);
                 break;
             case 'D':
-                //  FIXME : for debug
-                sendChar(getDownlinkBAU());
-                sendChar(BAULATE);
                 while(CAM2 == 1);   //  wait 5V SW
                 while(CAM2 == 0){
-                    //  FIXME : for debug
-                    //if(CAMERA_POW == 1){
-                    if(j0==0){
+                    if(CAMERA_POW == 1){
                         onAmp();
-                        j0=1;
-                        sendChar(BAULATE);
-                        send_CRLF();
-                        
                     }
                     send_dummy_data();
                 }
                 offAmp();
-                j0=0;
                 send_OK();
                 break;
             case 'R':
@@ -186,19 +145,10 @@ void main(void){
                             break;
                         }
                         change_downlink_baurate(Command[3]);
-                        //  FIXME : for debug
-                        sendChar(getDownlinkBAU());
                         break;
                     default:
                         break;
                 }
-                //  TODO : you need nesting
-                /*
-                if(Command[2] >= 0x47){
-                    Command[2] == 0x45;
-                }
-                */
-
                 break;
             case 'S':
                /* Comment

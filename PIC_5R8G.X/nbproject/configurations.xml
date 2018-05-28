@@ -53,7 +53,7 @@
         <targetPluginBoard></targetPluginBoard>
         <platformTool>ICD3PlatformTool</platformTool>
         <languageToolchain>XC8</languageToolchain>
-        <languageToolchainVersion>1.41</languageToolchainVersion>
+        <languageToolchainVersion>1.37</languageToolchainVersion>
         <platform>4</platform>
       </toolsSet>
       <compileType>
@@ -68,8 +68,6 @@
           <parseOnProdLoad>true</parseOnProdLoad>
           <alternateLoadableFile></alternateLoadableFile>
         </loading>
-        <subordinates>
-        </subordinates>
       </compileType>
       <makeCustomizationType>
         <makeCustomizationPreStepEnabled>false</makeCustomizationPreStepEnabled>

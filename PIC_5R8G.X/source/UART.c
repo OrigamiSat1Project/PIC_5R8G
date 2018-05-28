@@ -68,9 +68,9 @@ static UBYTE BAU_WHEN_DOWNLINK = BAU_WITH_OBC;
 void onAmp(){
     initbau(BAU_WHEN_DOWNLINK);
     __delay_ms(10);
-    CAMERA_POW = 0;
-    CAMERA_SEL = 0;
-    max2828_txon();
+    //CAMERA_POW = 0;
+    //CAMERA_SEL = 0;
+    //max2828_txon();
 	__delay_ms(10);
 }
 

@@ -100,6 +100,7 @@ void main(void){
                 while(RCIF != 1);
                 Command[0] = RCREG;
             }
+            //  TODO : Add time restrict 
             for(UINT i=1;i<8;i++){
                 while(RCIF != 1);
                 Command[i] = RCREG;
@@ -107,17 +108,13 @@ void main(void){
                 //if(Command[i] == 0xff) break;
             }
         }
-        __delay_ms(10);
-        sendChar('3');
-        __delay_ms(10);
-        //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
-
-        /* Comment
-         * ========================================================================
-         * CRC16 judgement before go to switch-case statement
-         * ========================================================================
-         */
-
+        //  FIXME : for debug
+        for(UINT j=0;j<8;j++){
+            sendChar(Command[j]);
+        }
+        
+        
+        UINT j0=0;
         switch(Command[1]){
             case 'P':
                 Downlink(Roop_adr);
@@ -125,8 +122,10 @@ void main(void){
             case 'D':
                 while(CAM2 == 1);   //  wait 5V SW
                 while(CAM2 == 0){
-                    if(CAMERA_POW == 1){
+                    //if(CAMERA_POW == 1){
+                    if(j0=0){
                         onAmp();
+                        j0=1;
                     }
                     send_dummy_data();
                 }
@@ -156,23 +155,13 @@ void main(void){
                         if(Command[3] >= 0x47){
                             Command[3] = 0x45;
                         }
-                        Roop_adr = (UDWORD)Command[3]<<16;          //bit shift and clear low under 4bit for next 4bit address
-                        //FIXME : send 1byte by UART in order to check Roop_adr
-                        UBYTE Roop_adr_check = (UBYTE)(Roop_adr >>16);
-                        __delay_ms(10);
-                        sendChar(Roop_adr_check);
-                        __delay_ms(10);
+                        Roop_adr = (UDWORD)Command[3]<<16;
                         break;
                     case 'J':
                         if(Command[3] >= 0x08){
                             Command[3] = 0x07;
                         }
                         Jump_adr = (UDWORD)Command[3]<<16;
-                        //FIXME : send 1byte by UART in order to check Roop_adr
-                        UBYTE Jump_adr_check = (UBYTE)(Jump_adr >>16);
-                        __delay_ms(10);
-                        sendChar(Jump_adr_check);
-                        __delay_ms(10);
                         break;
                     case 'B':
                         if((Command[3] != BAU_LOW ) &&

@@ -83,6 +83,7 @@ void offAmp(void){
     MAX2828_TXEN = 0;
     PA_SW = 0;
 	__delay_ms(10);
+
 }
 
 //*** SENDポートのチェック ***
@@ -804,6 +805,11 @@ void send_NG(void){
     __delay_us(20);
 }
 
+void send_CRLF(void){
+    sendChar('\r');
+    sendChar('\n');
+}
+
 void echo_back(void){
     UBYTE testbuf1;
     UBYTE testbuf2;
@@ -835,6 +841,7 @@ void send_dummy_data(void){
                 //sendChar(0x00);
                 __delay_us(20);
             }
+            __delay_ms(1000);
         }else if(1200 < clock_in_tst && clock_in_tst <= 1800){
             //  shut down power of amp
 			if(CAMERA_POW == 0){
@@ -855,4 +862,8 @@ void send_dummy_data(void){
 
 void change_downlink_baurate(UBYTE bau){
     BAU_WHEN_DOWNLINK = bau;
+}
+
+UBYTE getDownlinkBAU(void){
+    return BAU_WHEN_DOWNLINK;
 }

@@ -32,9 +32,9 @@ void init_mpu(void)
 
 void init_module(void){
     init_mpu();
-    //initbau(BAU_HIGH);                //115200bps
+    initbau(BAU_HIGH);                //115200bps
     //initbau(BAU_MIDDLE);              //57600bps
-    initbau(BAU_LOW);                   //14400bps
+    //initbau(BAU_LOW);                   //14400bps
     MAX2828_EN = 1;                     //MAX2828 ON
     __delay_us(100);                    //100us wait
     FLASH_SPI_EI();                     //enable SPI

@@ -107,8 +107,6 @@ void main(void){
             case 'R':
                 switch(Command[2]){
                     case '8':
-                        //  FIXME : for debug
-                        sendChar(0x99);
                         Receive_8split_JPEG(Roop_adr, Jump_adr);
                         break;
                     case 'T':

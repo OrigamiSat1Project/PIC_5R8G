@@ -17,14 +17,10 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
        ===================================================================================================
     */
     Erase_sectors_before_Write(Roop_adr);
-    //FIXME : debug
-    sendChar(0xee);
     
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
-    //FIXME for simulator
-    //sendChar('R');
     
     /*  How to use receiveEndJpegFlag
  * ===============================================================================================================
@@ -55,21 +51,13 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
         }
         else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
         {
-            //XXX : FIXME : debug with OBC
-            //BUSY = 0;
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
-            //BUSY = 1;
             index_of_Buffer = 0;
             
             //  Jump to next group's first sector & change flag
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
-            // FIXME : for dubug
-            offAmp();
-            TXEN = Bit_High;
-            sendChar(receiveEndJpegFlag);
-            sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
         else
         {
@@ -77,28 +65,10 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             index_of_Buffer++;
         }
         if(index_of_Buffer == MaxOfMemory){
-            //XXX : FIXME : debug with OBC
-            //BUSY = 0;
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
-            //BUSY = 1;
         }
-    }
-    //  FIXME : for debug
-    send_OK();
-    //  FIXME : for debug
-    delay_ms(3000);
-    offAmp();
-    while(CAM2 == 1);   //  wait 5V SW
-    TXEN = Bit_High;
-    UDWORD FROM_Read_adr = Roop_adr;
-    while(FROM_Read_adr <= FROM_Write_adr){
-        flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
-        for(UINT i=0;i<MaxOfMemory;i++){
-            sendChar(Buffer[i]);
-        }
-        FROM_Read_adr += (UDWORD)(MaxOfMemory);
     }
 }
 
@@ -115,8 +85,6 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr){
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
-    //FIXME for simulator
-    sendChar('R');
     
    /*  How to use receiveEndJpegFlag
     * ====================================================================================================
@@ -135,18 +103,10 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr){
         }
         else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
         {
-            //XXX : FIXME : BUSY signal with OBC
-            BUSY = 0;
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
-            BUSY = 1;
             index_of_Buffer = 0;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
-            //FIXME : debug
-            offAmp();
-            TXEN = Bit_High;
-            sendChar(receiveEndJpegFlag);
-            sendChar((UBYTE)(FROM_Write_adr >> 16));
     }
         else
         {
@@ -154,75 +114,9 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr){
             index_of_Buffer++;
         }
         if(index_of_Buffer == MaxOfMemory){
-            //XXX : FIXME : BUSY signal with OBC
-            BUSY = 0;
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
-            BUSY =1;
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
         }
     }
-    //  FIXME : for debug
-    send_OK();
-    //  FIXME : for debug
-    delay_ms(3000);
-    offAmp();
-    while(CAM2 == 1);   //  wait 5V SW
-    TXEN = Bit_High;
-    UDWORD FROM_Read_adr = Roop_adr;
-    while(FROM_Read_adr <= FROM_Write_adr){
-        flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
-        for(UINT i=0;i<MaxOfMemory;i++){
-            sendChar(Buffer[i]);
-        }
-        FROM_Read_adr += (UDWORD)(MaxOfMemory);
-    }
 }
-
-//
-//void Send_JPEG_UART(UDWORD Roop_adr, UBYTE Identify_8split){
-//    sendChar('S');
-//    while(CAM2 == 1);   //  wait 5V SW
-//    UINT sendBufferCount = 0;
-//    UBYTE Buffer[MaxOfMemory];
-//    UDWORD FROM_Read_adr = Roop_adr;
-//    UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
-//    /*  How to use Identify_8split
-//     * ===========================================================================================
-//     *  Bit7        Bit6        Bit5        Bit4        Bit3        Bit2        Bit1        Bit0
-//     *  8/8         7/8         6/8         5/8         4/8         3/8         2/8         1/8
-//     * ===========================================================================================
-//     */            
-//    CREN = Bit_Low;
-//    TXEN = Bit_High;
-//    while(CAM2 == 0){
-//        /* Comment
-//         * =============================================================
-//         * Which sectors do you read by reading Identify_8split.
-//         * Flag is ON : flash_Read_Data
-//         * Flag is OFF : FROM_Read_adr is jumping to next sector's start address.
-//         * =============================================================
-//         * Code
-//         * =============================================================
-//         * if(Identify_8split & (0x01<<readFROM_Count)){    >
-//         *      flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
-//         * }
-//         * else{
-//         *      FROM_Read_adr &= ~0x0000ffff;            //Clear under lower 2bytes
-//         *      FROM_Read_adr += 0x10000;           //Jump to next sector's address
-//         * }
-//         * readFROM_Count +=1;
-//         * =============================================================
-//         */
-//        flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
-//        for(UINT i=0;i<MaxOfMemory;i++){
-//            sendChar(Buffer[i]);
-//            //sendChar(0x00);
-//            __delay_us(20);
-//        }
-//        FROM_Read_adr += (UDWORD)(MaxOfMemory);
-//        sendBufferCount ++;
-//    }/
-//    offAmp();
-//    send_OK();
-//}

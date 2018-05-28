@@ -58,7 +58,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00››0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00�?��?�0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x20000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
@@ -73,7 +73,6 @@ void main(void){
         UBYTE Command[8];
         Command[0] = 0x21;
 
-//        send_OK();
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
             for(UINT i=0;i<8;i++){
                 Command[i] = 0x21;
@@ -124,13 +123,6 @@ void main(void){
                 init_module();
                 break;
             case 'C':
-               /* Comment
-                * ======================================================================================
-                *  Make Change Roop_adr received from OBC
-                *  Add Command C:Change Roop_adr when some sectors of FROM are broken
-                *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-                *  Ground Station can choose only sector start address kind of 0x00�?��?�0000
-                */
                 switch(Command[2]){
                     case 'R':
                         //  sector size limit

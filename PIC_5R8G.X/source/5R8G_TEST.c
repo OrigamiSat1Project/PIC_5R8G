@@ -66,14 +66,15 @@ void main(void){
             while(Command[0] != '5'){
                 while(RCIF != 1);
                 Command[0] = RCREG;
-                sendChar(Command[0]);
             }
             //  TODO : Add time restrict
             for(UINT i=1;i<8;i++){
                 while(RCIF != 1);
                 Command[i] = RCREG;
-                sendChar(Command[i]);
             }
+        }
+        for(UINT i=0;i<8;i++){
+            sendChar(Command[i]);
         }
         //FIXME : debug
         send_OK();
@@ -129,6 +130,8 @@ void main(void){
                             Command[3] = 0x45;
                         }
                         Roop_adr = (UDWORD)Command[3]<<16;
+                        //FIXME : debug
+                        sendChar((UBYTE)(Roop_adr >> 16));
                         send_OK();
                         break;
                     case 'J':

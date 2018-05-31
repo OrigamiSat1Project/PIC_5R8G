@@ -21,5 +21,6 @@ typedef union{
 
 #define MaxOfMemory 40  //  TODO : Use Bank function then magnify buffer size;
 const UBYTE FooterOfJPEG[] = {0xff, 0x1e};
+const UBYTE FooterOfH264[] = {0x00, 0x01, 0x1e};
 
 #endif	//#ifndef __typedefine_h__

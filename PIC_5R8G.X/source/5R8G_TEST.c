@@ -105,9 +105,16 @@ void main(void){
             case 'R':
                 switch(Command[2]){
                     case '8':
-                        Receive_8split_JPEG(Roop_adr, Jump_adr);
-                        send_OK();
-                        break;
+                        switch(Command[3]){
+                            case 'J':
+                                Receive_8split_JPEG(Roop_adr, Jump_adr);
+                                send_OK();
+                                break;
+                            case 'H':
+                                Receive_8split_H264(Roop_adr, Jump_adr);
+                                send_OK;
+                                break;
+                        }
                     case 'T':
                         Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
                         send_OK();

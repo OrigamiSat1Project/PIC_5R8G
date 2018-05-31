@@ -20,6 +20,6 @@ typedef union{
 }EXCHG_LONG;	 //total 4byte
 
 #define MaxOfMemory 40  //  TODO : Use Bank function then magnify buffer size;
-const UBYTE FooterOfJPEG[] = {0xff, 0x0e};
+const UBYTE FooterOfJPEG[] = {0xff, 0x1e};
 
 #endif	//#ifndef __typedefine_h__

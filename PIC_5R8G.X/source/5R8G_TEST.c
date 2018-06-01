@@ -12,6 +12,7 @@
 #include "ReceiveJPEG.h"
 #include "Downlink.h"
 #include "CRC16.h"
+#include "Timer.h"
 //#include "stdint.h"
 
 // CONFIG1
@@ -67,12 +68,22 @@ void main(void){
                 while(RCIF != 1);
                 Command[0] = RCREG;
             }
+            /* Code
+             * =================================================================
+             * TMR IE = High; //Timer Eables Timer 1 or 2
+             * =================================================================
+             */
             //  TODO : Add time restrict
             for(UINT i=1;i<8;i++){
                 while(RCIF != 1);
                 Command[i] = RCREG;
             }
         }
+        /* Code
+         * =================================================================
+         * TMR IE = Low; //Timer Eables Timer 1 or 2
+         * =================================================================
+         */
         for(UINT i=0;i<8;i++){
             sendChar(Command[i]);
         }

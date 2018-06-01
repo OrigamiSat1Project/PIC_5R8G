@@ -45,6 +45,11 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * =============================================================
      */
     send_01();
+    /* Code
+     * =================================================================
+     * TMR IE = High; //Timer Eables Timer 1 or 2
+     * =================================================================
+     */
     while(CAM2 == 0){
         if(readFROM_Count >= 8){
             readFROM_Count = 0;
@@ -95,6 +100,11 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     offAmp();
     CREN = Bit_High;
     TXEN = Bit_Low;
+    /* Code
+     * =================================================================
+     * TMR IE = Low; //Timer Eables Timer 1 or 2
+     * =================================================================
+     */
 }
 
 void downlinkChar(UBYTE buf){

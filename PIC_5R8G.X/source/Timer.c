@@ -44,9 +44,21 @@
  * void interrupt TImer_interrput(void){
  *      if(PIR1bits.TMR1IF){
  *          PIR1bits.TMR1IF = 0;
+ *          Timer_count_1++;      //1count = 2.5s
+ *          if(Timer_count_1 == 4){
+ *              downlinkRest('A');
+ *              Timter_count_1 = 0;
+ *          }
  *      }
  *      else if(PIR1bits.TMR2IF){
- *          PIR1bits.TMR2IF = 0;
+ *          PIR1bits.TMR2IF = 0;    
+ *          Timer_count_2++;    //1count = 1.0ms
+ *          if(Timer_count_2 == 1000){
+ *              for(UINT i=0; i<8;i++){     >
+ *                  Command[i] = 0x21;
+ *              }
+ *          Timer_count_2 = 0;
+ *          }
  *      }
  * }
  * =============================================================================

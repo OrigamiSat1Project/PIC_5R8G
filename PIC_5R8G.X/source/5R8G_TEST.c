@@ -58,6 +58,13 @@ void main(void){
         TXEN = Bit_High;
         UBYTE Command[8];
         Command[0] = 0x21;
+        
+        /* Code
+         * =====================================================================
+         * UINT Timer_count_1 = 0;
+         * UINT Timer_count_2 = 0;
+         * =====================================================================
+         */
 
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
             for(UINT i=0;i<8;i++){

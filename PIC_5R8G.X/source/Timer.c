@@ -23,42 +23,49 @@
  * Max count = 43.4192u * 256 * 256 = 2.845 sec with TMR1H and TMR1L
  * Timer2
  * 1count_max = 5,4274 * 16 =86.8384u sec with prescaler(1:1,4,16)
- * Max count = 86.8384u * 16 = 1.389m sec with postscaler(1:1 to 16)
+ * count      = 86.8384u * 16 = 1.389m sec with postscaler(1:1 to 16)
+ * Max count  = 1.389m * 256 = 355.384m sec
  * We have to check it out how long time we need
  *      1. Discard uncorrect Command
  *      2. Rest time (maybe 5s)
  * We can't send variables from main to intterupt, may have to define Command in not main but global
+ * 
+ * 2.5 sec  = 43.4192u sec * 256 *225
+ * 1.0 sec  = 355.384m sec * 3
  * =============================================================================
  * Code
  * =============================================================================
  * void init_Interrput(void){
  *      INTCON  = 0xC0;
- *      T1CON   =
+ *      T1CON   = 0x31;
+ *      TMRL    = 0x1f;
  *      TMRH    = 0x00;
- *      TMRL    = 0x00;
- *      T2CON   =
- *      TMR2    = 0x00;
- *      PR2     = 
+ *      T2CON   = 0x7f;
+ *      TMR2    = 0x03;
+ *      PR2     = 0xff;
  * }
  * 
  * void interrupt TImer_interrput(void){
  *      if(PIR1bits.TMR1IF){
  *          PIR1bits.TMR1IF = 0;
+ *          TMR1L = 0x1f;
+ *          TMR1H = 0x00;
  *          Timer_count_1++;      //1count = 2.5s
- *          if(Timer_count_1 == 4){
- *              downlinkRest('A');
- *              Timter_count_1 = 0;
- *          }
+ *      }
+ *      if(Timer_count_1 == 4){
+ *          downlinkRest('A');
+ *          Timter_count_1 = 0;
  *      }
  *      else if(PIR1bits.TMR2IF){
  *          PIR1bits.TMR2IF = 0;    
- *          Timer_count_2++;    //1count = 1.0ms
- *          if(Timer_count_2 == 1000){
- *              for(UINT i=0; i<8;i++){     >
- *                  Command[i] = 0x21;
- *              }
- *          Timer_count_2 = 0;
+ *          TMR2    = 0x03;
+ *          Timer_count_2++;    //1count = 355 ms
+ *      }
+ *      if(Timer_count_2 == 1000){
+ *          for(UINT i=0; i<8;i++){     >
+ *              Command[i] = 0x21;
  *          }
+ *      Timer_count_2 = 0;
  *      }
  * }
  * =============================================================================

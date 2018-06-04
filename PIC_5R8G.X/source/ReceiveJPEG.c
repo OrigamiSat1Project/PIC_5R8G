@@ -8,13 +8,23 @@
 #include "MAX2828.h"
 #include "typedefine.h"
 
+/* Comment
+ * =========================================================================
+ * We use 18 sectors by each file.
+ * We call two  sectors as one group.
+ * Image files use 8 groups and ECC (Error Correction) use 1 groups.
+ * Before ECC, we detect EOF(End of File) and jump to next group.
+ * After ECC, we receive all data until detecting CAM1-off signal.
+ * =========================================================================
+ */
+
 void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
    /* Comment
-    * ===================================================================================================
+    * ==========================================================================
     * Erase sectors before writing FROM
     * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
     * We erase 16 sectors from Roop_adr in this Code.
-       ===================================================================================================
+    * ==========================================================================
     */
     Erase_sectors_before_Write(Roop_adr, Jump_adr);   
     UBYTE Buffer[MaxOfMemory];
@@ -45,6 +55,21 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     sendChar(0x88);
     CREN = Bit_High;    //It is needed for integration with OBC
     //TXEN = Bit_High;
+    /* Comment
+     * =========================================================================
+     * We no longer use 0x80 flag (Finish of file).
+     * Instead, we will use CAM1 until finishing receiving data.
+     * Thumbnail and H264 is also used CAM1.
+     * CAM1 is bit inversion.
+     * =========================================================================
+     * Code
+     * =========================================================================
+     * while(CAM1 = 1);
+     * while(CAM1 == 0){
+     *      source code
+     * }
+     * =========================================================================
+     */
     while((receiveEndJpegFlag  & 0x80) != 0x80){
         while (RCIF != 1);
         Buffer[index_of_Buffer] = RCREG;
@@ -60,6 +85,13 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             //  Jump to next group's first sector & change flag
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
+            /* Code
+             * =================================================================
+             * if(receiveEndJpegFlag < 0x80){    >  //Before ECC
+             *      FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
+             * }
+             * =================================================================
+             */
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
             sendChar(receiveEndJpegFlag);
             sendChar((UBYTE)(FROM_Write_adr >> 16));
@@ -101,6 +133,14 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     CREN = Bit_High;
     TXEN = Bit_High;
     UINT index_of_Buffer = 0;
+    /* Code
+     * =========================================================================
+     * while(CAM1 = 1);
+     * while(CAM1 == 0){
+     *      source code
+     * }
+     * =========================================================================
+     */
     while((receiveEndJpegFlag  & 0x10) != 0x10)
     {
         while (RCIF != 1);
@@ -144,18 +184,6 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
        ===================================================================================================
     */
     Erase_sectors_before_Write(Roop_adr, Jump_adr);
-    /* Comment
-     * =========================================================================
-     * wait 5V switch
-     * In H264 function, control receiving by not only Flag but CAM1(5V) switch
-     * CAM1 is bit inversion
-     * =========================================================================
-     * Code
-     * =========================================================================
-     * while(CAM1 == 1);
-     * =========================================================================
-     */
-    
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndH264Flag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
@@ -187,7 +215,10 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
     //TXEN = Bit_High;
     /* Code
      * =========================================================================
+     * while(CAM1 = 1);
      * while(CAM1 == 0){
+     *      source code
+     * }
      * =========================================================================
      */
     while((receiveEndH264Flag  & 0x80) != 0x80){
@@ -214,6 +245,11 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             //  Jump to next group's first sector & change flag
             receiveEndH264Flag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag.
             receiveEndH264Flag += 0x10;     //+1 8split_cnt in receiveEndH264Flag.
+            =================================================================
+            if(receiveEndJpegFlag < 0x80){    >  //Before ECC
+                FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
+            }
+            =================================================================
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndH264Flag >> 4) * Jump_adr;
             sendChar(receiveEndH264Flag);
             sendChar((UBYTE)(FROM_Write_adr >> 16));
@@ -230,9 +266,4 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             index_of_Buffer = 0;
         }
     }
-    /* Code
-     * =========================================================================
-     * }
-     * =========================================================================
-     */
 }

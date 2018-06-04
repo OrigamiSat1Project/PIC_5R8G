@@ -154,12 +154,12 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
     /*  How to use receiveEndH264Flag
  * ===============================================================================================================
  *  Bit7            Bit6            Bit5        Bit4        Bit3                Bit2            Bit1                                Bit0
- *  8split_End      8split_cnt2     cnt1        cnt0        Flag_0x1e        Flag_0xff        Flag_0x00(Second time)           Flag_0x00(First time)
+ *  8split_End      8split_cnt2     cnt1        cnt0        Flag_0x1e        Flag_0x01        Flag_0x00(Second time)           Flag_0x00(First time)
  *  
  *  Initialize                 = 0x00  (0b00000000)
  *  Receive 0x00 (First)       = 0x01  (0b00000001)
  *  Receive 0x00 (Second)      = 0x03  (0b00000011)
- *  Receive 0xff               = 0x07  (0b00000111)
+ *  Receive 0x01               = 0x07  (0b00000111)
  *  During writing group 1     = 0x00  (0b00000000)
  *  During writing group 2     = 0x10  (0b00010000)
  *  During writing group 3     = 0x20  (0b00100000)
@@ -188,11 +188,11 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             receiveEndH264Flag |= 0x02;
             index_of_Buffer++;
         }
-        else if((receiveEndH264Flag & 0x03) == 0x03 && Buffer[index_of_Buffer] == FooterOfH264[1]){
+        else if((receiveEndH264Flag & 0x02) == 0x02 && Buffer[index_of_Buffer] == FooterOfH264[1]){
             receiveEndH264Flag |= 0x04;
             index_of_Buffer++;
         }
-        else if ((receiveEndH264Flag & 0x07) == 0x07 && Buffer[index_of_Buffer] == FooterOfH264[2])
+        else if ((receiveEndH264Flag & 0x04) == 0x04 && Buffer[index_of_Buffer] == FooterOfH264[2])
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;

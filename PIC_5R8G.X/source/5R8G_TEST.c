@@ -43,7 +43,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00??¿½?¿½??¿½?¿½??¿½?¿½??¿½?¿½0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00??Â¿Â½?Â¿Â½??Â¿Â½?Â¿Â½??Â¿Â½?Â¿Â½??Â¿Â½?Â¿Â½0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x020000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
@@ -88,6 +88,8 @@ void main(void){
                     case 'T':
                         Downlink(Roop_adr, Jump_adr, 0x01);
                         break;
+                    default:
+                        break;
                 }
                 break;
             case 'D':
@@ -113,6 +115,8 @@ void main(void){
                             case 'H':
                                 Receive_8split_H264(Roop_adr, Jump_adr);
                                 send_OK;
+                                break;
+                            default:
                                 break;
                         }
                     case 'T':

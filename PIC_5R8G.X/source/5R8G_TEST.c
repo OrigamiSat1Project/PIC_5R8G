@@ -58,10 +58,22 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00¬Å‚?∫¬Å‚?∫0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;
+   
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x30000;
-    //UDWORD FROM_Jump_next_sector = 0x10000;
+   /* Comment
+    * =====================================================
+    * We save Roop_adr in FROM's 0 sector
+    * Roop_adr in 0x00000000
+    * Jump_adr in 0x00000001
+    * =====================================================
+    * Code
+    * =====================================================
+    * flash_Read_Data((UDWORD)(0x00), (UDWORD)(0x01), &Roop_adr);
+    * flash_Read_Data((UDWORD)(0x01), (UDWORD)(0x01), &Jump_adr);
+    * =====================================================
+    */
     //UINT roopcount = 0;
     init_module();
     while(1){
@@ -140,6 +152,18 @@ void main(void){
                             Command[3] = 0x27;
                         }
                         Roop_adr = (UDWORD)Command[3]<<16;
+                        /* Comment
+                         * =====================================================
+                         * We save Roop_adr in FROM's 0 sector
+                         * Roop_adr in 0x00000000
+                         * Jump_adr in 0x00000001
+                         * =====================================================
+                         * Code
+                         * =====================================================
+                         * flash_Write_Data((UDWORD)(0x00), (UDWORD)(0x01), &Command+3);
+                         * flash_Read_Data((UDWORD)(0x00), (UDWORD)(0x01), &Roop_adr);
+                         * =====================================================
+                         */
                         break;
                     case 'J':
                         if(Command[3] >= 0x08){
@@ -148,6 +172,12 @@ void main(void){
                             Command[3] = 0x03;
                         }
                         Jump_adr = (UDWORD)Command[3]<<16;
+                        /* Code
+                         * =====================================================
+                         * flash_Write_Data((UDWORD)(0x01), (UDWORD)(0x01), &Command+3);
+                         * flash_Read_Data((UDWORD)(0x01), (UDWORD)(0x01), &Jump_adr);
+                         * =====================================================
+                         */
                         break;
                     case 'B':
                         if((Command[3] != BAU_LOW ) &&

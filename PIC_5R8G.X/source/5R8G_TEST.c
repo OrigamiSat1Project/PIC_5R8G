@@ -144,13 +144,11 @@ void main(void){
                      * Max Roop_adr = 63- 24 = 39(0x27)
                      * Min Jump_adr = 3
                      * Max Jump_adr = 63/8 ~= 7
+                     * 63 = 0x3f
                      * =========================================================
                      */
                     case 'R':
-                        //  sector size limit
-                        if(Command[3] >= 0x28){
-                            Command[3] = 0x27;
-                        }
+                        if((Command[3] + (UBYTE)(Jump_adr>>16) * 8) > 0x3f) break;
                         Roop_adr = (UDWORD)Command[3]<<16;
                         /* Comment
                          * =====================================================
@@ -166,11 +164,7 @@ void main(void){
                          */
                         break;
                     case 'J':
-                        if(Command[3] >= 0x08){
-                            Command[3] = 0x07;
-                        }else if(Command[3] <= 0x02){
-                            Command[3] = 0x03;
-                        }
+                        if(((UBYTE)(Roop_adr>>16) + Command[3] * 8) > 0x3f) break;
                         Jump_adr = (UDWORD)Command[3]<<16;
                         /* Code
                          * =====================================================

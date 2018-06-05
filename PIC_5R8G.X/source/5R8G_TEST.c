@@ -60,7 +60,7 @@ void main(void){
     //UDWORD FROM_Read_adr  = g1_data_adr;
     //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00Ââ?ºÂâ?º0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
-    UDWORD Jump_adr = 0x20000;
+    UDWORD Jump_adr = 0x30000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
     init_module();
@@ -125,16 +125,27 @@ void main(void){
                 *  Ground Station can choose only sector start address kind of 0x00Ââ?ºÂâ?º0000
                 */
                 switch(Command[2]){
+                    /* Comment
+                     * =========================================================
+                     * We can use 63 sectors in FROM
+                     * Original JPEG uses 24(3jump * 8groups) sectors each.
+                     * Max Roop_adr = 63- 24 = 39(0x27)
+                     * Min Jump_adr = 3
+                     * Max Jump_adr = 63/8 ~= 7
+                     * =========================================================
+                     */
                     case 'R':
                         //  sector size limit
-                        if(Command[3] >= 0x47){
-                            Command[3] = 0x45;
+                        if(Command[3] >= 0x28){
+                            Command[3] = 0x27;
                         }
                         Roop_adr = (UDWORD)Command[3]<<16;
                         break;
                     case 'J':
                         if(Command[3] >= 0x08){
                             Command[3] = 0x07;
+                        }else if(Command[3] <= 0x02){
+                            Command[3] = 0x03;
                         }
                         Jump_adr = (UDWORD)Command[3]<<16;
                         break;

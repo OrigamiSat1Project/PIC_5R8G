@@ -45,6 +45,68 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * =============================================================
      */
     send_01();
+    
+    /* Comment
+     * =========================================================================
+     * Significant change
+     * We have used 0xff, 0x1e flag in this function.
+     * We will use only 0xff flag
+     * 
+     * How to use flag
+     * Bit7    Bit6    Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
+     * ----    ----    cnt5    cnt4    cnt3    cnt2    cnt1    cnt0_0xff
+     * =========================================================================
+     */
+    
+    /* Code
+     * =========================================================================
+    while(CAM2 == 0){
+        if(readFROM_Count >= 8){
+            readFROM_Count = 0;
+            FROM_Read_adr = Roop_adr;
+            receiveEndJpegFlag = 0x00;
+        }
+        if((Identify_8split & (0x01<<readFROM_Count)) == (0x01<<readFROM_Count)){   >
+            flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            for(UINT i=0; i<MaxOfMemory; i++){  >
+                downlinkChar(Buffer[i]);
+                if(Buffer[i] == FooterOfJPEG[0]){
+                    receiveEndJpegFlag += 0x01;
+                }else{
+                    receiveEndJpegFlag &= 0x00;
+                }
+                if(receiveEndJpegFlag >= (UBYTE)(MaxOfMemory)){
+                    receiveEndJpegFlag &= 0x00;
+                    readFROM_Count ++;
+                    FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
+                    downlinkRest('1');
+                    sendBufferCount = 1;
+                    __delay_ms(3000);
+                    break;
+                }
+            }
+            FROM_Read_adr += (UDWORD)(MaxOfMemory);
+
+             //  for rest
+            if(sendBufferCount % JPGCOUNT == 0){
+                downlinkRest('A');
+                sendBufferCount = 0;
+            }
+            
+            //  WDT dealing
+            sendBufferCount ++;
+            if (sendBufferCount % 20 == 0) {
+                CLRWDT();
+                WDT_CLK = ~WDT_CLK;
+            }
+        }
+        else{
+            readFROM_Count ++;
+            FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
+        }
+    }
+     * =========================================================================
+    */
     while(CAM2 == 0){
         if(readFROM_Count >= 8){
             readFROM_Count = 0;

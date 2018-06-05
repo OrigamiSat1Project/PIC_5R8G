@@ -47,7 +47,6 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     *  During writing group 6     = 0x50  (0b01010000)
     *  During writing group 7     = 0x60  (0b01100000)
     *  During writing group 8     = 0x70  (0b01110000)
-    *  After Writing              = 0x80  (0b10000000)
     * ===============================================================================================================
     */
     UINT index_of_Buffer = 0;
@@ -87,7 +86,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
             /* Code
              * =================================================================
-             * if(receiveEndJpegFlag < 0x80){    >  //Before ECC
+             * if(receiveEndJpegFlag < 0x70){    >  //Before ECC
              *      FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
              * }
              * =================================================================
@@ -205,7 +204,6 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
      *  During writing group 6     = 0x50  (0b01010000)
      *  During writing group 7     = 0x60  (0b01100000)
      *  During writing group 8     = 0x70  (0b01110000)
-     *  After Writing              = 0x80  (0b10000000)
      * ===============================================================================================================
      */
     UINT index_of_Buffer = 0;
@@ -246,7 +244,7 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             receiveEndH264Flag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag.
             receiveEndH264Flag += 0x10;     //+1 8split_cnt in receiveEndH264Flag.
             =================================================================
-            if(receiveEndJpegFlag < 0x80){    >  //Before ECC
+            if(receiveEndJpegFlag < 0x70){    >  //Before ECC
                 FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
             }
             =================================================================

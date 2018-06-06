@@ -61,28 +61,26 @@ void main(void){
         
         
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-            //XXX : timer
-            //==================================================================
-            timer_counter = 0;
-            //==================================================================
             for(UINT i=0;i<8;i++){
                 Command[i] = 0x21;
             }
             //  sync with commands by OBC
+            timer_counter = 0;
             while(Command[0] != '5'){
-                while(RCIF != 1);
+                while(RCIF != 1){
+                    if(timer_counter > 100) break;
+                }
+                if(timer_counter > 100) break;
                 Command[0] = RCREG;
             }
             //  TODO : Add time restrict
+            //XXX
+            timer_counter = 0;
             for(UINT i=1;i<8;i++){
-                //XXX : 1count = 10ms, if waiting here over 100ms, clear
-                //==============================================================
                 while(RCIF != 1){
-                    if(timer_counter > 10) break;
+                    if(timer_counter > 100) break;
                 }
-                //XXX : 1count = 10ms, if waiting here over 100ms, clear
-                if(timer_counter > 10) break;
-                //==============================================================
+                if(timer_counter > 100) break;
                 Command[i] = RCREG;
             }
         }

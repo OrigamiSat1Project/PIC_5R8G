@@ -39,15 +39,17 @@
      INTCONbits.PEIE    = Bit_High;
      PIE1bits.TMR2IE    = Bit_High;
      PIR1bits.TMR2IF    = Bit_Low;
-     //Postscaler 1:8, Prescalr 1:1 1count:5.4274u * 8 = 43.4192u
      T2CON   = 0x3c;        
-     TMR2    = 0xe7;         //231 count * 43.4192us = 10.03ms
-     PR2     = 0x00;       
+     TMR2    = 0x00;
+     PR2     = 0xe6;       
  }
  void interrupt incrementTimer(void){
      if(PIR1bits.TMR2IF){
          PIR1bits.TMR2IF = 0;
-         PR2 = 0x00;
+         TMR2 = 0x00;
          timer_counter++;
+     }
+     if(timer_counter > 15000){
+         timer_counter = 0;
      }
  }

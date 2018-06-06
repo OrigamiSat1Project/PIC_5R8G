@@ -68,13 +68,7 @@ void main(void){
     * Roop_adr in 0x00000000
     * Jump_adr in 0x00000001
     * =====================================================
-    * Code
-    * =====================================================
-    * flash_Read_Data((UDWORD)(0x00), (UDWORD)(0x01), &Roop_adr);
-    * flash_Read_Data((UDWORD)(0x01), (UDWORD)(0x01), &Jump_adr);
-    * =====================================================
     */
-    //UINT roopcount = 0;
     init_module();
     while(1){
         if(CAMERA_POW == 0){
@@ -149,6 +143,8 @@ void main(void){
                      */
                     case 'R':
                         if((Command[3] + (UBYTE)(Jump_adr>>16) * 8) > 0x3f) break;
+                        //FIXME : debug
+                        sendChar(Roop_adr >> 16);
                         Roop_adr = (UDWORD)Command[3]<<16;
                         /* Comment
                          * =====================================================
@@ -156,22 +152,21 @@ void main(void){
                          * Roop_adr in 0x00000000
                          * Jump_adr in 0x00000001
                          * =====================================================
-                         * Code
-                         * =====================================================
-                         * flash_Write_Data((UDWORD)(0x00), (UDWORD)(0x01), Command+3);
-                         * flash_Read_Data((UDWORD)(0x00), (UDWORD)(0x01), &Roop_adr);
-                         * =====================================================
                          */
+                        flash_Write_Data((UDWORD)(0x00), (UDWORD)(0x01), Command+3);
+                        flash_Read_Data((UDWORD)(0x00), (UDWORD)(0x01), &Roop_adr);
+                        //FIXME : debug
+                        sendChar(Roop_adr >> 16);
                         break;
                     case 'J':
                         if(((UBYTE)(Roop_adr>>16) + Command[3] * 8) > 0x3f) break;
+                        //FIXME : debug
+                        sendChar(Jump_adr >> 16);
                         Jump_adr = (UDWORD)Command[3]<<16;
-                        /* Code
-                         * =====================================================
-                         * flash_Write_Data((UDWORD)(0x01), (UDWORD)(0x01), Command+3);
-                         * flash_Read_Data((UDWORD)(0x01), (UDWORD)(0x01), &Jump_adr);
-                         * =====================================================
-                         */
+                        flash_Write_Data((UDWORD)(0x01), (UDWORD)(0x01), Command+3);
+                        flash_Read_Data((UDWORD)(0x01), (UDWORD)(0x01), &Jump_adr);
+                        //FIXME : debug
+                        sendChar(Jump_adr >> 16);
                         break;
                     case 'B':
                         if((Command[3] != BAU_LOW ) &&

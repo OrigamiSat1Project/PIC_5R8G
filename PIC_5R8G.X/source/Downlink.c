@@ -6,6 +6,7 @@
 #include "UART.h"
 #include "time.h"
 #include "FROM.h"
+#include "Timer.h"
 
 void downlinkChar(UBYTE);
 void downlinkRest(UBYTE);
@@ -45,11 +46,10 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * =============================================================
      */
     send_01();
-    /* Code
-     * =================================================================
-     * TMR IE = High; //Timer Eables Timer 1 or 2
-     * =================================================================
-     */
+    //XXX : Timer
+    // =========================================================================
+    timer_counter = 0;
+    // =========================================================================
     while(CAM2 == 0){
         if(readFROM_Count >= 8){
             readFROM_Count = 0;
@@ -77,13 +77,19 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                 }
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
-
-            //  FIXME : TIMER2
              //  for rest
             if(sendBufferCount % JPGCOUNT == 0){
                 downlinkRest('A');
                 sendBufferCount = 0;
             }
+            
+            //XXX : rest by using timer
+            // =================================================================
+            if(timer_counter > 1000){
+                downlinkRest('A');
+                timer_counter = 0;
+            }
+            // =================================================================
             
             //  WDT dealing
             sendBufferCount ++;
@@ -100,11 +106,6 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     offAmp();
     CREN = Bit_High;
     TXEN = Bit_Low;
-    /* Code
-     * =================================================================
-     * TMR IE = Low; //Timer Eables Timer 1 or 2
-     * =================================================================
-     */
 }
 
 void downlinkChar(UBYTE buf){
@@ -115,17 +116,22 @@ void downlinkChar(UBYTE buf){
 void downlinkRest(UBYTE c){
     if (c == '1'){
         send_01();
-    }else{
+    }else if (c == 'A'){
         send_AB();
     }
     offAmp();
     __delay_ms(5000);
+    //XXX : using timer
+    // =========================================================================
+    timer_counter = 0;
+    while(timer_counter < 500);
+    // =========================================================================
     if(CAMERA_POW == 1){
         onAmp();
     }
     if (c == '1'){
         send_01();
-    }else{
+    }else if (c== 'A'){
         send_AB();
     }
 }

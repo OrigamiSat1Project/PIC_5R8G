@@ -59,14 +59,12 @@ void main(void){
         UBYTE Command[8];
         Command[0] = 0x21;
         
-        /* Code
-         * =====================================================================
-         * UINT Timer_count_1 = 0;
-         * UINT Timer_count_2 = 0;
-         * =====================================================================
-         */
-
+        
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
+            //XXX : timer
+            //==================================================================
+            timer_counter = 0;
+            //==================================================================
             for(UINT i=0;i<8;i++){
                 Command[i] = 0x21;
             }
@@ -75,22 +73,19 @@ void main(void){
                 while(RCIF != 1);
                 Command[0] = RCREG;
             }
-            /* Code
-             * =================================================================
-             * TMR IE = High; //Timer Eables Timer 1 or 2
-             * =================================================================
-             */
             //  TODO : Add time restrict
             for(UINT i=1;i<8;i++){
-                while(RCIF != 1);
+                //XXX : 1count = 10ms, if waiting here over 100ms, clear
+                //==============================================================
+                while(RCIF != 1){
+                    if(timer_counter > 10) break;
+                }
+                //XXX : 1count = 10ms, if waiting here over 100ms, clear
+                if(timer_counter > 10) break;
+                //==============================================================
                 Command[i] = RCREG;
             }
         }
-        /* Code
-         * =================================================================
-         * TMR IE = Low; //Timer Eables Timer 1 or 2
-         * =================================================================
-         */
         for(UINT i=0;i<8;i++){
             sendChar(Command[i]);
         }

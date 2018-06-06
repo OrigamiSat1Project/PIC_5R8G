@@ -6,6 +6,7 @@
 #include "UART.h"
 #include "time.h"
 #include "FROM.h"
+#include "Timer.h"
 
 /*** ÁπùÊß≠„Å?Áπß?Ω≥ÁπùÔΩ≥ËõªÊô?ÊÇ?ËõπÈñ???Ω¶ÈÄ?? ***/
 void init_mpu(void)
@@ -38,12 +39,8 @@ void init_module(void){
     FLASH_SPI_EI();                     //enable SPI
     init_max2828();                     //init MAX2828
     Mod_SW = 0;                         //FSK modulation ON
-    //XXX : Timer processing
-    /* Code
-     * ======================================================================================
-     * init_Interrput();
-     * ======================================================================================
-     */
+    //XXX : Timer
+    initInterrupt();
 }
     
     /* Comment

@@ -12,6 +12,8 @@
 #include "ReceiveJPEG.h"
 #include "Downlink.h"
 #include "CRC16.h"
+#include "typedefine.h"
+#include "Timer.h"
 
 /* Comment
  * =============================================================================
@@ -28,45 +30,24 @@
  * We have to check it out how long time we need
  *      1. Discard uncorrect Command
  *      2. Rest time (maybe 5s)
- * We can't send variables from main to intterupt, may have to define Command in not main but global
- * 
- * 2.5 sec  = 43.4192u sec * 256 *225
- * 1.0 sec  = 355.384m sec * 3
  * =============================================================================
  * Code
  * =============================================================================
- * void init_Interrput(void){
- *      INTCON  = 0xC0;
- *      T1CON   = 0x31;
- *      TMRL    = 0x1f;
- *      TMRH    = 0x00;
- *      T2CON   = 0x7f;
- *      TMR2    = 0x03;
- *      PR2     = 0xff;
- * }
- * 
- * void interrupt TImer_interrput(void){
- *      if(PIR1bits.TMR1IF){
- *          PIR1bits.TMR1IF = 0;
- *          TMR1L = 0x1f;
- *          TMR1H = 0x00;
- *          Timer_count_1++;      //1count = 2.5s
- *      }
- *      if(Timer_count_1 == 4){
- *          downlinkRest('A');
- *          Timter_count_1 = 0;
- *      }
- *      else if(PIR1bits.TMR2IF){
- *          PIR1bits.TMR2IF = 0;    
- *          TMR2    = 0x03;
- *          Timer_count_2++;    //1count = 355 ms
- *      }
- *      if(Timer_count_2 == 1000){
- *          for(UINT i=0; i<8;i++){     >
- *              Command[i] = 0x21;
- *          }
- *      Timer_count_2 = 0;
- *      }
- * }
- * =============================================================================
  */
+ void initInterrupt(void){
+     INTCONbits.GIE     = Bit_High;
+     INTCONbits.PEIE    = Bit_High;
+     PIE1bits.TMR2IE    = Bit_High;
+     PIR1bits.TMR2IF    = Bit_Low;
+     //Postscaler 1:8, Prescalr 1:1 1count:5.4274u * 8 = 43.4192u
+     T2CON   = 0x3c;        
+     TMR2    = 0xe7;         //231 count * 43.4192us = 10.03ms
+     PR2     = 0x00;       
+ }
+ void interrupt incrementTimer(void){
+     if(PIR1bits.TMR2IF){
+         PIR1bits.TMR2IF = 0;
+         PR2 = 0x00;
+         timer_counter++;
+     }
+ }

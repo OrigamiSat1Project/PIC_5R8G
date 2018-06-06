@@ -1,5 +1,6 @@
 /*Timer.h*/
 
+#include <xc.h>
 #include "typedefine.h"
 
 #ifndef TIMER_H

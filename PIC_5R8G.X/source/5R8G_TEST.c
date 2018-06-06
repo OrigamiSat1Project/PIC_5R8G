@@ -33,171 +33,17 @@
 
 UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
-
-#define JPGCOUNT 5000
 void main(void){
-    UDWORD			g1_data_adr = (UDWORD)0x00010000;
-    //UDWORD			g2_data_adr = (UDWORD)0x00020000;   No need
-
-    //UBYTE Buffer[MaxOfMemory];
-    //UINT indexOfBuffer = 0;
-
-    //UDWORD FROM_Write_adr = g1_data_adr;
-    //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00??申?申??申?申??申?申??申?申0000. Use in 'C' and 'D' command
-    UDWORD Roop_adr = g1_data_adr;
-    UDWORD Jump_adr = 0x020000;
-    //UDWORD FROM_Jump_next_sector = 0x10000;
-    //UINT roopcount = 0;
-    init_module();
+    
+    init_mpu();
+    initInterrupt();
+    timer_counter = 0;
     while(1){
-        if(CAMERA_POW == 0){
-            offAmp();
-        }
-        CREN = Bit_High;
-        TXEN = Bit_High;
-        UBYTE Command[8];
-        Command[0] = 0x21;
-        
-        
-        while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-            //XXX : timer
-            //==================================================================
+        if(timer_counter == 10000){
+            BUSY = 1;
+            __delay_ms(100);
+            BUSY = 0;
             timer_counter = 0;
-            //==================================================================
-            for(UINT i=0;i<8;i++){
-                Command[i] = 0x21;
-            }
-            //  sync with commands by OBC
-            while(Command[0] != '5'){
-                while(RCIF != 1);
-                Command[0] = RCREG;
-            }
-            //  TODO : Add time restrict
-            for(UINT i=1;i<8;i++){
-                //XXX : 1count = 10ms, if waiting here over 100ms, clear
-                //==============================================================
-                while(RCIF != 1){
-                    if(timer_counter > 10) break;
-                }
-                //XXX : 1count = 10ms, if waiting here over 100ms, clear
-                if(timer_counter > 10) break;
-                //==============================================================
-                Command[i] = RCREG;
-            }
-        }
-        for(UINT i=0;i<8;i++){
-            sendChar(Command[i]);
-        }
-        //FIXME : debug
-        send_OK();
-
-        switch(Command[1]){
-            case 'P':
-                switch(Command[2]){
-                    case '8':
-                        Downlink(Roop_adr, Jump_adr, Command[3]);
-                        break;
-                    case 'T':
-                        Downlink(Roop_adr, Jump_adr, 0x01);
-                        break;
-                }
-                break;
-            case 'D':
-                while(CAM2 == 1);   //  wait 5V SW
-                while(CAM2 == 0){
-                    if(CAMERA_POW == 1){
-                        onAmp();
-                    }
-                    send_dummy_data();
-                }
-                offAmp();
-                //  FIXME : for debug
-                send_OK();
-                break;
-            case 'R':
-                switch(Command[2]){
-                    case '8':
-                        Receive_8split_JPEG(Roop_adr, Jump_adr);
-                        send_OK();
-                        break;
-                    case 'T':
-                        Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
-                        send_OK();
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case 'E':
-                Erase_sectors(Command[2], Command[3]);
-                break;
-            case 'I':
-                init_module();
-                break;
-            case 'C':
-                switch(Command[2]){
-                    case 'R':
-                        //  sector size limit
-                        if(Command[3] >= 0x47){
-                            Command[3] = 0x45;
-                        }
-                        Roop_adr = (UDWORD)Command[3]<<16;
-                        //FIXME : debug
-                        sendChar((UBYTE)(Roop_adr >> 16));
-                        send_OK();
-                        break;
-                    case 'J':
-                        if(Command[3] >= 0x08){
-                            Command[3] = 0x07;
-                        }
-                        Jump_adr = (UDWORD)Command[3]<<16;
-                        break;
-                    case 'B':
-                        if((Command[3] != BAU_LOW ) &&
-                           (Command[3] != BAU_MIDDLE) &&
-                           (Command[3] != BAU_HIGH)){
-                            break;
-                        }
-                        change_downlink_baurate(Command[3]);
-                        send_OK();
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case 'S':
-               /* Comment
-                * ======================================================================================
-                * Make Sleep mode (Command =='S')
-                * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
-                * We have to keep MCLR pin High.
-                * Above this is uncorrect because we shouldn't use PIC_SLEEP.
-                * Sleep mode only FROM, Amp
-                *=======================================================================================
-                * Code
-                *=======================================================================================
-                flash_Deep_sleep();
-                offAmp();
-                break;
-                * =======================================================================================
-                */
-            case 'W':
-               /*Comment
-                * ======================================================================================
-                * Make Wake up mode (Command == 'W')
-                *======================================================================================
-                * Code
-                * =======================================================================================
-                * flash_Wake_up();
-                * =======================================================================================
-                */
-                break;
-            default:
-                //  FIXME : for debug
-                sendChar(0xff);
-                offAmp();
-                break;
         }
     }
 }

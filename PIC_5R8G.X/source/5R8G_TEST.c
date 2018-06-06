@@ -158,7 +158,7 @@ void main(void){
                          * =====================================================
                          * Code
                          * =====================================================
-                         * flash_Write_Data((UDWORD)(0x00), (UDWORD)(0x01), &Command+3);
+                         * flash_Write_Data((UDWORD)(0x00), (UDWORD)(0x01), Command+3);
                          * flash_Read_Data((UDWORD)(0x00), (UDWORD)(0x01), &Roop_adr);
                          * =====================================================
                          */
@@ -168,7 +168,7 @@ void main(void){
                         Jump_adr = (UDWORD)Command[3]<<16;
                         /* Code
                          * =====================================================
-                         * flash_Write_Data((UDWORD)(0x01), (UDWORD)(0x01), &Command+3);
+                         * flash_Write_Data((UDWORD)(0x01), (UDWORD)(0x01), Command+3);
                          * flash_Read_Data((UDWORD)(0x01), (UDWORD)(0x01), &Jump_adr);
                          * =====================================================
                          */

@@ -69,7 +69,9 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
      * =========================================================================
      */
     while((receiveEndJpegFlag  & 0x80) != 0x80){
-        while (RCIF != 1);
+        while (RCIF != 1){
+            if(CAM1 == 1) break;
+        }
         Buffer[index_of_Buffer] = RCREG;
         if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
             receiveEndJpegFlag |= 0x01;
@@ -140,7 +142,9 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
      */
     while((receiveEndJpegFlag  & 0x10) != 0x10)
     {
-        while (RCIF != 1);
+        while (RCIF != 1){
+            if(CAM1 == 1) break;
+        }
         Buffer[index_of_Buffer] = RCREG;
         if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
             receiveEndJpegFlag |= 0x01;
@@ -217,7 +221,9 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
      * =========================================================================
      */
     while((receiveEndH264Flag  & 0x80) != 0x80){
-        while (RCIF != 1);
+        while (RCIF != 1){
+            if(CAM1 == 1) break;
+        }
         Buffer[index_of_Buffer] = RCREG;
         /* Skelton
         if((receiveEndH264Flag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfH264[0]){

@@ -116,6 +116,8 @@ void main(void){
                                 Receive_8split_H264(Roop_adr, Jump_adr);
                                 send_OK;
                                 break;
+                            case 'E':
+                                Receive_ECC(Roop_adr, Jump_adr, Command+3);
                             default:
                                 break;
                         }

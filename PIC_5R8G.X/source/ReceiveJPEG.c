@@ -22,8 +22,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
    /* Comment
     * ==========================================================================
     * Erase sectors before writing FROM
-    * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
-    * We erase 16 sectors from Roop_adr in this Code.
+    * We erase Roop_adr + Jump_adr * 8 sectors before writing
     * ==========================================================================
     */
     Erase_sectors_before_Write(Roop_adr, Jump_adr);   
@@ -110,11 +109,10 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
 
 void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
    /* Comment
-    * ===================================================================================================
+    * ==========================================================================
     * Erase sectors before writing FROM
-    * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
-    * We erase 16 sectors from Roop_adr in this Code.
-       ===================================================================================================
+    * We erase Roop_adr + Jump_adr * 8 sectors before writing
+    * ==========================================================================
     */
     Erase_sectors_before_Write(Roop_adr, Jump_adr);
     UBYTE Buffer[MaxOfMemory];
@@ -176,11 +174,10 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
 
 void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
    /* Comment
-    * ===================================================================================================
+    * ==========================================================================
     * Erase sectors before writing FROM
-    * Original JPEG use 16 sectors and 1/4 JPEG use 8 sectors.
-    * We erase 16 sectors from Roop_adr in this Code.
-       ===================================================================================================
+    * We erase Roop_adr + Jump_adr * 8 sectors before writing
+    * ==========================================================================
     */
     Erase_sectors_before_Write(Roop_adr, Jump_adr);
     UBYTE Buffer[MaxOfMemory];
@@ -258,6 +255,79 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             index_of_Buffer++;
         }
         */
+        if(index_of_Buffer == MaxOfMemory){
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            FROM_Write_adr += (UDWORD)(MaxOfMemory);
+            index_of_Buffer = 0;
+        }
+    }
+}
+
+void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE *Command_length){
+   /* Comment
+    * ==========================================================================
+    * Erase sectors before writing FROM
+    * We erase Roop_adr + Jump_adr * 8 sectors before writing
+    * ==========================================================================
+    */
+    Erase_sectors_before_Write(Roop_adr, Jump_adr);   
+    UBYTE Buffer[MaxOfMemory];
+    UBYTE receiveEndECCFlag = 0x00;
+    UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
+    
+    /* Comment
+     * =========================================================================
+     * We calc the length of ECC from Command_length
+     * =========================================================================
+     */
+    UINT ECC_length = 0;
+    for(UINT i=0; i<3; i++){    
+        ECC_length += *(Command_length + i) << 8*(2-i); 
+    }
+    
+   /*  How to use receiveEndECCFlag
+    * ===============================================================================================================
+    * Bit7    Bit6    Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
+    *                                 cnt3    cnt2    cnt1    cnt0
+    *  
+    *  Initialize                 = 0x00  (0b00000000)
+    * ===============================================================================================================
+    */
+    UINT index_of_Buffer = 0;
+    UINT ECC_count = 0;
+    //FIXME : 
+    sendChar(0xee);
+    CREN = Bit_High;    //It is needed for integration with OBC
+    //TXEN = Bit_High;
+    while(receiveEndECCFlag != 0x08){
+        while (RCIF != 1){
+            if(CAM1 == 1) break;
+        }
+        Buffer[index_of_Buffer] = RCREG;
+        if (receiveEndECCFlag < 0x07 && ECC_count == ECC_length/8)
+        {
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            index_of_Buffer = 0;
+            //  Jump to next group's first sector & change flag
+            receiveEndECCFlag += 0x01;     //+1 8split_cnt in receiveEndECCFlag.
+            FROM_Write_adr = Roop_adr +(UINT)(receiveEndECCFlag) * Jump_adr;
+            ECC_count = 0;
+            //FIXME : debug
+            sendChar(receiveEndECCFlag);
+            sendChar((UBYTE)(FROM_Write_adr >> 16));
+        }
+        else if(receiveEndECCFlag = 0x07 && ECC_count == (ECC_length - (ECC_length/8) * 7))
+        {
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            index_of_Buffer = 0;
+            ECC_count = 0;
+            receiveEndECCFlag += 0x01;
+        }
+        else
+        {
+            ECC_count++;
+            index_of_Buffer++;
+        }
         if(index_of_Buffer == MaxOfMemory){
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
             FROM_Write_adr += (UDWORD)(MaxOfMemory);

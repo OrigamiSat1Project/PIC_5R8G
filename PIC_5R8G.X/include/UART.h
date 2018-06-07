@@ -43,7 +43,7 @@ void send_NG(void);
 void send_CRLF(void);
 void echo_back(void);
 void send_dummy_data(void);
-UBYTE    getUartData(void);
+UBYTE    getUartData(UBYTE);
 typedef union{
 	UBYTE	Data[64];
 	UDWORD	dummy;

@@ -68,7 +68,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                     readFROM_Count ++;
                     FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
                     downlinkRest('1');
-                    sendBufferCount = 1;
+//                    sendBufferCount = 1;
                     __delay_ms(3000);
                     break;
                 }
@@ -78,25 +78,24 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
              //  for rest
-            if(sendBufferCount % JPGCOUNT == 0){
-                downlinkRest('A');
-                sendBufferCount = 0;
-            }
+//            if(sendBufferCount % JPGCOUNT == 0){
+//                downlinkRest('A');
+//                sendBufferCount = 0;
+//            }
             
             //XXX : rest by using timer
             // =================================================================
             if(timer_counter > 1000){
                 downlinkRest('A');
-                timer_counter = 0;
             }
             // =================================================================
             
             //  WDT dealing
-            sendBufferCount ++;
-            if (sendBufferCount % 20 == 0) {
-                CLRWDT();
-                WDT_CLK = ~WDT_CLK;
-            }
+//            sendBufferCount ++;
+//            if (sendBufferCount % 20 == 0) {
+//                CLRWDT();
+//                WDT_CLK = ~WDT_CLK;
+//            }
         }
         else{
             readFROM_Count ++;
@@ -121,11 +120,6 @@ void downlinkRest(UBYTE c){
     }
     offAmp();
     __delay_ms(5000);
-    //XXX : using timer
-    // =========================================================================
-    timer_counter = 0;
-    while(timer_counter < 500);
-    // =========================================================================
     if(CAMERA_POW == 1){
         onAmp();
     }
@@ -134,4 +128,8 @@ void downlinkRest(UBYTE c){
     }else if (c== 'A'){
         send_AB();
     }
+    //XXX : reset timer
+    // =========================================================================
+    timer_counter = 0;
+    // =========================================================================
 }

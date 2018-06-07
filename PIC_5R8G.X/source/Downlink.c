@@ -70,7 +70,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
             for(UINT i=0; i<MaxOfMemory; i++){  >
                 downlinkChar(Buffer[i]);
-                if(Buffer[i] == FooterOfJPEG[0]){
+                if(Buffer[i] == FROM_default_data){
                     receiveEndJpegFlag += 0x01;
                 }else{
                     receiveEndJpegFlag &= 0x00;

@@ -67,10 +67,11 @@ void main(void){
             //  sync with commands by OBC
             timer_counter = 0;
             while(Command[0] != '5'){
-                while(RCIF != 1){
-                    if(timer_counter > 100) break;
+                if(OERR || FERR){
+                    CREN = 0;
+                    CREN = 1;
                 }
-                if(timer_counter > 100) break;
+                while(RCIF != 1);
                 Command[0] = RCREG;
             }
             //  TODO : Add time restrict
@@ -80,7 +81,6 @@ void main(void){
                 while(RCIF != 1){
                     if(timer_counter > 100) break;
                 }
-                if(timer_counter > 100) break;
                 Command[i] = RCREG;
             }
         }

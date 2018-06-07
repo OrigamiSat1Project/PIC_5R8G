@@ -34,21 +34,6 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 
 #define JPGCOUNT 5000
-
-/*  How to use receiveEndJpegFlag
- * ===============================================================================================================
- *  Bit7            Bit6            Bit5        Bit4        Bit3        Bit2        Bit1                Bit0
- *  8split_End      8split_cnt2     cnt1        cnt0        ----        ----        Flag_0x0E           Flag_0xFF
- *
- *  Initialize                  = 0x00
- *  Detect JPEG marker 0xFF     = 0x01
- *  End of receive JPEG         = 0x03  (0b00000011)
- *  During writing sector 2     = 0x10  (0b00010000)
- *  During writing sector 8     = 0x70  (0b01110000)
- *  After 8split_end            = 0x80  (0b10000000)
- * ===============================================================================================================
- */
-
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
     //UDWORD			g2_data_adr = (UDWORD)0x00020000;   No need
@@ -59,7 +44,7 @@ void main(void){
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
     //UDWORD FROM_sector_adr = g1_data_adr;
-   
+
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x30000;
    /* Comment
@@ -79,28 +64,35 @@ void main(void){
         UBYTE Command[8];
         Command[0] = 0x21;
 
-//        send_OK();
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
             for(UINT i=0;i<8;i++){
                 Command[i] = 0x21;
             }
             //  sync with commands by OBC
             while(Command[0] != '5'){
-                while(RCIF != 1);
-                Command[0] = RCREG;
-                sendChar(Command[0]);
+                Command[0] = getUartData('T');
             }
-            //  TODO : Add time restrict 
+            //  TODO : Add time restrict
             for(UINT i=1;i<8;i++){
-                while(RCIF != 1);
-                Command[i] = RCREG;
-                sendChar(Command[i]);
+                Command[i] = getUartData('T');
             }
         }
-        
+        for(UINT i=0;i<8;i++){
+            sendChar(Command[i]);
+        }
+        //FIXME : debug
+        send_OK();
+
         switch(Command[1]){
             case 'P':
-                Downlink(Roop_adr);
+                switch(Command[2]){
+                    case '8':
+                        Downlink(Roop_adr, Jump_adr, Command[3]);
+                        break;
+                    case 'T':
+                        Downlink(Roop_adr, Jump_adr, 0x01);
+                        break;
+                }
                 break;
             case 'D':
                 while(CAM2 == 1);   //  wait 5V SW
@@ -111,10 +103,22 @@ void main(void){
                     send_dummy_data();
                 }
                 offAmp();
+                //  FIXME : for debug
                 send_OK();
                 break;
             case 'R':
-                ReceiveJPEG(Roop_adr);
+                switch(Command[2]){
+                    case '8':
+                        Receive_8split_JPEG(Roop_adr, Jump_adr);
+                        send_OK();
+                        break;
+                    case 'T':
+                        Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
+                        send_OK();
+                        break;
+                    default:
+                        break;
+                }
                 break;
             case 'E':
                 Erase_sectors(Command[2], Command[3]);
@@ -123,13 +127,6 @@ void main(void){
                 init_module();
                 break;
             case 'C':
-               /* Comment
-                * ======================================================================================
-                *  Make Change Roop_adr received from OBC
-                *  Add Command C:Change Roop_adr when some sectors of FROM are broken
-                *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-                *  Ground Station can choose only sector start address kind of 0x00Ââ?ºÂâ?º0000
-                */
                 switch(Command[2]){
                     /* Comment
                      * =========================================================
@@ -146,17 +143,9 @@ void main(void){
                         //FIXME : debug
                         sendChar(Roop_adr >> 16);
                         Roop_adr = (UDWORD)Command[3]<<16;
-                        /* Comment
-                         * =====================================================
-                         * We save Roop_adr in FROM's 0 sector
-                         * Roop_adr in 0x00000000
-                         * Jump_adr in 0x00000001
-                         * =====================================================
-                         */
-                        flash_Write_Data((UDWORD)(0x00), (UDWORD)(0x01), Command+3);
-                        flash_Read_Data((UDWORD)(0x00), (UDWORD)(0x01), &Roop_adr);
                         //FIXME : debug
-                        sendChar(Roop_adr >> 16);
+                        sendChar((UBYTE)(Roop_adr >> 16));
+                        send_OK();
                         break;
                     case 'J':
                         if(((UBYTE)(Roop_adr>>16) + Command[3] * 8) > 0x3f) break;
@@ -175,6 +164,7 @@ void main(void){
                             break;
                         }
                         change_downlink_baurate(Command[3]);
+                        send_OK();
                         break;
                     default:
                         break;
@@ -208,6 +198,8 @@ void main(void){
                 */
                 break;
             default:
+                //  FIXME : for debug
+                sendChar(0xff);
                 offAmp();
                 break;
         }

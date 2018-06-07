@@ -33,29 +33,17 @@
 
 //static UBYTE getUartData(void);
 
-//ä÷êîÇÃêÈåæ
-/* */
-void setupCam(UBYTE);
-//void getPicture(void);
-void getPicSize(void);
-void getPicData(void);
-UBYTE CheckSendPort(void);
-void savePicData(void);
-UBYTE savePicSize(void);
-void sendModData(UDWORD);
-void send_pn9(void);
-void send_55(void);
-
 void send_tst_str(void);
 void initbau(UBYTE);
 void sendChar(UBYTE);
 void send_01(void);
+void send_AB(void);
 void send_OK(void);
 void send_NG(void);
 void send_CRLF(void);
 void echo_back(void);
 void send_dummy_data(void);
-UBYTE    getUartData(void);
+UBYTE    getUartData(UBYTE);
 typedef union{
 	UBYTE	Data[64];
 	UDWORD	dummy;

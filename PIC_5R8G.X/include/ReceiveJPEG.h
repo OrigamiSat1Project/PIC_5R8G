@@ -8,6 +8,6 @@
 void Receive_8split_JPEG(UDWORD, UDWORD);
 void Receive_thumbnail_JPEG(UDWORD, UDWORD);
 void Receive_8split_H264(UDWORD, UDWORD);
-void Receive_ECC(UDWORD, UDWORD, UBYTE *);
+void Receive_ECC(UDWORD, UDWORD, UINT);
 
 #endif	/* RECEIVEJPEG_H */

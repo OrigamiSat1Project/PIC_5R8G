@@ -34,21 +34,6 @@ UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
 
 #define JPGCOUNT 5000
-
-/*  How to use receiveEndJpegFlag
- * ===============================================================================================================
- *  Bit7            Bit6            Bit5        Bit4        Bit3        Bit2        Bit1                Bit0
- *  8split_End      8split_cnt2     cnt1        cnt0        ----        ----        Flag_0x0E           Flag_0xFF
- *  
- *  Initialize                  = 0x00
- *  Detect JPEG marker 0xFF     = 0x01
- *  End of receive JPEG         = 0x03  (0b00000011)
- *  During writing sector 2     = 0x10  (0b00010000)
- *  During writing sector 8     = 0x70  (0b01110000)
- *  After 8split_end            = 0x80  (0b10000000)
- * ===============================================================================================================
- */
-
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
     //UDWORD			g2_data_adr = (UDWORD)0x00020000;   No need
@@ -58,65 +43,40 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00ÅõÅõ0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00??øΩ?øΩ??øΩ?øΩ??øΩ?øΩ??øΩ?øΩ0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
-    UDWORD Jump_adr = 0x20000;
+    UDWORD Jump_adr = 0x020000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
     //UINT roopcount = 0;
-
     init_module();
-
     while(1){
         if(CAMERA_POW == 0){
             offAmp();
         }
         CREN = Bit_High;
-        //  FIXME : for debug
-        //TXEN = Bit_Low;
         TXEN = Bit_High;
         UBYTE Command[8];
-        Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
-        /* Comment
-         * =====================================================================
-         * 1. check first RCREG = 5
-         * 2. Command[] = RCREG
-         * 3. Check by CRC16
-         * =====================================================================
-         * Code
-         * =====================================================================
-         * while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-         *      while(RCIF != 1);
-         *      while(RCREG != '5');
-         *      Command[0] = RCREG;
-         *      for (UINT i=1; i<8; i++){         >
-         *          while(RCIF != 1);
-         *          COmmand[i] = RCREG;
-         *      }
-         * }
-         * =====================================================================
-         */
+        Command[0] = 0x21;
+
         while(Identify_CRC16(Command) != CRC_check(Command, 6)){
+            for(UINT i=0;i<8;i++){
+                Command[i] = 0x21;
+            }
             //  sync with commands by OBC
             while(Command[0] != '5'){
-                while(RCIF != 1);
-                Command[0] = RCREG;
+                Command[0] = getUartData('T');
             }
+            //  TODO : Add time restrict
             for(UINT i=1;i<8;i++){
-                while(RCIF != 1);
-                Command[i] = RCREG;
-                //  FIXME : need break function if receiving magic words
-                //if(Command[i] == 0xff) break;
+                Command[i] = getUartData('T');
             }
         }
-        
-        //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
-        
-        /* Comment
-         * ========================================================================
-         * CRC16 judgement before go to switch-case statement
-         * ========================================================================
-         */
-        
+        for(UINT i=0;i<8;i++){
+            sendChar(Command[i]);
+        }
+        //FIXME : debug
+        send_OK();
+
         switch(Command[1]){
             case 'P':
                 switch(Command[2]){
@@ -137,10 +97,22 @@ void main(void){
                     send_dummy_data();
                 }
                 offAmp();
+                //  FIXME : for debug
                 send_OK();
                 break;
             case 'R':
-                ReceiveJPEG(Roop_adr);
+                switch(Command[2]){
+                    case '8':
+                        Receive_8split_JPEG(Roop_adr, Jump_adr);
+                        send_OK();
+                        break;
+                    case 'T':
+                        Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
+                        send_OK();
+                        break;
+                    default:
+                        break;
+                }
                 break;
             case 'E':
                 Erase_sectors(Command[2], Command[3]);
@@ -149,17 +121,35 @@ void main(void){
                 init_module();
                 break;
             case 'C':
-               /* Comment
-                * ======================================================================================
-                *  Make Change Roop_adr received from OBC
-                *  Add Command C:Change Roop_adr when some sectors of FROM are broken
-                *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-                *  Ground Station can choose only sector start address kind of 0x00ÅõÅõ0000
-                */
-                Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
-                //FIXME : send 1byte by UART in order to check Roop_adr
-                UBYTE Roop_adr_check = (UBYTE)(Roop_adr >>16);
-                sendChar((UBYTE)(Roop_adr >> 16));
+                switch(Command[2]){
+                    case 'R':
+                        //  sector size limit
+                        if(Command[3] >= 0x47){
+                            Command[3] = 0x45;
+                        }
+                        Roop_adr = (UDWORD)Command[3]<<16;
+                        //FIXME : debug
+                        sendChar((UBYTE)(Roop_adr >> 16));
+                        send_OK();
+                        break;
+                    case 'J':
+                        if(Command[3] >= 0x08){
+                            Command[3] = 0x07;
+                        }
+                        Jump_adr = (UDWORD)Command[3]<<16;
+                        break;
+                    case 'B':
+                        if((Command[3] != BAU_LOW ) &&
+                           (Command[3] != BAU_MIDDLE) &&
+                           (Command[3] != BAU_HIGH)){
+                            break;
+                        }
+                        change_downlink_baurate(Command[3]);
+                        send_OK();
+                        break;
+                    default:
+                        break;
+                }
                 break;
             case 'S':
                /* Comment
@@ -167,7 +157,7 @@ void main(void){
                 * Make Sleep mode (Command =='S')
                 * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
                 * We have to keep MCLR pin High.
-                * Above this is uncorrect because we shouldn't use PIC_SLEEP. 
+                * Above this is uncorrect because we shouldn't use PIC_SLEEP.
                 * Sleep mode only FROM, Amp
                 *=======================================================================================
                 * Code
@@ -189,6 +179,8 @@ void main(void){
                 */
                 break;
             default:
+                //  FIXME : for debug
+                sendChar(0xff);
                 offAmp();
                 break;
         }

@@ -11,23 +11,23 @@
 #include "InitMPU.h"
 
 
-//ï¿½Ïï¿½ï¿½ÌéŒ¾
-static UBYTE send_buf[6];	//ï¿½ï¿½ï¿½Mï¿½pï¿½oï¿½bï¿½tï¿½@
-static UBYTE rData[12];		//ï¿½ï¿½ï¿½Mï¿½pï¿½oï¿½bï¿½tï¿½@
-static USLONG dlength;		//ï¿½fï¿½[ï¿½^ï¿½ï¿½
+//?¿½Ïï¿½?¿½ÌéŒ¾
+static UBYTE send_buf[6];	//?¿½?¿½?¿½M?¿½p?¿½o?¿½b?¿½t?¿½@
+static UBYTE rData[12];		//?¿½?¿½?¿½M?¿½p?¿½o?¿½b?¿½t?¿½@
+static USLONG dlength;		//?¿½f?¿½[?¿½^?¿½?¿½
 
-extern UDWORD               g_data_adr;	//FROMï¿½ï¿½ï¿½ÌƒAï¿½hï¿½ï¿½ï¿½X(ï¿½fï¿½[ï¿½^ï¿½p)
+extern UDWORD               g_data_adr;	//FROM?¿½?¿½?¿½ÌƒA?¿½h?¿½?¿½?¿½X(?¿½f?¿½[?¿½^?¿½p)
 
-//static bank2 volatile CamDataBuf	Rbuf2;	//ï¿½æ‘œï¿½fï¿½[ï¿½^ï¿½pï¿½oï¿½bï¿½tï¿½@
-//static bank3 volatile CamDataBuf	Rbuf3;	//ï¿½æ‘œï¿½fï¿½[ï¿½^ï¿½pï¿½oï¿½bï¿½tï¿½@
+//static bank2 volatile CamDataBuf	Rbuf2;	//?¿½æ‘œï¿½f?¿½[?¿½^?¿½p?¿½o?¿½b?¿½t?¿½@
+//static bank3 volatile CamDataBuf	Rbuf3;	//?¿½æ‘œï¿½f?¿½[?¿½^?¿½p?¿½o?¿½b?¿½t?¿½@
 
 
 const UBYTE STR[] = {"ABCDEFGH\r\n"};
 
-//ï¿½Öï¿½ï¿½ÌéŒ¾
+//?¿½Öï¿½?¿½ÌéŒ¾
 //static void		initbau(void);
 void            initbau(UBYTE);
-UBYTE           getUartData(void);
+UBYTE           getUartData(UBYTE);
 void            sendChar(UBYTE);
 void            send_01(void);
 void            send_AB(void);
@@ -59,17 +59,17 @@ void offAmp(void){
 
 }
 
-////ï¿½æ‘œï¿½fï¿½[ï¿½^ï¿½Û‘ï¿½
+////?¿½æ‘œï¿½f?¿½[?¿½^?¿½Û‘ï¿½
 //void savePicData(void)
 //{
-//	UBYTE idCount1 = 0;			//ï¿½pï¿½bï¿½Pï¿½[ï¿½WID(LSB)
-//	UBYTE idCount2 = 0;			//ï¿½pï¿½bï¿½Pï¿½[ï¿½WID(MSB)
+//	UBYTE idCount1 = 0;			//?¿½p?¿½b?¿½P?¿½[?¿½WID(LSB)
+//	UBYTE idCount2 = 0;			//?¿½p?¿½b?¿½P?¿½[?¿½WID(MSB)
 //	UWORD i = 0;
 ////	UBYTE Ret;
 //	UDWORD w_adr;
 //
 //	w_adr = g_data_adr;
-//	//ACK0ï¿½ğ‘—Mï¿½oï¿½bï¿½tï¿½@ï¿½Éƒï¿½ï¿½[ï¿½h
+//	//ACK0?¿½?‘—M?¿½o?¿½b?¿½t?¿½@?¿½É?¿½?¿½[?¿½h
 //	for(i=0;i<6;i++)
 //	{
 //		send_buf[i] = ACK0[i];
@@ -77,13 +77,13 @@ void offAmp(void){
 //
 //	while(dlength > 122)
 //	{
-//		//IDï¿½Jï¿½Eï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Z
+//		//ID?¿½J?¿½E?¿½?¿½?¿½g?¿½?¿½?¿½Z
 //		send_buf[4] = idCount1;
 //		send_buf[5] = idCount2;
 //
-//		sendAckID(send_buf);		//ACK(ï¿½fï¿½[ï¿½^ï¿½æ“¾ID)ï¿½ï¿½ï¿½M
+//		sendAckID(send_buf);		//ACK(?¿½f?¿½[?¿½^?¿½æ“¾ID)?¿½?¿½?¿½M
 //
-//		//ï¿½æ‘œï¿½fï¿½[ï¿½^ï¿½ï¿½ï¿½M
+//		//?¿½æ‘œï¿½f?¿½[?¿½^?¿½?¿½?¿½M
 //		for(i=0;i<64;i++)
 //		{
 //			Rbuf2.Data[i] = getUartData();
@@ -98,8 +98,8 @@ void offAmp(void){
 //
 //		dlength -= 122;
 //
-//		//ï¿½Cï¿½ï¿½ï¿½[ï¿½Wï¿½fï¿½[ï¿½^IDï¿½Ì‰ï¿½ï¿½Zï¿½ï¿½ï¿½ï¿½
-//		if(idCount1 == 0xFF)	//ï¿½pï¿½bï¿½Pï¿½[ï¿½WIDï¿½ï¿½LSBï¿½ï¿½FFï¿½È‚çŒ…ï¿½ã‚ªï¿½ï¿½
+//		//?¿½C?¿½?¿½?¿½[?¿½W?¿½f?¿½[?¿½^ID?¿½Ì‰ï¿½?¿½Z?¿½?¿½?¿½?¿½
+//		if(idCount1 == 0xFF)	//?¿½p?¿½b?¿½P?¿½[?¿½WID?¿½?¿½LSB?¿½?¿½FF?¿½È‚çŒ…?¿½ã‚ª?¿½?¿½
 //		{
 //			idCount1 = 0;
 //			idCount2++;
@@ -110,14 +110,14 @@ void offAmp(void){
 //		}
 //	}
 //
-//	/***ï¿½ÅIï¿½pï¿½bï¿½Pï¿½[ï¿½Wï¿½Ìï¿½ï¿½ï¿½***/
+//	/***?¿½ÅI?¿½p?¿½b?¿½P?¿½[?¿½W?¿½Ìï¿½?¿½?¿½***/
 //	if(dlength != 0)
 //	{
-//		//IDï¿½Jï¿½Eï¿½ï¿½ï¿½gï¿½ï¿½ï¿½Z
+//		//ID?¿½J?¿½E?¿½?¿½?¿½g?¿½?¿½?¿½Z
 //		send_buf[4] = idCount1;
 //		send_buf[5] = idCount2;
 //
-//		sendAckID(send_buf);		//ACK(ï¿½fï¿½[ï¿½^ï¿½æ“¾ID)ï¿½ï¿½ï¿½M
+//		sendAckID(send_buf);		//ACK(?¿½f?¿½[?¿½^?¿½æ“¾ID)?¿½?¿½?¿½M
 //
 //		if(dlength > 58)
 //		{
@@ -179,7 +179,7 @@ void offAmp(void){
 //	}
 //}
 
-//UARTï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½
+//UART?¿½Ìï¿½?¿½?¿½?¿½?¿½
 void initbau(UBYTE bau)
 {
     if((bau != BAU_LOW ) &&
@@ -188,14 +188,14 @@ void initbau(UBYTE bau)
     {
             bau = BAU_WITH_OBC;
     }
-	/*ï¿½{ï¿½[ï¿½ï¿½ï¿½[ï¿½gï¿½İ’ï¿½*/
-	BRGH    = Bit_High;		//ï¿½{ï¿½[ï¿½ï¿½ï¿½[ï¿½gï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½[ï¿½h
-	BAUDCTL = 0x08;			//16ï¿½{ï¿½ï¿½
+	/*?¿½{?¿½[?¿½?¿½?¿½[?¿½g?¿½İ’ï¿½*/
+	BRGH    = Bit_High;		//?¿½{?¿½[?¿½?¿½?¿½[?¿½g?¿½?¿½?¿½?¿½?¿½?¿½?¿½[?¿½h
+	BAUDCTL = 0x08;			//16?¿½{?¿½?¿½
 	BAULATE = bau;
-	SPEN    = Bit_High;		//ï¿½Vï¿½ï¿½ï¿½Aï¿½ï¿½ï¿½|ï¿½[ï¿½gï¿½İ’ï¿½
+	SPEN    = Bit_High;		//?¿½V?¿½?¿½?¿½A?¿½?¿½?¿½|?¿½[?¿½g?¿½İ’ï¿½
 }
 
-//1Byteï¿½ï¿½ï¿½Mï¿½Öï¿½
+//1Byte?¿½?¿½?¿½M?¿½Öï¿½
 void sendChar(UBYTE c)
 {
 	while(TXIF != 1);
@@ -206,7 +206,7 @@ void send_tst_str(void){
     CREN = Bit_Low;
     TXEN = Bit_High;
 	UINT clock_in_tst = 0;
-//	initbau(BAU_HIGH);								//UARTï¿½Ìï¿½ï¿½ï¿½ï¿½ï¿½ 115.2kbps
+//	initbau(BAU_HIGH);								//UART?¿½Ìï¿½?¿½?¿½?¿½?¿½ 115.2kbps
 //	initbau(0x1F);									//57.6kbps
 //	initbau(0x5F);									//19.2kbps
     CAMERA_POW = 0;
@@ -323,10 +323,9 @@ void echo_back(void){
     CREN = Bit_High;
     TXEN = Bit_High;
     __delay_ms(1000);
-    //flash_Erase(g_data_adr,S_ERASE);    //g_data_adrï¿½ï¿½sector65536byteï¿½ï¿½ï¿½íœ
+    //flash_Erase(g_data_adr,S_ERASE);    //g_data_adr?¿½?¿½sector65536byte?¿½?¿½?¿½?œ
     while(1){
-        while(RCIF != 1);
-        testbuf1 = RCREG;
+        testbuf1 = getUartData(0x00);
         //flash_Write_Data(echo_adr,1UL,&testbuf1);
         //flash_Read_Data(echo_adr,1UL,&testbuf2);
         sendChar(testbuf1);
@@ -371,4 +370,22 @@ void change_downlink_baurate(UBYTE bau){
 
 UBYTE getDownlinkBAU(void){
     return BAU_WHEN_DOWNLINK;
+}
+
+UBYTE getUartData(UBYTE mode){
+    if(mode == 'T'){
+        if(OERR || FERR){
+            CREN = 0;
+            CREN = 1;
+        }
+        while(RCIF != 1);
+        return RCREG;
+    }else{
+        if(OERR || FERR){
+            CREN = 0;
+            CREN = 1;
+        }
+        while(RCIF != 1);
+        return RCREG;
+    }
 }

@@ -64,13 +64,11 @@ void main(void){
             }
             //  sync with commands by OBC
             while(Command[0] != '5'){
-                while(RCIF != 1);
-                Command[0] = RCREG;
+                Command[0] = getUartData('T');
             }
             //  TODO : Add time restrict
             for(UINT i=1;i<8;i++){
-                while(RCIF != 1);
-                Command[i] = RCREG;
+                Command[i] = getUartData('T');
             }
         }
         for(UINT i=0;i<8;i++){

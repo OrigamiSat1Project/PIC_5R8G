@@ -76,6 +76,7 @@ void main(void){
         }
         //FIXME : debug
         send_OK();
+        UINT ECC_length = 0;
 
         switch(Command[1]){
             case 'P':
@@ -114,14 +115,18 @@ void main(void){
                                 Receive_8split_H264(Roop_adr, Jump_adr);
                                 send_OK;
                                 break;
-                            case 'E':
-                                Receive_ECC(Roop_adr, Jump_adr, Command+3);
                             default:
                                 break;
                         }
+                    case 'E':
+                        for(UINT i=0; i<3; i++){
+                            ECC_length += Command[i+3] << 8*(2-i);
+                        }
+                        Receive_ECC(Roop_adr, Jump_adr, ECC_length);
+                        break;
                     case 'T':
                         Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
-                        send_OK();
+                        send_OK(); 
                         break;
                     default:
                         break;

@@ -139,7 +139,7 @@ void main(void){
                      * =========================================================
                      */
                     case 'R':
-                        if((Command[3] + (UBYTE)(Jump_adr>>16) * 8) > 0x3f) break;
+                        if((Command[3] + (UBYTE)(Jump_adr>>16) * 8) > MaxOfSector) break;
                         //FIXME : debug
                         sendChar(Roop_adr >> 16);
                         Roop_adr = (UDWORD)Command[3]<<16;
@@ -148,12 +148,10 @@ void main(void){
                         send_OK();
                         break;
                     case 'J':
-                        if(((UBYTE)(Roop_adr>>16) + Command[3] * 8) > 0x3f) break;
+                        if(((UBYTE)(Roop_adr>>16) + Command[3] * 8) > MaxOfSector) break;
                         //FIXME : debug
                         sendChar(Jump_adr >> 16);
                         Jump_adr = (UDWORD)Command[3]<<16;
-                        flash_Write_Data((UDWORD)(0x01), (UDWORD)(0x01), Command+3);
-                        flash_Read_Data((UDWORD)(0x01), (UDWORD)(0x01), &Jump_adr);
                         //FIXME : debug
                         sendChar(Jump_adr >> 16);
                         break;

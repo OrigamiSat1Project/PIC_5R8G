@@ -47,8 +47,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     CREN = Bit_High;    //It is needed for integration with OBC
     //TXEN = Bit_High;
     while((receiveEndJpegFlag  & 0x80) != 0x80){
-        while (RCIF != 1);
-        Buffer[index_of_Buffer] = RCREG;
+        Buffer[index_of_Buffer] = getUartData(0x00);
         if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
             receiveEndJpegFlag |= 0x01;
             index_of_Buffer++;
@@ -105,8 +104,7 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     UINT index_of_Buffer = 0;
     while((receiveEndJpegFlag  & 0x10) != 0x10)
     {
-        while (RCIF != 1);
-        Buffer[index_of_Buffer] = RCREG;
+        Buffer[index_of_Buffer] = getUartData(0x00);
         if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
             receiveEndJpegFlag |= 0x01;
             index_of_Buffer++;

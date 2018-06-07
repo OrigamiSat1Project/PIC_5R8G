@@ -14,6 +14,7 @@
 #include "CRC16.h"
 #include "typedefine.h"
 #include "Timer.h"
+#include <limits.h>
 
 /* Comment
  * =============================================================================
@@ -49,7 +50,7 @@
          TMR2 = 0x00;
          timer_counter++;
      }
-     if(timer_counter > 15000){
+     if(timer_counter == UINT_MAX){
          timer_counter = 0;
      }
  }

@@ -78,6 +78,10 @@ void main(void){
             //XXX
             timer_counter = 0;
             for(UINT i=1;i<8;i++){
+                if(OERR || FERR){
+                    CREN = 0;
+                    CREN = 1;
+                }
                 while(RCIF != 1){
                     if(timer_counter > 100) break;
                 }

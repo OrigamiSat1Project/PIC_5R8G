@@ -71,7 +71,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                 }else{
                     receiveEndJpegFlag &= 0x00;
                 }
-                if(receiveEndJpegFlag >= (UBYTE)(MaxOfMemory)){
+                if(receiveEndJpegFlag >= (UBYTE)(MaxOfMemory)*2){
                     receiveEndJpegFlag &= 0x00;
                     readFROM_Count ++;
                     FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;

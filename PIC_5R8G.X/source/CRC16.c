@@ -19,13 +19,6 @@ UWORD crc16(UWORD crc, UBYTE *ptr, UINT len){
 	return ~crc;
 }
 
-UWORD Identify_CRC16(UBYTE *text)
-{
-	UBYTE *p = (UBYTE *)text;
-	UINT n = strlen(text);
-	UWORD crc = crc16(0, p, n);
-    return crc;
-}
 
 UWORD CRC_check(UBYTE *Command, UINT Size_before_CRC){
     UWORD CRC_check_receive = 0x0000;

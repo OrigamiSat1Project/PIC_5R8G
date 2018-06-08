@@ -7,6 +7,7 @@
 #include "SECTOR.h"
 #include "MAX2828.h"
 #include "typedefine.h"
+#include "UART.h"
 
 void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
    /* Comment
@@ -164,13 +165,8 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
     sendChar(0x77);
     CREN = Bit_High;    //It is needed for integration with OBC
     //TXEN = Bit_High;
-    /* Code
-     * =========================================================================
     while((receiveEndH264Flag  & 0x80) != 0x80){
-        while (RCIF != 1){
-            if(CAM1 == 1) break;
-        }
-        Buffer[index_of_Buffer] = RCREG;
+        Buffer[index_of_Buffer] = getUartData(0x00);
         if((receiveEndH264Flag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfH264[0]){
             receiveEndH264Flag |= 0x01;
             index_of_Buffer++;
@@ -207,8 +203,6 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             index_of_Buffer = 0;
         }
     }
-     * =========================================================================
-     */
 }
 
 void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
@@ -228,17 +222,7 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
      * We calc the length of ECC from Command_length
      * =========================================================================
      */
-    /* Code
-     * =========================================================================
-    UINT ECC_length = 0;
-    for(UINT i=0; i<3; i++){        >
-        ECC_length += *(Command_length + i) << 8*(2-i); >
-    }
-     * =========================================================================
-     */
-
-
-
+    
    /*  How to use receiveEndECCFlag
     * ===============================================================================================================
     * Bit7    Bit6    Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
@@ -253,14 +237,12 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
     sendChar(0xee);
     CREN = Bit_High;    //It is needed for integration with OBC
     //TXEN = Bit_High;
-    /* Code
-     * =========================================================================
     while(receiveEndECCFlag != 0x08){
         while (RCIF != 1){
             if(CAM1 == 1) break;
         }
-        Buffer[index_of_Buffer] = RCREG;
-        if (receiveEndECCFlag < 0x07 && ECC_count == ECC_length/8)  >
+        Buffer[index_of_Buffer] = getUartData(0x00);
+        if (receiveEndECCFlag < 0x07 && ECC_count == ECC_length/8)  
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;
@@ -290,6 +272,4 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             index_of_Buffer = 0;
         }
     }
-     * =========================================================================
-     */
 }

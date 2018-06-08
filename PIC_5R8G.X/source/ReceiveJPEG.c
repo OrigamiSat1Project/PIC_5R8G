@@ -242,7 +242,7 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             if(CAM1 == 1) break;
         }
         Buffer[index_of_Buffer] = getUartData(0x00);
-        if (receiveEndECCFlag < 0x07 && ECC_count == ECC_length/8)  
+        if (receiveEndECCFlag < 0x07 && ECC_count == (UINT)ECC_length/8)  
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;
@@ -254,7 +254,7 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             sendChar(receiveEndECCFlag);
             sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
-        else if(receiveEndECCFlag = 0x07 && ECC_count == (ECC_length - (ECC_length/8) * 7))
+        else if(receiveEndECCFlag = 0x07 && ECC_count == (ECC_length - 7*(UINT)(ECC_length/8)))
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;

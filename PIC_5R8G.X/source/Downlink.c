@@ -23,8 +23,6 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     if(CAMERA_POW == 1){
         onAmp();
     }
-    UINT sendBufferCount = 1;
-    const UINT JPGCOUNT = 300;
     UBYTE Buffer[MaxOfMemory];
     UDWORD FROM_Read_adr = Roop_adr;
     UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
@@ -46,10 +44,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * =============================================================
      */
     send_01();
-    //XXX : Timer
-    // =========================================================================
     timer_counter = 0;
-    // =========================================================================
     while(CAM2 == 0){
         if(readFROM_Count >= 8){
             readFROM_Count = 0;
@@ -68,8 +63,6 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                     readFROM_Count ++;
                     FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
                     downlinkRest('1');
-//                    sendBufferCount = 1;
-                    __delay_ms(3000);
                     break;
                 }
                 else{
@@ -78,24 +71,14 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
              //  for rest
-//            if(sendBufferCount % JPGCOUNT == 0){
-//                downlinkRest('A');
-//                sendBufferCount = 0;
-//            }
-            
-            //XXX : rest by using timer
-            // =================================================================
             if(timer_counter > 1000){
                 downlinkRest('A');
             }
-            // =================================================================
-            
             //  WDT dealing
-//            sendBufferCount ++;
-//            if (sendBufferCount % 20 == 0) {
-//                CLRWDT();
-//                WDT_CLK = ~WDT_CLK;
-//            }
+            if(timer_counter = 20){
+                CLRWDT();
+                WDT_CLK =~WDT_CLK;
+            }
         }
         else{
             readFROM_Count ++;
@@ -128,8 +111,5 @@ void downlinkRest(UBYTE c){
     }else if (c== 'A'){
         send_AB();
     }
-    //XXX : reset timer
-    // =========================================================================
     timer_counter = 0;
-    // =========================================================================
 }

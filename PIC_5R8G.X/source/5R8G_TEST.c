@@ -64,7 +64,7 @@ void main(void){
         UBYTE Command[8];
         Command[0] = 0x21;
 
-        while(Identify_CRC16(Command) != CRC_check(Command, 6)){
+        while(crc16(0,Command,6) != CRC_check(Command, 6)){
             for(UINT i=0;i<8;i++){
                 Command[i] = 0x21;
             }

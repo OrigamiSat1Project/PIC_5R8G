@@ -6,7 +6,7 @@
 #include "UART.h"
 #include "time.h"
 #include "FROM.h"
-#include "Timer.h"
+//#include "Timer.h"
 
 void downlinkChar(UBYTE);
 void downlinkRest(UBYTE);
@@ -44,7 +44,8 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * =============================================================
      */
     send_01();
-    timer_counter = 0;
+    //BUG 
+    //timer_counter = 0;
     /* Comment
      * =========================================================================
      * Significant change
@@ -81,14 +82,14 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
              //  for rest
-            if(timer_counter >= 10000){
-                downlinkRest('A');
-            }
-            //  WDT dealing
-            if(timer_counter == 20){
-                CLRWDT();
-                WDT_CLK = ~WDT_CLK;
-            }
+//            if(timer_counter >= 10000){
+//                downlinkRest('A');
+//            }
+//            //  WDT dealing
+//            if(timer_counter == 20){
+//                CLRWDT();
+//                WDT_CLK = ~WDT_CLK;
+//            }
         }
         else{
             readFROM_Count ++;
@@ -118,5 +119,6 @@ void downlinkRest(UBYTE c){
     }else if (c== 'A'){
         send_AB();
     }
-    timer_counter = 0;
+    //BUG
+    //timer_counter = 0;
 }

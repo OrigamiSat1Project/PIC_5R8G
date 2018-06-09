@@ -122,6 +122,7 @@ void main(void){
                             default:
                                 break;
                         }
+                        break;
                     case 'E':
                         for(UINT i=0; i<3; i++){
                             ECC_length += Command[i+3] << 8*(2-i);

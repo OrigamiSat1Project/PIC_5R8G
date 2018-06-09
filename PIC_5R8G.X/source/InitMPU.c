@@ -40,7 +40,8 @@ void init_module(void){
     init_max2828();                     //init MAX2828
     Mod_SW = 0;                         //FSK modulation ON
     //XXX : Timer
-    initInterrupt();
+    //FIXME : debug
+    //initInterrupt();
 }
     
     /* Comment

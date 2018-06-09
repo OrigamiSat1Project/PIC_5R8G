@@ -1,17 +1,6 @@
 #include <xc.h>
 //#include "pic16f886.h"
 
-#include "stdio.h"
-#include "string.h"
-#include "InitMPU.h"
-#include "MAX2828.h"
-#include "UART.h"
-#include "time.h"
-#include "FROM.h"
-#include "SECTOR.h"
-#include "ReceiveJPEG.h"
-#include "Downlink.h"
-#include "CRC16.h"
 #include "typedefine.h"
 #include "Timer.h"
 #include <limits.h>
@@ -32,25 +21,23 @@
  *      1. Discard uncorrect Command
  *      2. Rest time (maybe 5s)
  * =============================================================================
- * Code
- * =============================================================================
  */
- void initInterrupt(void){
-     INTCONbits.GIE     = Bit_High;
-     INTCONbits.PEIE    = Bit_High;
-     PIE1bits.TMR2IE    = Bit_High;
-     PIR1bits.TMR2IF    = Bit_Low;
-     T2CON   = 0x3c;        
-     TMR2    = 0x00;
-     PR2     = 0xe6;       
- }
- void interrupt incrementTimer(void){
-     if(PIR1bits.TMR2IF){
-         PIR1bits.TMR2IF = 0;
-         TMR2 = 0x00;
-         timer_counter++;
-     }
-     if(timer_counter == UINT_MAX){
-         timer_counter = 0;
-     }
- }
+void initInterrupt(void){
+    INTCONbits.GIE  = 1;
+    INTCONbits.PEIE = 1;
+    PIE1bits.TMR2IE = 1;
+    PIR1bits.TMR2IF = 0;
+    T2CON   = 0x3c;      
+    TMR2    = 0x00;
+    PR2     = 0xe6;
+}
+void interrupt incrementTimer(void){
+    if(PIR1bits.TMR2IF){
+        PIR1bits.TMR2IF = 0;
+        TMR2 = 0x00;
+        timer_counter++;
+    }
+    if(timer_counter == UINT_MAX){
+        timer_counter = 0;
+    }
+}

@@ -1,8 +1,6 @@
 #include <xc.h>
 //#include "pic16f886.h"
 
-#include "stdio.h"
-#include "string.h"
 #include "InitMPU.h"
 #include "MAX2828.h"
 #include "UART.h"
@@ -32,7 +30,6 @@
 #pragma config WRT = HALF       // Flash Program Memory Self Write Enable bits (0000h to 0FFFh write protected, 1000h to 1FFFh may be modified by EECON control)
 
 UDWORD          g_data_adr  = (UDWORD)0x00000000;
-
 
 #define JPGCOUNT 5000
 void main(void){

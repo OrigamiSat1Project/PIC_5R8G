@@ -44,7 +44,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00??ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00???¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x020000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
@@ -64,9 +64,8 @@ void main(void){
                 Command[i] = 0x21;
             }
             //  sync with commands by OBC
-            timer_counter = 0;
             while(Command[0] != '5'){
-                Command[0] = getUartData('T');
+                Command[0] = getUartData(0x00);
             }
             //  TODO : Add time restrict
             //XXX

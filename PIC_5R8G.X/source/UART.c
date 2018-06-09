@@ -9,6 +9,7 @@
 //#include "Main.h"
 #include "MAX2828.h"
 #include "InitMPU.h"
+#include "Timer.h"
 
 
 //?¿½Ïï¿½?¿½ÌéŒ¾
@@ -378,7 +379,9 @@ UBYTE getUartData(UBYTE mode){
             CREN = 0;
             CREN = 1;
         }
-        while(RCIF != 1);
+        while(RCIF != 1){
+            if(timer_counter > 100) break;
+        }
         return RCREG;
     }else{
         if(OERR || FERR){

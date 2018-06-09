@@ -117,7 +117,7 @@ void main(void){
                                 break;
                             case 'H':
                                 Receive_8split_H264(Roop_adr, Jump_adr);
-                                send_OK;
+                                send_OK();
                                 break;
                             default:
                                 break;

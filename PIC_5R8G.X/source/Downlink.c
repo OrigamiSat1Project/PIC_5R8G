@@ -75,7 +75,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                 downlinkRest('A');
             }
             //  WDT dealing
-            if(timer_counter = 20){
+            if(timer_counter == 20){
                 CLRWDT();
                 WDT_CLK =~WDT_CLK;
             }

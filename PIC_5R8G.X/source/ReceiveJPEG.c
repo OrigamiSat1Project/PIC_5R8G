@@ -188,8 +188,10 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             receiveEndH264Flag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag.
             receiveEndH264Flag += 0x10;     //+1 8split_cnt in receiveEndH264Flag.
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndH264Flag >> 4) * Jump_adr;
+            //FIXME : debug
             sendChar(receiveEndH264Flag);
             sendChar((UBYTE)(FROM_Write_adr >> 16));
+            sendChar(0xaa);
         }
         else
         {
@@ -201,6 +203,10 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
+        }
+        //FIXME : debug
+        if((receiveEndH264Flag  & 0x80) == 0x80){
+            sendChar(0xbb);
         }
     }
 }

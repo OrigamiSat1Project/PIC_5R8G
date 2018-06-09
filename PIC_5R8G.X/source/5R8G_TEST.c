@@ -12,7 +12,7 @@
 #include "ReceiveJPEG.h"
 #include "Downlink.h"
 #include "CRC16.h"
-#include "Timer.h"
+//#include "Timer.h"
 //#include "stdint.h"
 
 // CONFIG1
@@ -64,13 +64,13 @@ void main(void){
                 Command[i] = 0x21;
             }
             //  sync with commands by OBC
-            timer_counter = 0;
+//            timer_counter = 0;
             while(Command[0] != '5'){
                 Command[0] = getUartData('T');
             }
             //  TODO : Add time restrict
             //XXX
-            timer_counter = 0;
+//            timer_counter = 0;
             for(UINT i=1;i<8;i++){
                 Command[i] = getUartData('T');
             }

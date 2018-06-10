@@ -128,6 +128,7 @@ void main(void){
                             ECC_length += Command[i+3] << 8*(2-i);
                         }
                         Receive_ECC(Roop_adr, Jump_adr, ECC_length);
+                        send_OK();
                         break;
                     case 'T':
                         Receive_thumbnail_JPEG(Roop_adr, Jump_adr);

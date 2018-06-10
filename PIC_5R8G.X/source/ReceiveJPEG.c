@@ -241,14 +241,14 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
     UINT ECC_count = 0;
     //FIXME :
     sendChar(0xee);
+    sendChar(ECC_length);
+    sendChar(ECC_length/8);
+    sendChar(ECC_length-7*(ECC_length/8));
     CREN = Bit_High;    //It is needed for integration with OBC
     //TXEN = Bit_High;
     while(receiveEndECCFlag != 0x08){
-        while (RCIF != 1){
-            if(CAM1 == 1) break;
-        }
         Buffer[index_of_Buffer] = getUartData(0x00);
-        if (receiveEndECCFlag < 0x07 && ECC_count == (UINT)ECC_length/8)  
+        if (receiveEndECCFlag < 0x07 && ECC_count == ECC_length/8 - 1)
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;
@@ -260,12 +260,15 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             sendChar(receiveEndECCFlag);
             sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
-        else if(receiveEndECCFlag = 0x07 && ECC_count == (ECC_length - 7*(UINT)(ECC_length/8)))
+        else if(receiveEndECCFlag == 0x07 && ECC_count == ECC_length -7*(ECC_length/8) -1)
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;
             ECC_count = 0;
             receiveEndECCFlag += 0x01;
+            //FIXME : debug
+            sendChar(receiveEndECCFlag);
+            sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
         else
         {
@@ -278,4 +281,5 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             index_of_Buffer = 0;
         }
     }
+    sendChar(0xee);
 }

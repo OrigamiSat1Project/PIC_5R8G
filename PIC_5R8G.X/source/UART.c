@@ -373,12 +373,21 @@ UBYTE getDownlinkBAU(void){
 }
 
 UBYTE getUartData(UBYTE mode){
-    if(mode == 'T'){
+    if(mode == 'T'){        //T = Timer processing
         if(OERR || FERR){
             CREN = 0;
             CREN = 1;
         }
         while(RCIF != 1);
+        return RCREG;
+    }else if(mode == 'C'){  //C = CAM1 mode
+        if(OERR || FERR){
+            CREN = 0;
+            CREN = 1;
+        }
+        while(RCIF != 1){
+            if(CAM1 == 1) break;
+        }
         return RCREG;
     }else{
         if(OERR || FERR){

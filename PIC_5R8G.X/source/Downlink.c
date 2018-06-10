@@ -23,6 +23,8 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     if(CAMERA_POW == 1){
         onAmp();
     }
+    UINT sendBufferCount = 1;
+    const UINT JPGCOUNT = 300;
     UBYTE Buffer[MaxOfMemory];
     UDWORD FROM_Read_adr = Roop_adr;
     UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
@@ -82,10 +84,19 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
              //  for rest
+            if(sendBufferCount % JPGCOUNT == 0){
+                downlinkRest('A');
+                sendBufferCount = 0;
+            }
 //            if(timer_counter >= 10000){
 //                downlinkRest('A');
 //            }
+            
 //            //  WDT dealing
+            if (sendBufferCount % 20 == 0) {
+                CLRWDT();
+                WDT_CLK = ~WDT_CLK;
+            }
 //            if(timer_counter == 20){
 //                CLRWDT();
 //                WDT_CLK = ~WDT_CLK;
@@ -96,6 +107,9 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
         }
     }
+    offAmp();
+    CREN = Bit_High;
+    TXEN = Bit_Low;
 }
 
 void downlinkChar(UBYTE buf){

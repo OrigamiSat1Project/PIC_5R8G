@@ -6,6 +6,7 @@
 #include "UART.h"
 #include "time.h"
 #include "FROM.h"
+//#include "Timer.h"
 
 void downlinkChar(UBYTE);
 void downlinkRest(UBYTE);
@@ -125,4 +126,5 @@ void downlinkRest(UBYTE c){
     }else{
         send_AB();
     }
+//    timer_counter = 0;
 }

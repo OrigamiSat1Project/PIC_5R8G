@@ -10,6 +10,7 @@
 #include "ReceiveJPEG.h"
 #include "Downlink.h"
 #include "CRC16.h"
+//#include "Timer.h"
 //#include "stdint.h"
 
 // CONFIG1
@@ -64,6 +65,8 @@ void main(void){
                 Command[0] = getUartData(0x00);
             }
             //  TODO : Add time restrict
+            //XXX
+//            timer_counter = 0;
             for(UINT i=1;i<8;i++){
                 Command[i] = getUartData('T');
             }
@@ -73,6 +76,7 @@ void main(void){
         }
         //FIXME : debug
         send_OK();
+        UINT ECC_length = 0;
 
         switch(Command[1]){
             case 'P':
@@ -82,6 +86,8 @@ void main(void){
                         break;
                     case 'T':
                         Downlink(Roop_adr, Jump_adr, 0x01);
+                        break;
+                    default:
                         break;
                 }
                 break;
@@ -100,7 +106,24 @@ void main(void){
             case 'R':
                 switch(Command[2]){
                     case '8':
-                        Receive_8split_JPEG(Roop_adr, Jump_adr);
+                        switch(Command[3]){
+                            case 'J':
+                                Receive_8split_JPEG(Roop_adr, Jump_adr);
+                                send_OK();
+                                break;
+                            case 'H':
+                                Receive_8split_H264(Roop_adr, Jump_adr);
+                                send_OK();
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    case 'E':
+                        for(UINT i=0; i<3; i++){
+                            ECC_length += Command[i+3] << 8*(2-i);
+                        }
+                        Receive_ECC(Roop_adr, Jump_adr, ECC_length);
                         send_OK();
                         break;
                     case 'T':

@@ -10,7 +10,7 @@
 #include "ReceiveJPEG.h"
 #include "Downlink.h"
 #include "CRC16.h"
-//#include "Timer.h"
+#include "Timer.h"
 //#include "stdint.h"
 
 // CONFIG1
@@ -41,7 +41,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00???ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½???ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½???ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½???ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00????¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½????¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½????¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½????¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x020000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
@@ -64,9 +64,7 @@ void main(void){
             while(Command[0] != '5'){
                 Command[0] = getUartData(0x00);
             }
-            //  TODO : Add time restrict
-            //XXX
-//            timer_counter = 0;
+            timer_counter = 0;
             for(UINT i=1;i<8;i++){
                 Command[i] = getUartData('T');
             }
@@ -104,15 +102,19 @@ void main(void){
                 send_OK();
                 break;
             case 'R':
+                //XXX : Timer OFF
+                PIE1bits.TMR2IE = 0;
                 switch(Command[2]){
                     case '8':
                         switch(Command[3]){
                             case 'J':
                                 Receive_8split_JPEG(Roop_adr, Jump_adr);
+                                //  FIXME : for debug
                                 send_OK();
                                 break;
                             case 'H':
                                 Receive_8split_H264(Roop_adr, Jump_adr);
+                                //  FIXME : for debug
                                 send_OK();
                                 break;
                             default:
@@ -124,15 +126,19 @@ void main(void){
                             ECC_length += Command[i+3] << 8*(2-i);
                         }
                         Receive_ECC(Roop_adr, Jump_adr, ECC_length);
+                        //  FIXME : for debug
                         send_OK();
                         break;
                     case 'T':
                         Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
+                        //  FIXME : for debug
                         send_OK();
                         break;
                     default:
                         break;
                 }
+                //XXX : Timer ON
+                PIE1bits.TMR2IE = 1;
                 break;
             case 'E':
                 Erase_sectors(Command[2], Command[3]);
@@ -148,8 +154,8 @@ void main(void){
                             Command[3] = 0x45;
                         }
                         Roop_adr = (UDWORD)Command[3]<<16;
-                        //FIXME : debug
                         sendChar((UBYTE)(Roop_adr >> 16));
+                        //  FIXME : for debug
                         send_OK();
                         break;
                     case 'J':
@@ -165,6 +171,7 @@ void main(void){
                             break;
                         }
                         change_downlink_baurate(Command[3]);
+                        //  FIXME : for debug
                         send_OK();
                         break;
                     default:

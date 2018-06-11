@@ -247,7 +247,7 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
     CREN = Bit_High;    //It is needed for integration with OBC
     //TXEN = Bit_High;
     while(receiveEndECCFlag != 0x08){
-        Buffer[index_of_Buffer] = getUartData(0x00);
+        Buffer[index_of_Buffer] = getUartData('C');
         if (receiveEndECCFlag < 0x07 && ECC_count == ECC_length/8 - 1)
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);

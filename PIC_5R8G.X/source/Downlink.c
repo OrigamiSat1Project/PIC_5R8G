@@ -6,7 +6,7 @@
 #include "UART.h"
 #include "time.h"
 #include "FROM.h"
-//#include "Timer.h"
+#include "Timer.h"
 
 void downlinkChar(UBYTE);
 void downlinkRest(UBYTE);
@@ -23,19 +23,11 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     if(CAMERA_POW == 1){
         onAmp();
     }
-    UINT sendBufferCount = 1;
-    const UINT JPGCOUNT = 300;
     UBYTE Buffer[MaxOfMemory];
     UDWORD FROM_Read_adr = Roop_adr;
     UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
 
     UBYTE receiveEndJpegFlag = 0x00;
-    /* How to use receiveEndJpegFlag
-     * =========================================================================
-     * Bit7    Bit6    Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
-     * ----    ----    ----    ----    ----    ----    0x0e    0x0f
-     * =========================================================================
-     */
     CREN = Bit_Low;
     TXEN = Bit_High;
     /* Comment
@@ -53,7 +45,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * We have used 0xff, 0x1e flag in this function.
      * We will use only 0xff flag
      *
-     * How to use flag
+     * How to use receiveEndJpegFlag
      * Bit7    Bit6    Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
      * ----    ----    cnt5    cnt4    cnt3    cnt2    cnt1    cnt0_0xff
      * =========================================================================
@@ -78,7 +70,6 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                     readFROM_Count ++;
                     FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
                     downlinkRest('1');
-                    sendBufferCount = 1;
                     __delay_ms(3000);
                     break;
                 }
@@ -87,13 +78,12 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
 
             //  FIXME : TIMER2
              //  for rest
-            if(timer_counter >= 10000){
+            if(timer_counter >= 10000){     //10s
                 downlinkRest('A');
-                sendBufferCount = 0;
             }
 
             //  WDT dealing
-            if(timer_counter == 20){
+            if(timer_counter == 40){        //40ms
                 CLRWDT();
                 WDT_CLK = ~WDT_CLK;
             }
@@ -126,5 +116,5 @@ void downlinkRest(UBYTE c){
     }else{
         send_AB();
     }
-//    timer_counter = 0;
+    timer_counter = 0;
 }

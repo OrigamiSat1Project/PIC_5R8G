@@ -147,7 +147,10 @@ void main(void){
                 PIE1bits.TMR2IE = 1;
                 break;
             case 'E':
+                if(Command[2] + Command[3] > MaxOfSector) break;
                 Erase_sectors(Command[2], Command[3]);
+                //FIXME ; debug
+                send_OK();
                 break;
             case 'I':
                 init_module();

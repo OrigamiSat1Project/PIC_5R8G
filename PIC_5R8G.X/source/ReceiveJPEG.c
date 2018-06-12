@@ -191,7 +191,6 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             //FIXME : debug
             sendChar(receiveEndH264Flag);
             sendChar((UBYTE)(FROM_Write_adr >> 16));
-            sendChar(0xaa);
         }
         else
         {
@@ -255,6 +254,9 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             //  Jump to next group's first sector & change flag
             receiveEndECCFlag += 0x01;     //+1 8split_cnt in receiveEndECCFlag.
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndECCFlag) * Jump_adr;
+            //FIXME ; debug
+            sendChar(ECC_count);
+
             ECC_count = 0;
             //FIXME : debug
             sendChar(receiveEndECCFlag);

@@ -154,6 +154,8 @@ void main(void){
                 break;
             case 'I':
                 init_module();
+                //FIXME : debug
+                send_OK();
                 break;
             case 'C':
                 switch(Command[2]){

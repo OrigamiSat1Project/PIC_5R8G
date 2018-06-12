@@ -397,7 +397,9 @@ UBYTE getUartData(UBYTE mode){
             CREN = 0;
             CREN = 1;
         }
-        while(RCIF != 1);
+        while(RCIF != 1){
+            if(CAM1 == 1)break;
+        }
         return RCREG;
     }
 }

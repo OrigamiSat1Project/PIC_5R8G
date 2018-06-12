@@ -121,7 +121,10 @@ void main(void){
                 }
                 break;
             case 'E':
+                if(Command[2] + Command[3] > MaxOfSector) break;
                 Erase_sectors(Command[2], Command[3]);
+                //FIXME ; debug
+                send_OK();
                 break;
             case 'I':
                 init_module();

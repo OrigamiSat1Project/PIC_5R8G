@@ -41,11 +41,17 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00????申?申??申?申???申?申??申?申????申?申??申?申???申?申??申?申????申?申??申?申???申?申??申?申????申?申??申?申???申?申??申?申0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;
+
     UDWORD Roop_adr = g1_data_adr;
-    UDWORD Jump_adr = 0x020000;
-    //UDWORD FROM_Jump_next_sector = 0x10000;
-    //UINT roopcount = 0;
+    UDWORD Jump_adr = 0x30000;
+   /* Comment
+    * =====================================================
+    * We save Roop_adr in FROM's 0 sector
+    * Roop_adr in 0x00000000
+    * Jump_adr in 0x00000001
+    * =====================================================
+    */
     init_module();
     while(1){
         if(CAMERA_POW == 0){
@@ -148,21 +154,32 @@ void main(void){
                 break;
             case 'C':
                 switch(Command[2]){
+                    /* Comment
+                     * =========================================================
+                     * We can use 63 sectors in FROM
+                     * Original JPEG uses 24(3jump * 8groups) sectors each.
+                     * Max Roop_adr = 63- 24 = 39(0x27)
+                     * Min Jump_adr = 3
+                     * Max Jump_adr = 63/8 ~= 7
+                     * 63 = 0x3f
+                     * =========================================================
+                     */
                     case 'R':
-                        //  sector size limit
-                        if(Command[3] >= 0x47){
-                            Command[3] = 0x45;
-                        }
+                        if((Command[3] + (UBYTE)(Jump_adr>>16) * 8) > MaxOfSector) break;
+                        //FIXME : debug
+                        sendChar(Roop_adr >> 16);
                         Roop_adr = (UDWORD)Command[3]<<16;
                         sendChar((UBYTE)(Roop_adr >> 16));
                         //  FIXME : for debug
                         send_OK();
                         break;
                     case 'J':
-                        if(Command[3] >= 0x08){
-                            Command[3] = 0x07;
-                        }
+                        if(((UBYTE)(Roop_adr>>16) + Command[3] * 8) > MaxOfSector) break;
+                        //FIXME : debug
+                        sendChar(Jump_adr >> 16);
                         Jump_adr = (UDWORD)Command[3]<<16;
+                        //FIXME : debug
+                        sendChar(Jump_adr >> 16);
                         break;
                     case 'B':
                         if((Command[3] != BAU_LOW ) &&

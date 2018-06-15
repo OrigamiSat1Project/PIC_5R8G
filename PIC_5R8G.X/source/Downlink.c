@@ -6,66 +6,110 @@
 #include "UART.h"
 #include "time.h"
 #include "FROM.h"
+#include "Timer.h"
 
-void Downlink(UDWORD Roop_adr){
-    sendChar('P');
+void downlinkChar(UBYTE);
+void downlinkRest(UBYTE);
+
+void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
+    /*  How to use Identify_8split
+     * ========================================================================
+     *  Bit7    Bit6    Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
+     *  8/8     7/8     6/8     5/8     4/8     3/8     2/8     1/8
+     * ========================================================================
+     */
+    sendChar(0x50);
     while(CAM2 == 1);   //  wait 5V SW
-    UINT sendBufferCount = 0;
-    const UINT JPGCOUNT = 5000;
+    if(CAMERA_POW == 1){
+        onAmp();
+    }
     UBYTE Buffer[MaxOfMemory];
     UDWORD FROM_Read_adr = Roop_adr;
-    //UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
-    //UBYTE Identify_8split = 0xff;           //Which sectors do you want to downlink. This is a kind of Flag. Defualt: all sectors(8)
-    /*  How to use Identify_8split
-     * ===========================================================================================
-     *  Bit7        Bit6        Bit5        Bit4        Bit3        Bit2        Bit1        Bit0
-     *  8/8         7/8         6/8         5/8         4/8         3/8         2/8         1/8
-     * ===========================================================================================
-     */            
+    UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
+
+    UBYTE receiveEndJpegFlag = 0x00;
+    /* How to use receiveEndJpegFlag
+     * =========================================================================
+     * Bit7    Bit6    Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
+     * ----    ----    ----    ----    ----    ----    0x0e    0x0f
+     * =========================================================================
+     */
     CREN = Bit_Low;
     TXEN = Bit_High;
+    /* Comment
+     * =============================================================
+     * Which groups do you read by reading Identify_8split.
+     * Flag is ON : flash_Read_Data
+     * Flag is OFF : FROM_Read_adr is jumping to next sector's start address.
+     * =============================================================
+     */
+    send_01();
+    timer_counter = 0;
     while(CAM2 == 0){
-        /* Comment
-         * =============================================================
-         * Which sectors do you read by reading Identify_8split.
-         * Flag is ON : flash_Read_Data
-         * Flag is OFF : FROM_Read_adr is jumping to next sector's start address.
-         * =============================================================
-         * Code
-         * =============================================================
-         * while(RCIF != 1);
-         * Identify_8split = Command[2];
-         * if(Identify_8split & (0x01<<readFROM_Count)){    >
-         *      flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
-         * }
-         * else{
-         *      FROM_Read_adr &= ~0xffff;            //Clear under lower 2bytes
-         *      FROM_Read_adr += 0x10000;           //Jump to next sector's address
-         * }
-         * readFROM_Count +=1;
-         * =============================================================
-         */
-        flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
-        if(sendBufferCount % JPGCOUNT == 0){
-            offAmp();
-            __delay_ms(3000);
-            if(CAMERA_POW == 1){
-                onAmp();
+        if(readFROM_Count >= 8){
+            readFROM_Count = 0;
+            FROM_Read_adr = Roop_adr;
+            receiveEndJpegFlag = 0x00;
+        }
+        if((Identify_8split & (0x01<<readFROM_Count)) == (0x01<<readFROM_Count)){
+            flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            for(UINT i=0; i<MaxOfMemory; i++){
+                downlinkChar(Buffer[i]);
+                if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[i] == FooterOfJPEG[0]){
+                    receiveEndJpegFlag |= 0x01;
+                }
+                else if((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[i] == FooterOfJPEG[1]){
+                    receiveEndJpegFlag &= 0x00;
+                    readFROM_Count ++;
+                    FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
+                    downlinkRest('1');
+                    break;
+                }
+                else{
+                    receiveEndJpegFlag &= 0x00;
+                }
             }
-            send_01();  //  send preamble
+            FROM_Read_adr += (UDWORD)(MaxOfMemory);
+             //  for rest
+            if(timer_counter > 1000){
+                downlinkRest('A');
+            }
+            //  WDT dealing
+            if(timer_counter == 20){
+                CLRWDT();
+                WDT_CLK =~WDT_CLK;
+            }
         }
-        for(UINT i=0;i<MaxOfMemory;i++){
-            sendChar(Buffer[i]);
-            //sendChar(0x00);
-            __delay_us(20);
-        }
-        FROM_Read_adr += (UDWORD)(MaxOfMemory);
-        sendBufferCount ++;
-        if (sendBufferCount % 20 == 0) {
-            CLRWDT();
-            WDT_CLK = ~WDT_CLK;
+        else{
+            readFROM_Count ++;
+            FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
         }
     }
     offAmp();
-    send_OK();
+    CREN = Bit_High;
+    TXEN = Bit_Low;
+}
+
+void downlinkChar(UBYTE buf){
+    sendChar(buf);
+    __delay_us(20);
+}
+
+void downlinkRest(UBYTE c){
+    if (c == '1'){
+        send_01();
+    }else if (c == 'A'){
+        send_AB();
+    }
+    offAmp();
+    __delay_ms(5000);
+    if(CAMERA_POW == 1){
+        onAmp();
+    }
+    if (c == '1'){
+        send_01();
+    }else if (c== 'A'){
+        send_AB();
+    }
+    timer_counter = 0;
 }

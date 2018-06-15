@@ -91,11 +91,26 @@ void main(void){
         switch(Command[1]){
             case 'P':
                 switch(Command[2]){
-                    case '8':
-                        Downlink(Roop_adr, Jump_adr, Command[3]);
-                        break;
-                    case 'T':
-                        Downlink(Roop_adr, Jump_adr, 0x01);
+                    case '2':   //CAM2
+                        switch(Command[3]){
+                            case 'T':
+                                Downlink(Roop_adr, Jump_adr, 0x01);
+                                break;
+                            case '8':
+                                Downlink(Roop_adr, Jump_adr, Command[3]);
+                                //FIXME : debug
+                                send_OK();
+                                break;
+                            default:
+                                break;
+                        }
+                    case 'C':   //Clock
+                        set_timer_counter(0);
+                            set_timer_counter_min(0);
+                            while(get_timer_counter_min() < (UINT)Command[4]);
+                            Downlink_clock(Roop_adr, Jump_adr, Command[3], (UINT)Command[5]);
+                            //FIXME : debug
+                            send_OK();
                         break;
                     default:
                         break;

@@ -99,13 +99,10 @@ void main(void){
                         set_timer_counter_min(0);
                         while(get_timer_counter_min() < (UINT)Command[4]);
                         set_timer_counter_min(0);
-                        while(1){
-                            if(get_timer_counter_min() >= (UINT)Command[5]) break;
-                            if(CAMERA_POW == 1){
-                                onAmp();
-                            }
-                            send_dummy_data_timer(Command[5]);
+                        if(CAMERA_POW == 1){
+                            onAmp();
                         }
+                        send_dummy_data_timer(Command[5]);
                         offAmp();
                         //  FIXME : for debug
                         send_OK();

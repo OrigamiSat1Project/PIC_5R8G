@@ -370,8 +370,7 @@ void send_dummy_data_timer(UBYTE time_command){
     TXEN = Bit_High;
 	UINT clock_in_tst = 0;
     delay_ms(1000);
-    while(1){
-        if (get_timer_counter_min() >= time_command) break;
+    while(get_timer_counter_min() < time_command){
         if(clock_in_tst <= 1200 ){
             for(UINT i=0;i<10;i++){
                 send_buf[0] = STR[i];

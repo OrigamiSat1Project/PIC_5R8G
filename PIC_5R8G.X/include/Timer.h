@@ -11,8 +11,12 @@
  * Code
  * =============================================================================
  */
-UINT timer_counter = 0;
+
 void initInterrupt(void);
 void interrupt incrementTimer(void);
+void set_timer_counter(UINT);
+void set_timer_counter_min(UINT);
+UINT get_timer_counter(void);
+UINT get_timer_counter_min(void);
 
 #endif	/* Timer_H */

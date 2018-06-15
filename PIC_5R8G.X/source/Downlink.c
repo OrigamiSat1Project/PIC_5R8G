@@ -6,7 +6,7 @@
 #include "UART.h"
 #include "time.h"
 #include "FROM.h"
-//#include "Timer.h"
+#include "Timer.h"
 
 void downlinkChar(UBYTE);
 void downlinkRest(UBYTE);

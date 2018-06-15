@@ -10,6 +10,7 @@
 #include "ReceiveJPEG.h"
 #include "Downlink.h"
 #include "CRC16.h"
+#include "Timer.h"
 //#include "stdint.h"
 
 // CONFIG1

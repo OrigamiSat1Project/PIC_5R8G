@@ -8,8 +8,12 @@
 #include "FROM.h"
 #include "Timer.h"
 
+static UINT rest_time = 10000;
+
 void downlinkChar(UBYTE);
 void downlinkRest(UBYTE);
+void set_rest_time(UINT);
+UINT get_rest_time(void);
 
 void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     /*  How to use Identify_8split
@@ -68,7 +72,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
 
             //  FIXME : TIMER2
              //  for rest
-            if(get_timer_counter() > 1000){
+            if(get_timer_counter() > get_rest_time()){
                 downlinkRest('A');
                 sendBufferCount = 0;
             }
@@ -150,7 +154,7 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
 
             //  FIXME : TIMER2
              //  for rest
-            if(get_timer_counter() > 1000){
+            if(get_timer_counter() > get_rest_time()){
                 downlinkRest('A');
                 sendBufferCount = 0;
             }
@@ -197,4 +201,12 @@ void downlinkRest(UBYTE c){
         send_AB();
     }
     set_timer_counter(0);
+}
+
+void set_rest_time(UINT time){
+    rest_time = time;
+}
+
+UINT get_rest_time(void){
+    return rest_time;
 }

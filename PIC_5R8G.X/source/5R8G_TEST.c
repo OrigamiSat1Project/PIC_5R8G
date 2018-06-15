@@ -236,6 +236,12 @@ void main(void){
                         //  FIXME : for debug
                         send_OK();
                         break;
+                    case 'T':
+                        //XXX : change rest_time in downlink
+                        if(Command[3] < 0x0a) break;    // under 10s
+                        set_rest_time((UINT)Command[3]);
+                        //FIXME : debug
+                        send_OK();
                     default:
                         break;
                 }

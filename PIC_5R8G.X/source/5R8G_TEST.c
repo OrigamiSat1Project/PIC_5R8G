@@ -102,7 +102,7 @@ void main(void){
                         if(CAMERA_POW == 1){
                             onAmp();
                         }
-                        send_dummy_data_timer(Command[5]);
+                        send_dummy_data_clock((UINT)Command[5]);
                         offAmp();
                         //  FIXME : for debug
                         send_OK();

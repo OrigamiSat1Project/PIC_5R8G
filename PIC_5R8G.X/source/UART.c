@@ -365,12 +365,12 @@ void send_dummy_data(void){
     }
 }
 //XXX
-void send_dummy_data_timer(UBYTE time_command){
+void send_dummy_data_clock(UINT ending_time){
     CREN = Bit_Low;
     TXEN = Bit_High;
 	UINT clock_in_tst = 0;
     delay_ms(1000);
-    while(get_timer_counter_min() < time_command){
+    while(get_timer_counter_min() < ending_time){
         if(clock_in_tst <= 1200 ){
             for(UINT i=0;i<10;i++){
                 send_buf[0] = STR[i];

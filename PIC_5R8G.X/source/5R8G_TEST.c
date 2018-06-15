@@ -54,20 +54,25 @@ void main(void){
         CREN = Bit_High;
         TXEN = Bit_High;
         UBYTE Command[8];
-//        Command[0] = 0x01;      //If all command[] is 0x00, that can pass CRC16 check filter.
-//        while(Identify_CRC16(Command) != CRC_check(Command, 6)){
-//            //  sync with commands by OBC
-//            while(Command[0] != '5'){
-//                while(RCIF != 1);
-//                Command[0] = RCREG;
-//            }
-//            for(UINT i=1;i<8;i++){
-//                while(RCIF != 1);
-//                Command[i] = RCREG;
-//                //  FIXME : need break function if receiving magic words
-//                //if(Command[i] == 0xff) break;
-//            }
-//        }
+        Command[0] = 0x21;
+        while(crc16(0,Command,6) != CRC_check(Command, 6)){
+            for(UINT i=0;i<8;i++){
+                Command[i] = 0x21;
+            }
+            //  sync with commands by OBC
+            while(Command[0] != '5'){
+                Command[0] = getUartData(0x00);
+            }
+            set_timer_counter(0);
+            for(UINT i=1;i<8;i++){
+                Command[i] = getUartData('T');
+            }
+        }
+        for(UINT i=0;i<8;i++){
+            sendChar(Command[i]);
+        }
+        //FIXME : debug
+        send_OK();
 
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
 
@@ -76,10 +81,6 @@ void main(void){
          * CRC16 judgement before go to switch-case statement
          * ========================================================================
          */
-        Command[1] = 'D';
-        Command[2] = '2';
-        Command[4] = 0x01;
-        Command[5] = 0x01;
         switch(Command[1]){
             case 'P':
                 switch(Command[2]){
@@ -96,9 +97,13 @@ void main(void){
                     case 'C':   //Clock
                         set_timer_counter(0);
                         set_timer_counter_min(0);
-                        while(get_timer_counter_min() >= (UINT)Command[4]);
-                        set_timer_counter(0);
+                        while(get_timer_counter_min() < (UINT)Command[4]);
+                        //FIXME
+                        sendChar((UBYTE)get_timer_counter_min());
                         set_timer_counter_min(0);
+                        //FIXME
+                        sendChar((UBYTE)get_timer_counter_min());
+                        //FIXME
                         while(get_timer_counter_min() < (UINT)Command[5]){
                             if(CAMERA_POW == 1){
                                 onAmp();
@@ -106,6 +111,8 @@ void main(void){
                             send_dummy_data();
                         }
                         offAmp();
+                        //  FIXME : for debug
+                        send_OK();
                         break;
                     case '2':    //Use CAM2
                         while(CAM2 == 1);   //  wait 5V SW

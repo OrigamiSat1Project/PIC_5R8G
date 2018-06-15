@@ -23,8 +23,8 @@
  * =============================================================================
  */
 
-static UINT timer_counter = 0;
-static UINT timer_counter_min = 0;
+static UINT timer_counter;
+static UINT timer_counter_min;
 
 void initInterrupt(void){
     INTCONbits.GIE  = 1;
@@ -54,11 +54,11 @@ void interrupt incrementTimer(void){
 }
 
 void set_timer_counter(UINT time){
-    timer_counter = (UINT)time;
+    timer_counter = time;
 }
 
 void set_timer_counter_min(UINT time_min){
-    timer_counter_min = (UINT)time_min;
+    timer_counter_min = time_min;
 }
 
 UINT get_timer_counter(void){

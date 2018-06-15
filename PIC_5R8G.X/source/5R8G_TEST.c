@@ -41,7 +41,7 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00???ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½???ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½???ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½???ï¿½ï¿½?ï¿½ï¿½??ï¿½ï¿½?ï¿½ï¿½0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00????¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½????¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½????¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½????¿½?¿½??¿½?¿½???¿½?¿½??¿½?¿½0000. Use in 'C' and 'D' command
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x020000;
     //UDWORD FROM_Jump_next_sector = 0x10000;
@@ -77,6 +77,9 @@ void main(void){
          * ========================================================================
          */
         Command[1] = 'D';
+        Command[2] = '2';
+        Command[4] = 0x01;
+        Command[5] = 0x01;
         switch(Command[1]){
             case 'P':
                 switch(Command[2]){
@@ -89,16 +92,36 @@ void main(void){
                 }
                 break;
             case 'D':
-                while(CAM2 == 1);   //  wait 5V SW
-                while(CAM2 == 0){
-                    if(CAMERA_POW == 1){
-                        onAmp();
-                    }
-                    send_dummy_data();
+                switch(Command[2]){
+                    case 'C':   //Clock
+                        set_timer_counter(0);
+                        set_timer_counter_min(0);
+                        while(get_timer_counter_min() >= (UINT)Command[4]);
+                        set_timer_counter(0);
+                        set_timer_counter_min(0);
+                        while(get_timer_counter_min() < (UINT)Command[5]){
+                            if(CAMERA_POW == 1){
+                                onAmp();
+                            }
+                            send_dummy_data();
+                        }
+                        offAmp();
+                        break;
+                    case '2':    //Use CAM2
+                        while(CAM2 == 1);   //  wait 5V SW
+                        while(CAM2 == 0){
+                            if(CAMERA_POW == 1){
+                                onAmp();
+                            }
+                            send_dummy_data();
+                        }
+                        offAmp();
+                        //  FIXME : for debug
+                        send_OK();
+                        break;
+                    default:
+                        break;
                 }
-                offAmp();
-                //  FIXME : for debug
-                send_OK();
                 break;
             case 'R':
                 switch(Command[2]){
@@ -126,7 +149,7 @@ void main(void){
                 *  Make Change Roop_adr received from OBC
                 *  Add Command C:Change Roop_adr when some sectors of FROM are broken
                 *  Receive a part of tmp_adr_change of FROM and overwrite Roop_adr
-                *  Ground Station can choose only sector start address kind of 0x00Âï¿½?ï¿½Âï¿½?ï¿½0000
+                *  Ground Station can choose only sector start address kind of 0x00Â?¿½??¿½Â?¿½??¿½0000
                 */
                 Roop_adr = (UDWORD)Command[2]<<16;          //bit shift and clear low under 4bit for next 4bit address
                 //FIXME : send 1byte by UART in order to check Roop_adr

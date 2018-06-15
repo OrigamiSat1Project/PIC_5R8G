@@ -44,7 +44,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * =============================================================
      */
     send_01();
-    timer_counter = 0;
+    set_timer_counter(0);
     while(CAM2 == 0){
         if(readFROM_Count >= 8){
             readFROM_Count = 0;
@@ -71,11 +71,11 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
              //  for rest
-            if(timer_counter > 1000){
+            if(get_timer_counter() > 1000){
                 downlinkRest('A');
             }
             //  WDT dealing
-            if(timer_counter == 20){
+            if(get_timer_counter() == 20){
                 CLRWDT();
                 WDT_CLK =~WDT_CLK;
             }
@@ -111,5 +111,5 @@ void downlinkRest(UBYTE c){
     }else if (c== 'A'){
         send_AB();
     }
-    timer_counter = 0;
+    set_timer_counter(0);
 }

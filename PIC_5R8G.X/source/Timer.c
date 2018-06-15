@@ -22,6 +22,10 @@
  *      2. Rest time (maybe 5s)
  * =============================================================================
  */
+
+static UINT timer_counter = 0;
+static UINT timer_counter_min = 0;
+
 void initInterrupt(void){
     INTCONbits.GIE  = 1;
     INTCONbits.PEIE = 1;
@@ -37,7 +41,30 @@ void interrupt incrementTimer(void){
         TMR2 = 0x00;
         timer_counter++;
     }
+    if(timer_counter == 60000){
+        timer_counter = 0;
+        timer_counter_min++;
+    }
     if(timer_counter == UINT_MAX){
         timer_counter = 0;
     }
+    if(timer_counter_min == UINT_MAX){
+        timer_counter_min = 0;
+    }
+}
+
+void set_timer_counter(UINT time){
+    timer_counter = (UINT)time;
+}
+
+void set_timer_counter_min(UINT time_min){
+    timer_counter_min = (UINT)time_min;
+}
+
+UINT get_timer_counter(void){
+    return timer_counter;
+}
+
+UINT get_timer_counter_min(void){
+    return timer_counter_min;
 }

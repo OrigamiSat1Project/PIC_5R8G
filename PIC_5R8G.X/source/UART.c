@@ -380,7 +380,7 @@ UBYTE getUartData(UBYTE mode){
             CREN = 1;
         }
         while(RCIF != 1){
-            if(timer_counter > 100) break;
+            if(get_timer_counter() > 100) break;
         }
         return RCREG;
     }else{

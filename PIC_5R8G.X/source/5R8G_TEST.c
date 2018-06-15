@@ -1,8 +1,6 @@
 #include <xc.h>
 //#include "pic16f886.h"
 
-#include "stdio.h"
-#include "string.h"
 #include "InitMPU.h"
 #include "MAX2828.h"
 #include "UART.h"
@@ -32,7 +30,6 @@
 
 UDWORD          g_data_adr  = (UDWORD)0x00000000;
 
-
 #define JPGCOUNT 5000
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
@@ -43,11 +40,17 @@ void main(void){
 
     //UDWORD FROM_Write_adr = g1_data_adr;
     //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;       //Each sector's first address kind of 0x00???申?申??申?申???申?申??申?申???申?申??申?申???申?申??申?申0000. Use in 'C' and 'D' command
+    //UDWORD FROM_sector_adr = g1_data_adr;
+
     UDWORD Roop_adr = g1_data_adr;
-    UDWORD Jump_adr = 0x020000;
-    //UDWORD FROM_Jump_next_sector = 0x10000;
-    //UINT roopcount = 0;
+    UDWORD Jump_adr = 0x30000;
+   /* Comment
+    * =====================================================
+    * We save Roop_adr in FROM's 0 sector
+    * Roop_adr in 0x00000000
+    * Jump_adr in 0x00000001
+    * =====================================================
+    */
     init_module();
     while(1){
         if(CAMERA_POW == 0){
@@ -63,15 +66,10 @@ void main(void){
                 Command[i] = 0x21;
             }
             //  sync with commands by OBC
-            //BUG
-            //timer_counter = 0;
             while(Command[0] != '5'){
-                Command[0] = getUartData('T');
+                Command[0] = getUartData(0x00);
             }
-            //  TODO : Add time restrict
-            //XXX
-            //BUG
-            //timer_counter = 0;
+            timer_counter = 0;
             for(UINT i=1;i<8;i++){
                 Command[i] = getUartData('T');
             }
@@ -81,6 +79,7 @@ void main(void){
         }
         //FIXME : debug
         send_OK();
+        UINT ECC_length = 0;
 
         switch(Command[1]){
             case 'P':
@@ -90,6 +89,8 @@ void main(void){
                         break;
                     case 'T':
                         Downlink(Roop_adr, Jump_adr, 0x01);
+                        break;
+                    default:
                         break;
                 }
                 break;
@@ -106,42 +107,83 @@ void main(void){
                 send_OK();
                 break;
             case 'R':
+                //XXX : Timer OFF
+                PIE1bits.TMR2IE = 0;
                 switch(Command[2]){
                     case '8':
-                        Receive_8split_JPEG(Roop_adr, Jump_adr);
+                        switch(Command[3]){
+                            case 'J':
+                                Receive_8split_JPEG(Roop_adr, Jump_adr);
+                                //  FIXME : for debug
+                                send_OK();
+                                break;
+                            case 'H':
+                                Receive_8split_H264(Roop_adr, Jump_adr);
+                                //  FIXME : for debug
+                                send_OK();
+                                break;
+                            default:
+                                break;
+                        }
+                        break;
+                    case 'E':
+                        for(UINT i=0; i<3; i++){
+                            ECC_length += Command[i+3] << 8*(2-i);
+                        }
+                        Receive_ECC(Roop_adr, Jump_adr, ECC_length);
+                        //  FIXME : for debug
                         send_OK();
                         break;
                     case 'T':
                         Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
+                        //  FIXME : for debug
                         send_OK();
                         break;
                     default:
                         break;
                 }
+                //XXX : Timer ON
+                PIE1bits.TMR2IE = 1;
                 break;
             case 'E':
+                if(Command[2] + Command[3] > MaxOfSector) break;
                 Erase_sectors(Command[2], Command[3]);
+                //FIXME ; debug
+                send_OK();
                 break;
             case 'I':
                 init_module();
+                //FIXME : debug
+                send_OK();
                 break;
             case 'C':
                 switch(Command[2]){
+                    /* Comment
+                     * =========================================================
+                     * We can use 63 sectors in FROM
+                     * Original JPEG uses 24(3jump * 8groups) sectors each.
+                     * Max Roop_adr = 63- 24 = 39(0x27)
+                     * Min Jump_adr = 3
+                     * Max Jump_adr = 63/8 ~= 7
+                     * 63 = 0x3f
+                     * =========================================================
+                     */
                     case 'R':
-                        //  sector size limit
-                        if(Command[3] >= 0x47){
-                            Command[3] = 0x45;
-                        }
-                        Roop_adr = (UDWORD)Command[3]<<16;
+                        if((Command[3] + (UBYTE)(Jump_adr>>16) * 8) > MaxOfSector) break;
                         //FIXME : debug
+                        sendChar(Roop_adr >> 16);
+                        Roop_adr = (UDWORD)Command[3]<<16;
                         sendChar((UBYTE)(Roop_adr >> 16));
+                        //  FIXME : for debug
                         send_OK();
                         break;
                     case 'J':
-                        if(Command[3] >= 0x08){
-                            Command[3] = 0x07;
-                        }
+                        if(((UBYTE)(Roop_adr>>16) + Command[3] * 8) > MaxOfSector) break;
+                        //FIXME : debug
+                        sendChar(Jump_adr >> 16);
                         Jump_adr = (UDWORD)Command[3]<<16;
+                        //FIXME : debug
+                        sendChar(Jump_adr >> 16);
                         break;
                     case 'B':
                         if((Command[3] != BAU_LOW ) &&
@@ -150,6 +192,7 @@ void main(void){
                             break;
                         }
                         change_downlink_baurate(Command[3]);
+                        //  FIXME : for debug
                         send_OK();
                         break;
                     default:

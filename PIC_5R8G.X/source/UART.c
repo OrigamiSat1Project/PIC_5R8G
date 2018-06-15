@@ -9,6 +9,7 @@
 //#include "Main.h"
 #include "MAX2828.h"
 #include "InitMPU.h"
+#include "Timer.h"
 
 
 //?¿½Ïï¿½?¿½ÌéŒ¾
@@ -373,19 +374,32 @@ UBYTE getDownlinkBAU(void){
 }
 
 UBYTE getUartData(UBYTE mode){
-    if(mode == 'T'){
+    if(mode == 'T'){        //T = Timer processing
         if(OERR || FERR){
             CREN = 0;
             CREN = 1;
         }
-        while(RCIF != 1);
+        while(RCIF != 1){
+            if(timer_counter > 100) break;
+        }
+        return RCREG;
+    }else if(mode == 'C'){  //C = CAM1 mode
+        if(OERR || FERR){
+            CREN = 0;
+            CREN = 1;
+        }
+        while(RCIF != 1){
+            if(CAM1 == 0) break;
+        }
         return RCREG;
     }else{
         if(OERR || FERR){
             CREN = 0;
             CREN = 1;
         }
-        while(RCIF != 1);
+        while(RCIF != 1){
+            if(CAM1 == 1)break;
+        }
         return RCREG;
     }
 }

@@ -61,7 +61,6 @@ void main(void){
         TXEN = Bit_High;
         UBYTE Command[8];
         Command[0] = 0x21;
-
         while(crc16(0,Command,6) != CRC_check(Command, 6)){
             for(UINT i=0;i<8;i++){
                 Command[i] = 0x21;
@@ -70,7 +69,7 @@ void main(void){
             while(Command[0] != '5'){
                 Command[0] = getUartData(0x00);
             }
-            timer_counter = 0;
+            set_timer_counter(0);
             for(UINT i=1;i<8;i++){
                 Command[i] = getUartData('T');
             }
@@ -82,6 +81,13 @@ void main(void){
         send_OK();
         UINT ECC_length = 0;
 
+        //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
+
+        /* Comment
+         * ========================================================================
+         * CRC16 judgement before go to switch-case statement
+         * ========================================================================
+         */
         switch(Command[1]){
             case 'P':
                 switch(Command[2]){
@@ -96,16 +102,35 @@ void main(void){
                 }
                 break;
             case 'D':
-                while(CAM2 == 1);   //  wait 5V SW
-                while(CAM2 == 0){
-                    if(CAMERA_POW == 1){
-                        onAmp();
-                    }
-                    send_dummy_data();
+                switch(Command[2]){
+                    case 'C':   //Clock
+                        set_timer_counter(0);
+                        set_timer_counter_min(0);
+                        while(get_timer_counter_min() < (UINT)Command[4]);
+                        set_timer_counter_min(0);
+                        if(CAMERA_POW == 1){
+                            onAmp();
+                        }
+                        send_dummy_data_timer(Command[5]);
+                        offAmp();
+                        //  FIXME : for debug
+                        send_OK();
+                        break;
+                    case '2':    //Use CAM2
+                        while(CAM2 == 1);   //  wait 5V SW
+                        while(CAM2 == 0){
+                            if(CAMERA_POW == 1){
+                                onAmp();
+                            }
+                            send_dummy_data();
+                        }
+                        offAmp();
+                        //  FIXME : for debug
+                        send_OK();
+                        break;
+                    default:
+                        break;
                 }
-                offAmp();
-                //  FIXME : for debug
-                send_OK();
                 break;
             case 'R':
                 //XXX : Timer OFF

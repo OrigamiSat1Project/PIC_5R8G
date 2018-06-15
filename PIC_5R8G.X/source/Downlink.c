@@ -40,19 +40,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * =============================================================
      */
     send_01();
-    //BUG
-    //timer_counter = 0;
-    /* Comment
-     * =========================================================================
-     * Significant change
-     * We have used 0xff, 0x1e flag in this function.
-     * We will use only 0xff flag
-     *
-     * How to use receiveEndJpegFlag
-     * Bit7    Bit6    Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
-     * ----    ----    cnt5    cnt4    cnt3    cnt2    cnt1    cnt0_0xff
-     * =========================================================================
-     */
+    set_timer_counter(0);
     while(CAM2 == 0){
         if(readFROM_Count >= 8){
             readFROM_Count = 0;
@@ -81,13 +69,13 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
 
             //  FIXME : TIMER2
              //  for rest
-            if(timer_counter >= 10000){     //10s
+            if(get_timer_counter() > 1000){
                 downlinkRest('A');
                 sendBufferCount = 0;
             }
 
             //  WDT dealing
-            if(timer_counter == 40){        //40ms
+            if(get_timer_counter() == 20){
                 CLRWDT();
                 WDT_CLK = ~WDT_CLK;
             }
@@ -127,5 +115,5 @@ void downlinkRest(UBYTE c){
     }else{
         send_AB();
     }
-    timer_counter = 0;
+    set_timer_counter(0);
 }

@@ -364,6 +364,38 @@ void send_dummy_data(void){
         clock_in_tst ++;
     }
 }
+//XXX
+void send_dummy_data_timer(UBYTE time_command){
+    CREN = Bit_Low;
+    TXEN = Bit_High;
+	UINT clock_in_tst = 0;
+    delay_ms(1000);
+    while(1){
+        if (get_timer_counter_min() >= time_command) break;
+        if(clock_in_tst <= 1200 ){
+            for(UINT i=0;i<10;i++){
+                send_buf[0] = STR[i];
+                sendChar(send_buf[0]);
+                //sendChar(0x00);
+                __delay_us(20);
+            }
+        }else if(1200 < clock_in_tst && clock_in_tst <= 1800){
+            //  shut down power of amp
+			if(CAMERA_POW == 0){
+				offAmp();
+			}
+            __delay_ms(8);
+        }else{
+            clock_in_tst = 0;
+            onAmp();
+        }
+        if(clock_in_tst % 100 == 0){
+            CLRWDT();
+            WDT_CLK = ~WDT_CLK;
+        }
+        clock_in_tst ++;
+    }
+}
 
 void change_downlink_baurate(UBYTE bau){
     BAU_WHEN_DOWNLINK = bau;

@@ -44,7 +44,7 @@ void main(void){
     //UDWORD FROM_sector_adr = g1_data_adr;
 
     UDWORD Roop_adr = g1_data_adr;
-    UDWORD Jump_adr = 0x30000;
+    UDWORD Jump_adr = 0x20000;
    /* Comment
     * =====================================================
     * We save Roop_adr in FROM's 0 sector
@@ -69,7 +69,6 @@ void main(void){
             while(Command[0] != '5'){
                 Command[0] = getUartData(0x00);
             }
-            set_timer_counter(0);
             for(UINT i=1;i<8;i++){
                 Command[i] = getUartData('T');
             }
@@ -148,8 +147,6 @@ void main(void){
 //                }
 //                break;
             case 'R':
-                //XXX : Timer OFF
-                PIE1bits.TMR2IE = 0;
                 switch(Command[2]){
                     case 'T':
                         Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
@@ -181,25 +178,25 @@ void main(void){
                         send_OK();
                         break;
                     case 'C':   //Clock mode
-                        //XXX : Timer ON
-                        PIE1bits.TMR2IE = 1;
                         set_timer_counter(0);
                         set_timer_counter_min(0);
                         while(get_timer_counter_min() < (UINT)Command[3]);
-                        Receive_8split_clock(Roop_adr, Jump_adr,(UINT)Command[4]);
+                        //FIXME : debug
+                        send_OK();
+                        Receive_8split_clock(Roop_adr, Jump_adr,(UINT)Command[4], (UINT)Command[5]);
+                        //FIXME : debug
+                        send_OK();
                         break;
                     default:
                         break;
                 }
-                //XXX : Timer ON
-                PIE1bits.TMR2IE = 1;
                 break;
-            case 'E':
-                if(Command[2] + Command[3] > MaxOfSector) break;
-                Erase_sectors(Command[2], Command[3]);
-                //FIXME ; debug
-                send_OK();
-                break;
+//            case 'E':
+//                if(Command[2] + Command[3] > MaxOfSector) break;
+//                Erase_sectors(Command[2], Command[3]);
+//                //FIXME ; debug
+//                send_OK();
+//                break;
             case 'I':
                 init_module();
                 //FIXME : debug

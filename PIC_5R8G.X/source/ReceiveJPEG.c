@@ -114,10 +114,8 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
-            receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
+            receiveEndJpegFlag += 0x10;     //+1 cnt in receiveEndJpegFlag.
             //FIXME : debug
-            offAmp();
-            TXEN = Bit_High;
             sendChar(receiveEndJpegFlag);
             sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
@@ -295,7 +293,7 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
     sendChar(0xee);
 }
 
-void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time){
+void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time, UINT end_time){
    /* Comment
     * ==========================================================================
     * Erase sectors before writing FROM
@@ -329,9 +327,10 @@ void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time){
     CREN = Bit_High;    //It is needed for integration with OBC
     //TXEN = Bit_High;
     set_timer_counter(0);
-    while((receiveEndClockFlag  & 0x80) != 0x80){
+    set_timer_counter_min(0);
+    while((receiveEndClockFlag  & 0x80) != 0x80 && get_timer_counter_min() < end_time){
         Buffer[index_of_Buffer] = getUartData(0x00);
-        if (get_timer_counter() >= split_time)
+        if (get_timer_counter() >= split_time * 1000)
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;

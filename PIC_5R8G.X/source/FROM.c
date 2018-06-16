@@ -44,10 +44,10 @@ UBYTE flash_Write_En(void);							/* Writing enable					*/
 static UBYTE flash_Wait_Busy(UWORD BusyTime, UWORD BusyCnt);
 															/* Busy completion waiting			*/
 UBYTE flash_SPI_DataOut(UWORD, UBYTE *);
-static UBYTE flash_Send_Cmd(UBYTE, UDWORD, UBYTE);
+//static UBYTE flash_Send_Cmd(UBYTE, UDWORD, UBYTE);
 static UBYTE flash_SPI_Rx(UWORD, UBYTE *);
 UBYTE flash_Read_Data(UDWORD, UDWORD, UBYTE *);
-//UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
+UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
 //UBYTE flash_Deep_sleep(void);
 //UBYTE flash_Wake_up(void);
 

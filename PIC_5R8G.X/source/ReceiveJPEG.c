@@ -325,7 +325,7 @@ void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time){
     set_timer_counter(0);
     while((receiveEndClockFlag  & 0x80) != 0x80){
         Buffer[index_of_Buffer] = getUartData(0x00);
-        if (get_timer_counter() == split_time)
+        if (get_timer_counter() >= split_time)
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;

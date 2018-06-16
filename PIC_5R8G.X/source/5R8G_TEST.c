@@ -106,51 +106,56 @@ void main(void){
                         }
                     case 'C':   //Clock
                         set_timer_counter(0);
-                            set_timer_counter_min(0);
-                            while(get_timer_counter_min() < (UINT)Command[4]);
-                            Downlink_clock(Roop_adr, Jump_adr, Command[3], (UINT)Command[5]);
-                            //FIXME : debug
-                            send_OK();
-                        break;
-                    default:
-                        break;
-                }
-                break;
-            case 'D':
-                switch(Command[2]){
-                    case 'C':   //Clock
-                        set_timer_counter(0);
                         set_timer_counter_min(0);
                         while(get_timer_counter_min() < (UINT)Command[4]);
-                        set_timer_counter_min(0);
-                        if(CAMERA_POW == 1){
-                            onAmp();
-                        }
-                        send_dummy_data_timer(Command[5]);
-                        offAmp();
-                        //  FIXME : for debug
-                        send_OK();
-                        break;
-                    case '2':    //Use CAM2
-                        while(CAM2 == 1);   //  wait 5V SW
-                        while(CAM2 == 0){
-                            if(CAMERA_POW == 1){
-                                onAmp();
-                            }
-                            send_dummy_data();
-                        }
-                        offAmp();
-                        //  FIXME : for debug
+                        Downlink_clock(Roop_adr, Jump_adr, Command[3], (UINT)Command[5]);
+                        //FIXME : debug
                         send_OK();
                         break;
                     default:
                         break;
                 }
                 break;
+//            case 'D':
+//                switch(Command[2]){
+//                    case 'C':   //Clock
+//                        set_timer_counter(0);
+//                        set_timer_counter_min(0);
+//                        while(get_timer_counter_min() < (UINT)Command[4]);
+//                        set_timer_counter_min(0);
+//                        if(CAMERA_POW == 1){
+//                            onAmp();
+//                        }
+//                        send_dummy_data_timer(Command[5]);
+//                        offAmp();
+//                        //  FIXME : for debug
+//                        send_OK();
+//                        break;
+//                    case '2':    //Use CAM2
+//                        while(CAM2 == 1);   //  wait 5V SW
+//                        while(CAM2 == 0){
+//                            if(CAMERA_POW == 1){
+//                                onAmp();
+//                            }
+//                            send_dummy_data();
+//                        }
+//                        offAmp();
+//                        //  FIXME : for debug
+//                        send_OK();
+//                        break;
+//                    default:
+//                        break;
+//                }
+//                break;
             case 'R':
                 //XXX : Timer OFF
                 PIE1bits.TMR2IE = 0;
                 switch(Command[2]){
+                    case 'T':
+                        Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
+                        //  FIXME : for debug
+                        send_OK();
+                        break;
                     case '8':
                         switch(Command[3]){
                             case 'J':
@@ -175,10 +180,13 @@ void main(void){
                         //  FIXME : for debug
                         send_OK();
                         break;
-                    case 'T':
-                        Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
-                        //  FIXME : for debug
-                        send_OK();
+                    case 'C':   //Clock mode
+                        //XXX : Timer ON
+                        PIE1bits.TMR2IE = 1;
+                        set_timer_counter(0);
+                        set_timer_counter_min(0);
+                        while(get_timer_counter_min() < (UINT)Command[3]);
+                        Receive_8split_clock(Roop_adr, Jump_adr,(UINT)Command[4]);
                         break;
                     default:
                         break;

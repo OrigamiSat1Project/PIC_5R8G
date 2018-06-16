@@ -203,71 +203,71 @@ void sendChar(UBYTE c)
 	TXREG = c;
 }
 
-void send_tst_str(void){
-    CREN = Bit_Low;
-    TXEN = Bit_High;
-	UINT clock_in_tst = 0;
-//	initbau(BAU_HIGH);								//UART?øΩÃèÔøΩ?øΩ?øΩ?øΩ?øΩ 115.2kbps
-//	initbau(0x1F);									//57.6kbps
-//	initbau(0x5F);									//19.2kbps
-    CAMERA_POW = 0;
-    CAMERA_SEL = 0;
-    max2828_txon();
-    delay_ms(1000);
-	while(1){
-        if(CAM2 == 0){
-            if(clock_in_tst <= 1200 ){
-                for(UINT i=0;i<10;i++){
-                    send_buf[0] = STR[i];
-                    sendChar(send_buf[0]);
-                    //sendChar(0x00);
-                    __delay_us(20);
-                }
-                if(CAM2 == 1 && CAMERA_POW == 0){
-                    //  shut down power of amp
-                    CLRWDT();
-                    WDT_CLK = ~WDT_CLK;
-                    clock_in_tst = 1300;    //  over 1200
-                    CAMERA_POW = 1;
-                    CAMERA_SEL = 1;
-                    MAX2828_TXEN = 0;
-                    PA_SW = 0;
-                    break;
-                }
-            }else if(clock_in_tst > 1200 ){
-                //  shut down power of amp
-                CLRWDT();
-                WDT_CLK = ~WDT_CLK;
-                CAMERA_POW = 1;
-                CAMERA_SEL = 1;
-                MAX2828_TXEN = 0;
-                PA_SW = 0;
-                delay_ms(5000);
-                if(CAM2 == 0 && CAMERA_POW == 1){
-                    //  wake up power for amp
-                    CAMERA_POW = 0;
-                    CAMERA_SEL = 0;
-                    max2828_txon();
-                    delay_ms(1000);
-                }
-                clock_in_tst = 0;
-            }
-            clock_in_tst ++;
-        }else{
-            //  if amp power on
-            if(CAMERA_POW == 0){
-               CLRWDT();
-                WDT_CLK = ~WDT_CLK;
-                clock_in_tst = 0;
-                CAMERA_POW = 1;
-                CAMERA_SEL = 1;
-                MAX2828_TXEN = 0;
-                PA_SW = 0;
-                clock_in_tst = 0;
-            }
-        }
-	}
-}
+//void send_tst_str(void){
+//    CREN = Bit_Low;
+//    TXEN = Bit_High;
+//	UINT clock_in_tst = 0;
+////	initbau(BAU_HIGH);								//UART?øΩÃèÔøΩ?øΩ?øΩ?øΩ?øΩ 115.2kbps
+////	initbau(0x1F);									//57.6kbps
+////	initbau(0x5F);									//19.2kbps
+//    CAMERA_POW = 0;
+//    CAMERA_SEL = 0;
+//    max2828_txon();
+//    delay_ms(1000);
+//	while(1){
+//        if(CAM2 == 0){
+//            if(clock_in_tst <= 1200 ){
+//                for(UINT i=0;i<10;i++){
+//                    send_buf[0] = STR[i];
+//                    sendChar(send_buf[0]);
+//                    //sendChar(0x00);
+//                    __delay_us(20);
+//                }
+//                if(CAM2 == 1 && CAMERA_POW == 0){
+//                    //  shut down power of amp
+//                    CLRWDT();
+//                    WDT_CLK = ~WDT_CLK;
+//                    clock_in_tst = 1300;    //  over 1200
+//                    CAMERA_POW = 1;
+//                    CAMERA_SEL = 1;
+//                    MAX2828_TXEN = 0;
+//                    PA_SW = 0;
+//                    break;
+//                }
+//            }else if(clock_in_tst > 1200 ){
+//                //  shut down power of amp
+//                CLRWDT();
+//                WDT_CLK = ~WDT_CLK;
+//                CAMERA_POW = 1;
+//                CAMERA_SEL = 1;
+//                MAX2828_TXEN = 0;
+//                PA_SW = 0;
+//                delay_ms(5000);
+//                if(CAM2 == 0 && CAMERA_POW == 1){
+//                    //  wake up power for amp
+//                    CAMERA_POW = 0;
+//                    CAMERA_SEL = 0;
+//                    max2828_txon();
+//                    delay_ms(1000);
+//                }
+//                clock_in_tst = 0;
+//            }
+//            clock_in_tst ++;
+//        }else{
+//            //  if amp power on
+//            if(CAMERA_POW == 0){
+//               CLRWDT();
+//                WDT_CLK = ~WDT_CLK;
+//                clock_in_tst = 0;
+//                CAMERA_POW = 1;
+//                CAMERA_SEL = 1;
+//                MAX2828_TXEN = 0;
+//                PA_SW = 0;
+//                clock_in_tst = 0;
+//            }
+//        }
+//	}
+//}
 
 void send_01(void){
     UBYTE Preamblecount = 0;
@@ -305,34 +305,34 @@ void send_OK(void){
     sendChar('\n');
 }
 
-void send_NG(void){
-    sendChar('N');
-    __delay_us(20);
-    sendChar('G');
-    __delay_us(20);
-}
+//void send_NG(void){
+//    sendChar('N');
+//    __delay_us(20);
+//    sendChar('G');
+//    __delay_us(20);
+//}
+//
+//void send_CRLF(void){
+//    sendChar('\r');
+//    sendChar('\n');
+//}
 
-void send_CRLF(void){
-    sendChar('\r');
-    sendChar('\n');
-}
-
-void echo_back(void){
-    UBYTE testbuf1;
-    UBYTE testbuf2;
-    UDWORD echo_adr = g_data_adr;
-    CREN = Bit_High;
-    TXEN = Bit_High;
-    __delay_ms(1000);
-    //flash_Erase(g_data_adr,S_ERASE);    //g_data_adr?øΩ?øΩsector65536byte?øΩ?øΩ?øΩ?èú
-    while(1){
-        testbuf1 = getUartData(0x00);
-        //flash_Write_Data(echo_adr,1UL,&testbuf1);
-        //flash_Read_Data(echo_adr,1UL,&testbuf2);
-        sendChar(testbuf1);
-        echo_adr += 1UL;
-    }
-}
+//void echo_back(void){
+//    UBYTE testbuf1;
+//    UBYTE testbuf2;
+//    UDWORD echo_adr = g_data_adr;
+//    CREN = Bit_High;
+//    TXEN = Bit_High;
+//    __delay_ms(1000);
+//    //flash_Erase(g_data_adr,S_ERASE);    //g_data_adr?øΩ?øΩsector65536byte?øΩ?øΩ?øΩ?èú
+//    while(1){
+//        testbuf1 = getUartData(0x00);
+//        //flash_Write_Data(echo_adr,1UL,&testbuf1);
+//        //flash_Read_Data(echo_adr,1UL,&testbuf2);
+//        sendChar(testbuf1);
+//        echo_adr += 1UL;
+//    }
+//}
 
 void send_dummy_data(void){
     CREN = Bit_Low;

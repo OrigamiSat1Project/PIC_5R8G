@@ -8,6 +8,7 @@
 #include "MAX2828.h"
 #include "typedefine.h"
 #include "UART.h"
+#include "Timer.h"
 
 void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
    /* Comment
@@ -286,4 +287,64 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
         }
     }
     sendChar(0xee);
+}
+
+void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time){
+   /* Comment
+    * ==========================================================================
+    * Erase sectors before writing FROM
+    * We erase Roop_adr + Jump_adr * 8 sectors before writing
+    * ==========================================================================
+    */
+    Erase_sectors_before_Write(Roop_adr, Jump_adr);
+    UBYTE Buffer[MaxOfMemory];
+    UBYTE receiveEndClockFlag = 0x00;
+    UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
+
+   /*  How to use receiveEndJpegFlag
+    * ==========================================================================
+    *  Bit7      Bit6     Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
+    *  cnt3      cnt2     cnt1    cnt0    ----    ----    ----     ----
+    *
+    *  Initialize                 = 0x00  (0b00000000)
+    *  During writing group 1     = 0x00  (0b00000000)
+    *  During writing group 2     = 0x10  (0b00010000)
+    *  During writing group 3     = 0x20  (0b00100000)
+    *  During writing group 4     = 0x30  (0b00110000)
+    *  During writing group 5     = 0x40  (0b01000000)
+    *  During writing group 6     = 0x50  (0b01010000)
+    *  During writing group 7     = 0x60  (0b01100000)
+    *  During writing group 8     = 0x70  (0b01110000)
+    * ==========================================================================
+    */
+    UINT index_of_Buffer = 0;
+    //FIXME : debug
+    sendChar(0xcc);
+    CREN = Bit_High;    //It is needed for integration with OBC
+    //TXEN = Bit_High;
+    set_timer_counter(0);
+    while((receiveEndClockFlag  & 0x80) != 0x80){
+        Buffer[index_of_Buffer] = getUartData(0x00);
+        if (get_timer_counter() == split_time)
+        {
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            index_of_Buffer = 0;
+            //  Jump to next group's first sector & change flag
+            receiveEndClockFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
+            FROM_Write_adr = Roop_adr +(UINT)(receiveEndClockFlag >> 4) * Jump_adr;
+            set_timer_counter(0);
+            //FIXME : debug
+            sendChar(receiveEndClockFlag);
+            sendChar((UBYTE)(FROM_Write_adr >> 16));
+        }
+        else
+        {
+            index_of_Buffer++;
+        }
+        if(index_of_Buffer == MaxOfMemory){
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            FROM_Write_adr += (UDWORD)(MaxOfMemory);
+            index_of_Buffer = 0;
+        }
+    }
 }

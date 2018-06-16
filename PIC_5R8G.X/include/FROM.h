@@ -197,11 +197,11 @@
 /**/
 UBYTE flash_Write_Page(UDWORD , UWORD , UBYTE *);	//1-page write processing
 UBYTE flash_Read_StsReg(UBYTE *);					//Write-protection check
-UBYTE flash_Write_StsReg(UBYTE *);					//Status register write processing
+//UBYTE flash_Write_StsReg(UBYTE *);					//Status register write processing
 UBYTE flash_Erase(UDWORD, UBYTE);					//Erase processing
 UBYTE flash_Read_Data(UDWORD, UDWORD, UBYTE *);		//Data read processing
 UBYTE flash_Write_Data(UDWORD, UDWORD, UBYTE *);	//Data write processing
-UBYTE flash_Write_Protect(UBYTE);					//Write-protection setting processing
+//UBYTE flash_Write_Protect(UBYTE);					//Write-protection setting processing
 void flash_ExchgLong(UDWORD);						//エンディアンの変換関数
  
 UBYTE flash_SPI_DataOut(UWORD, UBYTE *);
@@ -209,7 +209,7 @@ UBYTE flash_SPI_DataOut(UWORD, UBYTE *);
 UBYTE flash_Write_En(void);
 UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
 
-UBYTE flash_Deep_sleep(void);
-UBYTE flash_Wake_up(void);
+//UBYTE flash_Deep_sleep(void);
+//UBYTE flash_Wake_up(void);
 
 #endif /* __FROM_H__ */

@@ -15,6 +15,7 @@
       <itemPath>include/CRC16.h</itemPath>
       <itemPath>include/Downlink.h</itemPath>
       <itemPath>include/ReceiveJPEG.h</itemPath>
+      <itemPath>include/Timer.h</itemPath>
     </logicalFolder>
     <logicalFolder name="LinkerScript"
                    displayName="Linker Files"
@@ -33,6 +34,7 @@
       <itemPath>source/ReceiveJPEG.c</itemPath>
       <itemPath>source/Downlink.c</itemPath>
       <itemPath>source/CRC16.c</itemPath>
+      <itemPath>source/Timer.c</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

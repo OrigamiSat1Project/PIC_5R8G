@@ -215,6 +215,7 @@ void main(void){
                      * =========================================================
                      */
                     case 'R':
+                        if(Command[3] == 0x00) break;
                         if((Command[3] + (UBYTE)(Jump_adr>>16) * 8) > MaxOfSector) break;
                         //FIXME : debug
                         sendChar(Roop_adr >> 16);
@@ -224,12 +225,14 @@ void main(void){
                         send_OK();
                         break;
                     case 'J':
+                        if(Command[3] <= 0x01) break;
                         if(((UBYTE)(Roop_adr>>16) + Command[3] * 8) > MaxOfSector) break;
                         //FIXME : debug
                         sendChar(Jump_adr >> 16);
                         Jump_adr = (UDWORD)Command[3]<<16;
                         //FIXME : debug
                         sendChar(Jump_adr >> 16);
+                        send_OK();
                         break;
                     case 'B':
                         if((Command[3] != BAU_LOW ) &&

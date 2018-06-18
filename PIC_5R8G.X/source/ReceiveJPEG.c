@@ -322,22 +322,23 @@ void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time, UIN
     * ==========================================================================
     */
     UINT index_of_Buffer = 0;
-    //FIXME : debug
+    
     sendChar(0xcc);
     CREN = Bit_High;    //It is needed for integration with OBC
     //TXEN = Bit_High;
     set_timer_counter(0);
     set_timer_counter_min(0);
+    UINT sector_timer = get_timer_counter();
     while((receiveEndClockFlag  & 0x80) != 0x80 && get_timer_counter_min() < end_time){
-        Buffer[index_of_Buffer] = getUartData(0x00);
-        if (get_timer_counter() >= split_time * 1000)
+        Buffer[index_of_Buffer] = getUartData('T');
+        if (get_timer_counter() - sector_timer >= split_time * 1000)
         {
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
             index_of_Buffer = 0;
             //  Jump to next group's first sector & change flag
             receiveEndClockFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndClockFlag >> 4) * Jump_adr;
-            set_timer_counter(0);
+            sector_timer = get_timer_counter();
             //FIXME : debug
             sendChar(receiveEndClockFlag);
             sendChar((UBYTE)(FROM_Write_adr >> 16));

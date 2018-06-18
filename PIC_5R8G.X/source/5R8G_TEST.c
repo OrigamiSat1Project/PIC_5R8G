@@ -73,10 +73,14 @@ void main(void){
                 Command[i] = getUartData('T');
             }
         }
+        //XXX : busy signal when succeed receive command
+        BUSY = 0;
+        __delay_ms(3000);
+        BUSY = 1;
+        //FIXME : debug
         for(UINT i=0;i<8;i++){
             sendChar(Command[i]);
         }
-        //FIXME : debug
         send_OK();
         UINT ECC_length = 0;
 
@@ -182,7 +186,7 @@ void main(void){
                         set_timer_counter_min(0);
                         while(get_timer_counter_min() < (UINT)Command[3]);
                         //FIXME : debug
-                        send_OK();
+                        sendChar(0xaa);
                         Receive_8split_clock(Roop_adr, Jump_adr,(UINT)Command[4], (UINT)Command[5]);
                         //FIXME : debug
                         send_OK();
@@ -197,11 +201,11 @@ void main(void){
 //                //FIXME ; debug
 //                send_OK();
 //                break;
-            case 'I':
-                init_module();
-                //FIXME : debug
-                send_OK();
-                break;
+//            case 'I':
+//                init_module();
+//                //FIXME : debug
+//                send_OK();
+//                break;
             case 'C':
                 switch(Command[2]){
                     /* Comment
@@ -227,23 +231,21 @@ void main(void){
                     case 'J':
                         if(Command[3] <= 0x01) break;
                         if(((UBYTE)(Roop_adr>>16) + Command[3] * 8) > MaxOfSector) break;
-                        //FIXME : debug
-                        sendChar(Jump_adr >> 16);
                         Jump_adr = (UDWORD)Command[3]<<16;
                         //FIXME : debug
                         sendChar(Jump_adr >> 16);
                         send_OK();
                         break;
-                    case 'B':
-                        if((Command[3] != BAU_LOW ) &&
-                           (Command[3] != BAU_MIDDLE) &&
-                           (Command[3] != BAU_HIGH)){
-                            break;
-                        }
-                        change_downlink_baurate(Command[3]);
-                        //  FIXME : for debug
-                        send_OK();
-                        break;
+//                    case 'B':
+//                        if((Command[3] != BAU_LOW ) &&
+//                           (Command[3] != BAU_MIDDLE) &&
+//                           (Command[3] != BAU_HIGH)){
+//                            break;
+//                        }
+//                        change_downlink_baurate(Command[3]);
+//                        //  FIXME : for debug
+//                        send_OK();
+//                        break;
                     case 'D':
                         //XXX : change downlink_time in downlink
                         if(Command[3] >=  0x14) break;    // break over 20sec
@@ -262,7 +264,13 @@ void main(void){
                         break;
                 }
                 break;
-            case 'S':
+            case 'B':
+                //XXX : busy signal when PIC is in main roop
+                BUSY = 0;
+                __delay_ms(3000);
+                BUSY = 1;
+                break;
+//            case 'S':
                /* Comment
                 * ======================================================================================
                 * Make Sleep mode (Command =='S')
@@ -278,7 +286,7 @@ void main(void){
                 break;
                 * =======================================================================================
                 */
-            case 'W':
+//            case 'W':
                /*Comment
                 * ======================================================================================
                 * Make Wake up mode (Command == 'W')
@@ -288,7 +296,7 @@ void main(void){
                 * flash_Wake_up();
                 * =======================================================================================
                 */
-                break;
+//                break;
             default:
                 //  FIXME : for debug
                 sendChar(0xff);

@@ -410,8 +410,6 @@ UBYTE flash_Erase(UDWORD EAddr, UBYTE Etype)
 	UBYTE				StsReg;								/* Status buffer						*/
 #endif	/* #ifdef FLASH_WEL_CHK */
 	UBYTE				Ret;
-    // SW BUSY to High during FROM writing
-    //BUSY = 0;
 
 	/* Writing enable(WEL set) */
 	Ret = flash_Write_En();
@@ -458,8 +456,6 @@ UBYTE flash_Erase(UDWORD EAddr, UBYTE Etype)
 		return Ret;
 	}
     
-    //BUSY = 1;
-
 	return FLASH_OK;
 }
 

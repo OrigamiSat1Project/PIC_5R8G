@@ -74,9 +74,9 @@ void main(void){
             }
         }
         //XXX : busy signal when succeed receive command
-        BUSY = 0;
-        __delay_ms(3000);
-        BUSY = 1;
+//        BUSY = 0;
+//        __delay_ms(3000);
+//        BUSY = 1;
         //FIXME : debug
         for(UINT i=0;i<8;i++){
             sendChar(Command[i]);
@@ -195,12 +195,12 @@ void main(void){
                         break;
                 }
                 break;
-//            case 'E':
-//                if(Command[2] + Command[3] > MaxOfSector) break;
-//                Erase_sectors(Command[2], Command[3]);
-//                //FIXME ; debug
-//                send_OK();
-//                break;
+            case 'E':
+                if(Command[2] + Command[3] > MaxOfSector) break;
+                Erase_sectors(Command[2], Command[3]);
+                //FIXME ; debug
+                send_OK();
+                break;
 //            case 'I':
 //                init_module();
 //                //FIXME : debug
@@ -246,30 +246,30 @@ void main(void){
 //                        //  FIXME : for debug
 //                        send_OK();
 //                        break;
-                    case 'D':
-                        //XXX : change downlink_time in downlink
-                        if(Command[3] >=  0x14) break;    // break over 20sec
-                        set_downlink_time((UINT)Command[3]);
-                        //FIXME : debug
-                        send_OK();
-                        break;
-                    case 'T':
-                        //XXX : change rest_time in downlink
-                        if(Command[3] < 0x05) break;    // break under 5s
-                        set_rest_time((UINT)Command[3]);
-                        //FIXME : debug
-                        send_OK();
-                        break;
+//                    case 'D':
+//                        //XXX : change downlink_time in downlink
+//                        if(Command[3] >=  0x14) break;    // break over 20sec
+//                        set_downlink_time((UINT)Command[3]);
+//                        //FIXME : debug
+//                        send_OK();
+//                        break;
+//                    case 'T':
+//                        //XXX : change rest_time in downlink
+//                        if(Command[3] < 0x05) break;    // break under 5s
+//                        set_rest_time((UINT)Command[3]);
+//                        //FIXME : debug
+//                        send_OK();
+//                        break;
                     default:
                         break;
                 }
                 break;
-            case 'B':
-                //XXX : busy signal when PIC is in main roop
-                BUSY = 0;
-                __delay_ms(3000);
-                BUSY = 1;
-                break;
+//            case 'B':
+//                //XXX : busy signal when PIC is in main roop
+//                BUSY = 0;
+//                __delay_ms(3000);
+//                BUSY = 1;
+//                break;
 //            case 'S':
                /* Comment
                 * ======================================================================================

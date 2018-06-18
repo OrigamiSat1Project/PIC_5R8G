@@ -75,7 +75,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
 
             //  FIXME : TIMER2
              //  for rest
-            if(get_timer_counter() > get_rest_time()){
+            if(get_timer_counter() > get_downlink_time()){
                 downlinkRest('A');
                 sendBufferCount = 0;
             }

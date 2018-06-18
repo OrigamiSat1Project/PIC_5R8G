@@ -44,7 +44,6 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     //FIXME : debug
     sendChar(0x88);
     CREN = Bit_High;    //It is needed for integration with OBC
-    //TXEN = Bit_High;
     while((receiveEndJpegFlag  & 0x80) != 0x80){
         //XXX : CAM1 break in ECC
         if(CAM1 == 0) break;
@@ -98,7 +97,6 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     //FIXME : debug
     sendChar(0xbb);
     CREN = Bit_High;
-    TXEN = Bit_High;
     UINT index_of_Buffer = 0;
     while((receiveEndJpegFlag  & 0x10) != 0x10)
     {
@@ -167,7 +165,6 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
     //FIXME : debug
     sendChar(0x77);
     CREN = Bit_High;    //It is needed for integration with OBC
-    //TXEN = Bit_High;
     while((receiveEndH264Flag  & 0x80) != 0x80){
         //XXX : CAM1 break in ECC
         if(CAM1 == 0) break;
@@ -249,7 +246,6 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
     sendChar(ECC_length/8);
     sendChar(ECC_length-7*(ECC_length/8));
     CREN = Bit_High;    //It is needed for integration with OBC
-    //TXEN = Bit_High;
     while(receiveEndECCFlag != 0x08){
         //XXX : CAM1 break in ECC
         if(CAM1 == 0) break;
@@ -325,7 +321,6 @@ void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time, UIN
     
     sendChar(0xcc);
     CREN = Bit_High;    //It is needed for integration with OBC
-    //TXEN = Bit_High;
     set_timer_counter(0);
     set_timer_counter_min(0);
     UINT sector_timer = get_timer_counter();

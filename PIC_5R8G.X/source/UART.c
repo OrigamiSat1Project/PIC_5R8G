@@ -410,9 +410,9 @@ UBYTE getUartData(UBYTE mode){
             CREN = 0;
             CREN = 1;
         }
-        set_timer_counter(0);
+        set_timer_counter_only_getUart(0);
         while(RCIF != 1){
-            if(get_timer_counter() > 1000) break;
+            if(get_timer_counter_only_getUart() > 1000) break;
         }
         return RCREG;
     }else{                  //C = CAM1 mode

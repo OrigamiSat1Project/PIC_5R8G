@@ -15,8 +15,10 @@
 void initInterrupt(void);
 void interrupt incrementTimer(void);
 void set_timer_counter(UINT);
-void set_timer_counter_min(UINT);
 UINT get_timer_counter(void);
+void set_timer_counter_min(UINT);
 UINT get_timer_counter_min(void);
+void set_timer_counter_only_getUart(UINT);
+UINT get_timer_counter_only_getUart(void);
 
 #endif	/* Timer_H */

@@ -25,6 +25,7 @@
 
 static UINT timer_counter;
 static UINT timer_counter_min;
+static UINT timer_counter_only_getUart;
 
 void initInterrupt(void){
     INTCONbits.GIE  = 1;
@@ -40,6 +41,7 @@ void interrupt incrementTimer(void){
         PIR1bits.TMR2IF = 0;
         TMR2 = 0x00;
         timer_counter++;
+        timer_counter_only_getUart++;
     }
     if(timer_counter == 60000){
         timer_counter = 0;
@@ -51,20 +53,31 @@ void interrupt incrementTimer(void){
     if(timer_counter_min == UINT_MAX){
         timer_counter_min = 0;
     }
+    if(timer_counter_only_getUart == UINT_MAX){
+        timer_counter_only_getUart = 0;
+    }
 }
 
 void set_timer_counter(UINT time){
     timer_counter = time;
 }
 
-void set_timer_counter_min(UINT time_min){
-    timer_counter_min = time_min;
-}
-
 UINT get_timer_counter(void){
     return timer_counter;
 }
 
+void set_timer_counter_min(UINT time_min){
+    timer_counter_min = time_min;
+}
+
 UINT get_timer_counter_min(void){
     return timer_counter_min;
+}
+
+void set_timer_counter_only_getUart(UINT time){
+    timer_counter_only_getUart = time;
+}
+
+UINT get_timer_counter_only_getUart(void){
+    return timer_counter_only_getUart;
 }

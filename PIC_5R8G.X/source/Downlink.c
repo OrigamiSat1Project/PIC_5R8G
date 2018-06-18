@@ -8,10 +8,13 @@
 #include "FROM.h"
 #include "Timer.h"
 
-static UINT rest_time = 10000;
+static UINT downlink_time = 10000;  //downlinktime is 10s as default
+static UINT rest_time = 5000;       //rest time is 5s as default
 
 void downlinkChar(UBYTE);
 void downlinkRest(UBYTE);
+void set_downlink_time(UINT);
+UINT get_downlink_time(void);
 void set_rest_time(UINT);
 UINT get_rest_time(void);
 
@@ -154,7 +157,7 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
 
             //  FIXME : TIMER2
              //  for rest
-            if(get_timer_counter() > get_rest_time()){
+            if(get_timer_counter() > get_downlink_time()){
                 downlinkRest('A');
                 sendBufferCount = 0;
             }
@@ -191,7 +194,9 @@ void downlinkRest(UBYTE c){
         send_AB();
     }
     offAmp();
-    __delay_ms(5000);
+    //XXX : rest by using Timer
+    set_timer_counter(0);
+    while(get_timer_counter() < get_rest_time());
     if(CAMERA_POW == 1){
         onAmp();
     }
@@ -201,6 +206,14 @@ void downlinkRest(UBYTE c){
         send_AB();
     }
     set_timer_counter(0);
+}
+
+void set_downlink_time(UINT time){
+    downlink_time = time;
+}
+
+UINT get_downlink_time(void){
+    return downlink_time;
 }
 
 void set_rest_time(UINT time){

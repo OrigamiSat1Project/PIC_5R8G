@@ -10,6 +10,9 @@
 #include "UART.h"
 #include "Timer.h"
 
+const UBYTE FooterOfJPEG[] = {0xff, 0x1e};
+const UBYTE FooterOfH264[] = {0x00, 0x00, 0x01, 0x1e};
+
 void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
    /* Comment
     * ==========================================================================

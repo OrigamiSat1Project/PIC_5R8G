@@ -10,6 +10,7 @@
 
 static UINT downlink_time = 10000;  //downlinktime is 10s as default
 static UINT rest_time = 5000;       //rest time is 5s as default
+const UBYTE FROM_default_data = 0xff;
 
 void downlinkChar(UBYTE);
 void downlinkRest(UBYTE);

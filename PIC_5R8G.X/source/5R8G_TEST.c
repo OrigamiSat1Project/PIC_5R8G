@@ -30,6 +30,7 @@
 #pragma config WRT = HALF       // Flash Program Memory Self Write Enable bits (0000h to 0FFFh write protected, 1000h to 1FFFh may be modified by EECON control)
 
 UDWORD          g_data_adr  = (UDWORD)0x00000000;
+const UBYTE MaxOfSector = 0x3f;
 
 #define JPGCOUNT 5000
 void main(void){

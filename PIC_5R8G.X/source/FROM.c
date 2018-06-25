@@ -235,7 +235,7 @@ UBYTE flash_Write_Page(UDWORD WAddr, UWORD WCnt, UBYTE * pData)
 UBYTE flash_Write_Data(UDWORD WAddr, UDWORD WCnt, UBYTE * pData)
 {
 	// SW BUSY to High during FROM writing
-    BUSY = 0;
+    //BUSY = 0;
 	UDWORD				EndWAddr;						/* Writing end address					*/
 	UDWORD				WPagCnt;						/* Writing page count					*/
 	UDWORD				WByteCnt;						/* 1page writing byte count				*/
@@ -315,7 +315,7 @@ UBYTE flash_Write_Data(UDWORD WAddr, UDWORD WCnt, UBYTE * pData)
 			return Ret;
 		}
 	}
-    BUSY = 1;
+    //BUSY = 1;
 	return FLASH_OK;
 }
 

@@ -57,7 +57,9 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
         }
         else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
         {
+            BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            BUSY = 1;    //BUSY OFF
             index_of_Buffer = 0;
             //  Jump to next group's first sector & change flag
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
@@ -72,7 +74,9 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             index_of_Buffer++;
         }
         if(index_of_Buffer == MaxOfMemory){
+            BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
         }
@@ -112,7 +116,9 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
         }
         else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
         {
+            BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            BUSY = 1;   //BUSY OFF
             index_of_Buffer = 0;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 cnt in receiveEndJpegFlag.
@@ -126,7 +132,9 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             index_of_Buffer++;
         }
         if(index_of_Buffer == MaxOfMemory){
+            BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
         }
@@ -186,7 +194,9 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
         }
         else if ((receiveEndH264Flag & 0x04) == 0x04 && Buffer[index_of_Buffer] == FooterOfH264[3])
         {
+            BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            BUSY = 1;   //BUSY OFF
             index_of_Buffer = 0;
 
             //  Jump to next group's first sector & change flag
@@ -204,7 +214,9 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
         }
 
         if(index_of_Buffer == MaxOfMemory){
+            BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
         }
@@ -255,7 +267,9 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
         Buffer[index_of_Buffer] = getUartData(0x00);
         if (receiveEndECCFlag < 0x07 && ECC_count == ECC_length/8 - 1)
         {
+            BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            BUSY = 1;   //BUSY OFF
             index_of_Buffer = 0;
             //  Jump to next group's first sector & change flag
             receiveEndECCFlag += 0x01;     //+1 8split_cnt in receiveEndECCFlag.
@@ -270,7 +284,9 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
         }
         else if(receiveEndECCFlag == 0x07 && ECC_count == ECC_length -7*(ECC_length/8) -1)
         {
+            BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            BUSY = 1;   //BUSY OFF
             index_of_Buffer = 0;
             ECC_count = 0;
             receiveEndECCFlag += 0x01;
@@ -284,7 +300,9 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             index_of_Buffer++;
         }
         if(index_of_Buffer == MaxOfMemory){
+            BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
         }

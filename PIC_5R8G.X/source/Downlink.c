@@ -29,7 +29,8 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     sendChar(0x50);
     while(CAM2 == 1);   //  wait 5V SW
     if(CAMERA_POW == 1){
-        onAmp();
+        //FIXME
+        //onAmp();
     }
     UINT sendBufferCount = 1;
     UBYTE Buffer[MaxOfMemory];
@@ -46,7 +47,8 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * Flag is OFF : FROM_Read_adr is jumping to next sector's start address.
      * =============================================================
      */
-    send_01();
+    //FIXME
+    //send_01();
     set_timer_counter(0);
     while(CAM2 == 0){
         if(readFROM_Count >= 8){
@@ -63,11 +65,12 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                 }else{
                     receiveEndJpegFlag &= 0x00;
                 }
-                if(receiveEndJpegFlag >= (UBYTE)(MaxOfMemory)*2){
+                if(receiveEndJpegFlag >= (UBYTE)((MaxOfMemory)*2)){    //0d80 = 0x50, 0xff continue 50.
                     receiveEndJpegFlag &= 0x00;
                     readFROM_Count ++;
-                    FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
-                    downlinkRest('1');
+                    FROM_Read_adr = Roop_adr - (UDWORD)(MaxOfMemory) + readFROM_Count * Jump_adr;
+                    //FIXME
+                    //downlinkRest('1');
                     __delay_ms(3000);
                     break;
                 }
@@ -76,8 +79,9 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
 
             //  FIXME : TIMER2
              //  for rest
+            //FIXME
             if(get_timer_counter() > get_downlink_time()){
-                downlinkRest('A');
+                //downlinkRest('A');
                 sendBufferCount = 0;
             }
 
@@ -96,7 +100,8 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
         }
     }
-    offAmp();
+    //FIXME
+    //offAmp();
     CREN = Bit_High;
     TXEN = Bit_Low;
 }
@@ -148,7 +153,7 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
                 if(receiveEndJpegFlag >= (UBYTE)(MaxOfMemory)*2){
                     receiveEndJpegFlag &= 0x00;
                     readFROM_Count ++;
-                    FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
+                    FROM_Read_adr = Roop_adr - (UDWORD)(MaxOfMemory) + readFROM_Count * Jump_adr;
                     downlinkRest('1');
                     __delay_ms(3000);
                     break;
@@ -210,7 +215,7 @@ void downlinkRest(UBYTE c){
 }
 
 void set_downlink_time(UINT time){
-    downlink_time = time;
+    downlink_time = time * 1000;
 }
 
 UINT get_downlink_time(void){
@@ -218,7 +223,7 @@ UINT get_downlink_time(void){
 }
 
 void set_rest_time(UINT time){
-    rest_time = time;
+    rest_time = time * 1000;
 }
 
 UINT get_rest_time(void){

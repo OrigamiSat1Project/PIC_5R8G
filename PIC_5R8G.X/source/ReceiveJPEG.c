@@ -47,6 +47,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     //FIXME : debug
     sendChar(0x88);
     CREN = Bit_High;    //It is needed for integration with OBC
+    PIE1bits.TMR2IE = 0;
     while((receiveEndJpegFlag  & 0x80) != 0x80){
         //XXX : CAM1 break in ECC
         if(CAM1 == 0) break;
@@ -81,6 +82,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             index_of_Buffer = 0;
         }
     }
+    PIE1bits.TMR2IE = 1;
 }
 
 void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
@@ -105,6 +107,8 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     sendChar(0xbb);
     CREN = Bit_High;
     UINT index_of_Buffer = 0;
+    
+    PIE1bits.TMR2IE = 0;
     while((receiveEndJpegFlag  & 0x10) != 0x10)
     {
         //XXX : CAM1 break in ECC
@@ -139,6 +143,7 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             index_of_Buffer = 0;
         }
     }
+    PIE1bits.TMR2IE = 1;
 }
 
 void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
@@ -176,6 +181,7 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
     //FIXME : debug
     sendChar(0x77);
     CREN = Bit_High;    //It is needed for integration with OBC
+    PIE1bits.TMR2IE = 0;
     while((receiveEndH264Flag  & 0x80) != 0x80){
         //XXX : CAM1 break in ECC
         if(CAM1 == 0) break;
@@ -225,6 +231,7 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             sendChar(0xbb);
         }
     }
+    PIE1bits.TMR2IE = 1;
 }
 
 void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){

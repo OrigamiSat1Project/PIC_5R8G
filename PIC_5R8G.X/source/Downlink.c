@@ -194,7 +194,7 @@ void downlinkRest(UBYTE c){
 }
 
 void set_downlink_time(UINT time){
-    downlink_time = time;
+    downlink_time = time  * 1000;
 }
 
 UINT get_downlink_time(void){
@@ -202,7 +202,7 @@ UINT get_downlink_time(void){
 }
 
 void set_rest_time(UINT time){
-    rest_time = time;
+    rest_time = time * 1000;
 }
 
 UINT get_rest_time(void){

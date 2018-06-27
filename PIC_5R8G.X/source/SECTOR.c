@@ -32,7 +32,6 @@ void Erase_sectors_before_Write(UDWORD tmp_adr_erase, UDWORD Jump_adr){
     * ==========================================================================
     */
     BUSY = 0;
-    PIE1bits.TMR2IE = 0;
     UINT Amount_of_erase_sector = (UINT)(Jump_adr >> 16) * 8;
     for (UINT i=0; i<Amount_of_erase_sector; i++){
         flash_Erase(tmp_adr_erase,S_ERASE);
@@ -40,6 +39,5 @@ void Erase_sectors_before_Write(UDWORD tmp_adr_erase, UDWORD Jump_adr){
         CLRWDT();
         WDT_CLK =~WDT_CLK;
     }
-    PIE1bits.TMR2IE = 1;
     BUSY = 1;
 }

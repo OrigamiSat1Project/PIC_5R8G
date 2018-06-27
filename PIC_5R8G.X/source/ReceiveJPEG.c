@@ -42,6 +42,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     *  During writing group 8     = 0x70  (0b01110000)
     * ===============================================================================================================
     */
+    
     UINT index_of_Buffer = 0;
     CREN = Bit_High;
     while((receiveEndJpegFlag  & 0x80) != 0x80){

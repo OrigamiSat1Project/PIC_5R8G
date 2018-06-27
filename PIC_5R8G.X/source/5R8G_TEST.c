@@ -34,9 +34,9 @@ const UBYTE MaxOfSector = 0x3f;
 
 #define JPGCOUNT 5000
 void main(void){
-    UDWORD			g1_data_adr = (UDWORD)0x00010000;
+    //UDWORD			g1_data_adr = (UDWORD)0x00010000;
 
-    UDWORD Roop_adr = g1_data_adr;
+    UDWORD Roop_adr = (UDWORD)0x00010000;
     UDWORD Jump_adr = 0x20000;
    /* Comment
     * =====================================================
@@ -126,9 +126,12 @@ void main(void){
             case 'R':
                 switch(Command[2]){
                     case 'T':
+                        PIE1bits.TMR2IE = 0;
                         Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
+                        PIE1bits.TMR2IE = 1;
                         break;
                     case '8':
+                        PIE1bits.TMR2IE = 0;
                         switch(Command[3]){
                             case 'J':
                                 Receive_8split_JPEG(Roop_adr, Jump_adr);
@@ -139,12 +142,15 @@ void main(void){
                             default:
                                 break;
                         }
+                        PIE1bits.TMR2IE = 1;
                         break;
                     case 'E':
+                        PIE1bits.TMR2IE = 0;
                         for(UINT i=0; i<3; i++){
                             ECC_length += Command[i+3] << 8*(2-i);
                         }
                         Receive_ECC(Roop_adr, Jump_adr, ECC_length);
+                        PIE1bits.TMR2IE = 1;
                         break;
                     case 'C':   //Clock mode
                         set_timer_counter(0);
@@ -158,7 +164,9 @@ void main(void){
                 break;
             case 'E':
                 if(Command[2] + Command[3] > MaxOfSector) break;
+                PIE1bits.TMR2IE = 0;
                 Erase_sectors(Command[2], Command[3]);
+                PIE1bits.TMR2IE = 1;
                 break;
             case 'I':
                 init_module();

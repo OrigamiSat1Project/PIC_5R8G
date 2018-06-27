@@ -40,17 +40,12 @@ static FLASH_CMD			gFlash_CmdBuf;					/* Command transmission buffer		*/
 /*	Prototypes																					*/
 /************************************************************************************************/
 UBYTE flash_Write_En(void);							/* Writing enable					*/
-//static UBYTE flash_Write_Di(void);							/* Writing disable					*/
 static UBYTE flash_Wait_Busy(UWORD BusyTime, UWORD BusyCnt);
 															/* Busy completion waiting			*/
 UBYTE flash_SPI_DataOut(UWORD, UBYTE *);
-//static UBYTE flash_Send_Cmd(UBYTE, UDWORD, UBYTE);
 static UBYTE flash_SPI_Rx(UWORD, UBYTE *);
 UBYTE flash_Read_Data(UDWORD, UDWORD, UBYTE *);
 UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
-//UBYTE flash_Deep_sleep(void);
-//UBYTE flash_Wake_up(void);
-
 /* Write Enable */
 UBYTE flash_Write_En(void)
 {
@@ -67,21 +62,6 @@ UBYTE flash_Write_En(void)
 	return Ret;
 }
 
-/* Write disable */
-//static UBYTE flash_Write_Di(void)
-//{
-//	UBYTE				Ret;
-//
-//	FLASH_SET_CS(FLASH_LOW);								/* CS "L"							*/
-//	delay_us(FLASH_T_CS_HOLD);								/* 1us wait						*/
-//
-//	/* Writing disable command transmission */
-//	Ret = flash_Cmd_WRDI();
-//
-//	delay_us(FLASH_T_CS_HOLD);								/* 1us wait						*/
-//	FLASH_SET_CS(FLASH_HI);									/* CS "H"							*/
-//	return Ret;
-//}
 
 /*Waiting for BUSY process*/
 static UBYTE flash_Wait_Busy(UWORD BusyTime, UWORD BusyCnt)
@@ -128,7 +108,7 @@ static UBYTE flash_Wait_Busy(UWORD BusyTime, UWORD BusyCnt)
 	return FLASH_ERR;
 }
 
-/* エン�?ィアンの変換関数 */
+
 void flash_ExchgLong(UDWORD ChgData)
 {
 	EXCHG_LONG Tmp;
@@ -149,7 +129,7 @@ void flash_ExchgLong(UDWORD ChgData)
 #endif	/* #ifdef MTL_MCU_LITTLE */
 }
 
-/* SPI送信関数 */
+
 UBYTE flash_SPI_DataOut(UWORD TxCnt, UBYTE * pData)
 {
 	UWORD				TxWait;								/* Transmission waiting counter			*/
@@ -179,7 +159,7 @@ UBYTE flash_SPI_DataOut(UWORD TxCnt, UBYTE * pData)
 	return FLASH_OK;
 }
 
-/* コマンド�?�信関数 */
+
 UBYTE flash_Send_Cmd(UBYTE Cmd, UDWORD Arg, UBYTE CmdSize)
 {
 	/* The specified command is stored in the buffer */
@@ -319,7 +299,7 @@ UBYTE flash_Write_Data(UDWORD WAddr, UDWORD WCnt, UBYTE * pData)
 	return FLASH_OK;
 }
 
-/* SPI受信関数 */
+
 static UBYTE flash_SPI_Rx(UWORD RxCnt, UBYTE * pData)
 {
 	UWORD				RxWait;								/* Receive waiting counter				*/
@@ -329,7 +309,7 @@ static UBYTE flash_SPI_Rx(UWORD RxCnt, UBYTE * pData)
 	{
 		/* Receive dummy data -> Transmission buffer register */
 		FLASH_SPI_BUF = FLASH_DUMMY_DATA;					/* Receive dummy data setting			*/
-		/* 受信完�?して�?るかチェ�?ク */
+		
 		while (FLASH_SPI_BF == FLASH_LOW)							/* Loop for receive completion			*/
 		{
 			RxWait--;
@@ -342,7 +322,7 @@ static UBYTE flash_SPI_Rx(UWORD RxCnt, UBYTE * pData)
 		*pData = (UBYTE)FLASH_SPI_BUF;						/* Receive data storage					*/
 		pData++;
 
-		if(FLASH_SPI_IF == FLASH_HI)								/* 割り込みフラグ消去					*/
+		if(FLASH_SPI_IF == FLASH_HI)								
 		{
 			FLASH_SPI_IF = FLASH_LOW;
 		}
@@ -496,133 +476,3 @@ UBYTE flash_Read_StsReg(UBYTE * pStsReg)
 	return FLASH_OK;
 }
 
-/* Status register write processing */
-//UBYTE flash_Write_StsReg(UBYTE * pStsReg)
-//{
-//#ifdef FLASH_WEL_CHK
-//	UBYTE				StsReg;								/* Status buffer						*/
-//#endif	/* #ifdef FLASH_WEL_CHK */
-//	UBYTE				Ret;
-//
-//	/* Write status fixed data setting */
-//	*pStsReg = *pStsReg & (UBYTE)0x9C;
-//
-//	/* Writing enable(WEL set) */
-//	Ret = flash_Write_En();
-//	if (Ret != FLASH_OK)
-//	{
-//		return Ret;
-//	}
-//
-//#ifdef FLASH_WEL_CHK
-//	/* Status register reading */
-//	Ret = flash_Read_StsReg((UBYTE *)&StsReg);
-//	if ((Ret != FLASH_OK) || ((StsReg & FLASH_REG_WEL) == 0x00))
-//	{													/* Writing disable						*/
-//
-//		return Ret;
-//	}
-//#endif	/* #ifdef FLASH_WEL_CHK */
-//
-//	FLASH_SET_CS(FLASH_LOW);							/* CS "L"								*/
-//	delay_us(FLASH_T_CS_HOLD);
-//
-//	/* Status register write command transmission */
-//	Ret = flash_Cmd_WRSR();
-//	if (Ret != FLASH_OK)
-//	{
-//		return Ret;
-//	}
-//
-//	/* Status register writing */
-//	Ret = flash_SPI_DataOut(FLASH_STSREG_SIZE, pStsReg);
-//	if (Ret != FLASH_OK)
-//	{
-//		return Ret;
-//	}
-//
-//	delay_us(FLASH_T_CS_HOLD);
-//	FLASH_SET_CS(FLASH_HI);							/* CS "H"								*/
-//
-//	/* Write busy completion waiting */
-//	Ret = flash_Wait_Busy(FLASH_T_WBUSY_WAIT, FLASH_WBUSY_WAIT);
-//	if (Ret != FLASH_OK)
-//	{
-//		return Ret;
-//	}
-//
-//	return FLASH_OK;
-//}
-
-/* Write-protection setting processing *
- *-----------------------------------------------------------------------------------------------
- * 				: write-protection setting data (WpSts).
- * 				:   WpSts=0 :	BP0=0	BP1=0,	BP2=0
- * 				:   WpSts=1 :	BP0=1	BP1=0,	BP2=0
- * 				:   WpSts=2 :	BP0=0	BP1=1,	BP2=0
- * 				:   WpSts=3 :	BP0=1	BP1=1,	BP2=0
- * 				:   WpSts=4 :	BP0=0	BP1=0,	BP2=1
- * 				:   WpSts=5 :	BP0=1	BP1=0,	BP2=1
- * 				:   WpSts=6 :	BP0=0	BP1=1,	BP2=1
- * 				:   WpSts=7 :	BP0=1	BP1=1,	BP2=1
- *---------------------------------------------------------------------------------------------*/
-//UBYTE flash_Write_Protect(UBYTE WpSts)
-//{
-//	UBYTE				StsReg;							/* Write status buffer					*/
-//	UBYTE				Ret;
-//
-//	/* Parameter check */
-//	if (WpSts >  FLASH_WP_WHOLE_MEM)
-//	{
-//		return FLASH_ERR;
-//	}
-//
-//	/* Write-protection setting value storage */
-//	StsReg = (WpSts << 2) & (~FLASH_REG_SRWD);			/* SRWD is fixed "0"					*/
-//
-//	/* Status register writing */
-//	Ret = flash_Write_StsReg((UBYTE *)&StsReg);
-//	if (Ret != FLASH_OK)
-//	{
-//		return Ret;
-//	}
-//
-//	/* Write-protection state setting */
-////	gFlash_WP = WpSts;
-//
-//	return FLASH_OK;
-//}
-
-/*Deep sleep*/
-
-//UBYTE flash_Deep_sleep(void)
-//{
-//	UBYTE				Ret;
-//
-//	FLASH_SET_CS(FLASH_LOW);								//* CS "L"
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイ�?
-//
-//	//* change to Deep sleep mode
-//	Ret = flash_Cmd_DP();
-//
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイ�?
-//	FLASH_SET_CS(FLASH_HI);									//* CS "H"
-//	return Ret;    
-//}
-
-/*Release Deep sleep*/
-
-//UBYTE flash_Wake_up(void)
-//{
-//	UBYTE				Ret;
-//
-//	FLASH_SET_CS(FLASH_LOW);								//* CS "L"
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイ�?
-//
-//	//* Release Deep sleep
-//	Ret = flash_Cmd_RES();
-//
-//	delay_us(FLASH_T_CS_HOLD);								//* 1us ウェイ�?
-//	FLASH_SET_CS(FLASH_HI);									//* CS "H"
-//	return Ret;    
-//}

@@ -35,14 +35,6 @@ const UBYTE MaxOfSector = 0x3f;
 #define JPGCOUNT 5000
 void main(void){
     UDWORD			g1_data_adr = (UDWORD)0x00010000;
-    //UDWORD			g2_data_adr = (UDWORD)0x00020000;   No need
-
-    //UBYTE Buffer[MaxOfMemory];
-    //UINT indexOfBuffer = 0;
-
-    //UDWORD FROM_Write_adr = g1_data_adr;
-    //UDWORD FROM_Read_adr  = g1_data_adr;
-    //UDWORD FROM_sector_adr = g1_data_adr;
 
     UDWORD Roop_adr = g1_data_adr;
     UDWORD Jump_adr = 0x20000;
@@ -74,24 +66,12 @@ void main(void){
                 Command[i] = getUartData('T');
             }
         }
-        //XXX : busy signal when succeed receive command
+        //TODO : busy signal when succeed receive command
 //        BUSY = 0;
 //        __delay_ms(3000);
 //        BUSY = 1;
-        //FIXME : debug
-        for(UINT i=0;i<8;i++){
-            sendChar(Command[i]);
-        }
-        send_OK();
         UINT ECC_length = 0;
 
-        //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
-
-        /* Comment
-         * ========================================================================
-         * CRC16 judgement before go to switch-case statement
-         * ========================================================================
-         */
         switch(Command[1]){
             case 'P':
                 switch(Command[2]){
@@ -102,8 +82,6 @@ void main(void){
                                 break;
                             case '8':
                                 Downlink(Roop_adr, Jump_adr, Command[3]);
-                                //FIXME : debug
-                                send_OK();
                                 break;
                             default:
                                 break;
@@ -113,62 +91,50 @@ void main(void){
                         set_timer_counter_min(0);
                         while(get_timer_counter_min() < (UINT)Command[4]);
                         Downlink_clock(Roop_adr, Jump_adr, Command[3], (UINT)Command[5]);
-                        //FIXME : debug
-                        send_OK();
                         break;
                     default:
                         break;
                 }
                 break;
-//            case 'D':
-//                switch(Command[2]){
-//                    case 'C':   //Clock
-//                        set_timer_counter(0);
-//                        set_timer_counter_min(0);
-//                        while(get_timer_counter_min() < (UINT)Command[4]);
-//                        set_timer_counter_min(0);
-//                        if(CAMERA_POW == 1){
-//                            onAmp();
-//                        }
-//                        send_dummy_data_timer(Command[5]);
-//                        offAmp();
-//                        //  FIXME : for debug
-//                        send_OK();
-//                        break;
-//                    case '2':    //Use CAM2
-//                        while(CAM2 == 1);   //  wait 5V SW
-//                        while(CAM2 == 0){
-//                            if(CAMERA_POW == 1){
-//                                onAmp();
-//                            }
-//                            send_dummy_data();
-//                        }
-//                        offAmp();
-//                        //  FIXME : for debug
-//                        send_OK();
-//                        break;
-//                    default:
-//                        break;
-//                }
-//                break;
+            case 'D':
+                switch(Command[2]){
+                    case 'C':   //Clock
+                        set_timer_counter(0);
+                        set_timer_counter_min(0);
+                        while(get_timer_counter_min() < (UINT)Command[4]);
+                        set_timer_counter_min(0);
+                        if(CAMERA_POW == 1){
+                            onAmp();
+                        }
+                        send_dummy_data_timer(Command[5]);
+                        offAmp();
+                        break;
+                    case '2':    //Use CAM2
+                        while(CAM2 == 1);   //  wait 5V SW
+                        while(CAM2 == 0){
+                            if(CAMERA_POW == 1){
+                                onAmp();
+                            }
+                            send_dummy_data();
+                        }
+                        offAmp();
+                        break;
+                    default:
+                        break;
+                }
+                break;
             case 'R':
                 switch(Command[2]){
                     case 'T':
                         Receive_thumbnail_JPEG(Roop_adr, Jump_adr);
-                        //  FIXME : for debug
-                        send_OK();
                         break;
                     case '8':
                         switch(Command[3]){
                             case 'J':
                                 Receive_8split_JPEG(Roop_adr, Jump_adr);
-                                //  FIXME : for debug
-                                send_OK();
                                 break;
                             case 'H':
                                 Receive_8split_H264(Roop_adr, Jump_adr);
-                                //  FIXME : for debug
-                                send_OK();
                                 break;
                             default:
                                 break;
@@ -179,18 +145,12 @@ void main(void){
                             ECC_length += Command[i+3] << 8*(2-i);
                         }
                         Receive_ECC(Roop_adr, Jump_adr, ECC_length);
-                        //  FIXME : for debug
-                        send_OK();
                         break;
                     case 'C':   //Clock mode
                         set_timer_counter(0);
                         set_timer_counter_min(0);
                         while(get_timer_counter_min() < (UINT)Command[3]);
-                        //FIXME : debug
-                        sendChar(0xaa);
                         Receive_8split_clock(Roop_adr, Jump_adr,(UINT)Command[4], (UINT)Command[5]);
-                        //FIXME : debug
-                        send_OK();
                         break;
                     default:
                         break;
@@ -199,14 +159,10 @@ void main(void){
             case 'E':
                 if(Command[2] + Command[3] > MaxOfSector) break;
                 Erase_sectors(Command[2], Command[3]);
-                //FIXME ; debug
-                send_OK();
                 break;
-//            case 'I':
-//                init_module();
-//                //FIXME : debug
-//                send_OK();
-//                break;
+            case 'I':
+                init_module();
+                break;
             case 'C':
                 switch(Command[2]){
                     /* Comment
@@ -222,85 +178,39 @@ void main(void){
                     case 'R':
                         if(Command[3] == 0x00) break;
                         if((Command[3] + (UBYTE)(Jump_adr>>16) * 8) > MaxOfSector) break;
-                        //FIXME : debug
-                        sendChar(Roop_adr >> 16);
                         Roop_adr = (UDWORD)Command[3]<<16;
-                        sendChar((UBYTE)(Roop_adr >> 16));
-                        //  FIXME : for debug
-                        send_OK();
                         break;
                     case 'J':
                         if(Command[3] <= 0x01) break;
                         if(((UBYTE)(Roop_adr>>16) + Command[3] * 8) > MaxOfSector) break;
                         Jump_adr = (UDWORD)Command[3]<<16;
-                        //FIXME : debug
-                        sendChar(Jump_adr >> 16);
-                        send_OK();
                         break;
-//                    case 'B':
-//                        if((Command[3] != BAU_LOW ) &&
-//                           (Command[3] != BAU_MIDDLE) &&
-//                           (Command[3] != BAU_HIGH)){
-//                            break;
-//                        }
-//                        change_downlink_baurate(Command[3]);
-//                        //  FIXME : for debug
-//                        send_OK();
-//                        break;
-//                    case 'D':
-//                        //XXX : change downlink_time in downlink
-//                        if(Command[3] >=  0x14) break;    // break over 20sec
-//                        set_downlink_time((UINT)Command[3]);
-//                        //FIXME : debug
-//                        send_OK();
-//                        break;
-//                    case 'T':
-//                        //XXX : change rest_time in downlink
-//                        if(Command[3] < 0x05) break;    // break under 5s
-//                        set_rest_time((UINT)Command[3]);
-//                        //FIXME : debug
-//                        send_OK();
-//                        break;
+                    case 'B':
+                        if((Command[3] != BAU_LOW ) &&
+                           (Command[3] != BAU_MIDDLE) &&
+                           (Command[3] != BAU_HIGH)){
+                            break;
+                        }
+                        change_downlink_baurate(Command[3]);
+                        break;
+                    case 'D':
+                        if(Command[3] >=  0x14) break;
+                        set_downlink_time((UINT)Command[3]);
+                        break;
+                    case 'T':
+                        if(Command[3] < 0x05) break;    // break under 5s
+                        set_rest_time((UINT)Command[3]);
+                        break;
                     default:
                         break;
                 }
                 break;
-//            case 'B':
-//                //XXX : busy signal when PIC is in main roop
-//                BUSY = 0;
-//                __delay_ms(3000);
-//                BUSY = 1;
-//                break;
-//            case 'S':
-               /* Comment
-                * ======================================================================================
-                * Make Sleep mode (Command =='S')
-                * We make PIC sleep mode. All pins are low without MCLR pin in order to save energy.
-                * We have to keep MCLR pin High.
-                * Above this is uncorrect because we shouldn't use PIC_SLEEP.
-                * Sleep mode only FROM, Amp
-                *=======================================================================================
-                * Code
-                *=======================================================================================
-                flash_Deep_sleep();
-                offAmp();
+            case 'B':
+                BUSY = 0;
+                __delay_ms(3000);
+                BUSY = 1;
                 break;
-                * =======================================================================================
-                */
-//            case 'W':
-               /*Comment
-                * ======================================================================================
-                * Make Wake up mode (Command == 'W')
-                *======================================================================================
-                * Code
-                * =======================================================================================
-                * flash_Wake_up();
-                * =======================================================================================
-                */
-//                break;
             default:
-                //  FIXME : for debug
-                sendChar(0xff);
                 offAmp();
                 break;
         }

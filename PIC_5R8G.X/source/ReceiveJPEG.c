@@ -7,7 +7,7 @@
 #include "SECTOR.h"
 #include "MAX2828.h"
 #include "typedefine.h"
-#include "UART.h"
+#include "ReceiveJPEG.h"
 #include "Timer.h"
 
 const UBYTE FooterOfJPEG[] = {0xff, 0x1e};
@@ -21,7 +21,6 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     * ==========================================================================
     */
     Erase_sectors_before_Write(Roop_adr, Jump_adr);
-    UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
 
@@ -44,11 +43,8 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     * ===============================================================================================================
     */
     UINT index_of_Buffer = 0;
-    //FIXME : debug
-    sendChar(0x88);
-    CREN = Bit_High;    //It is needed for integration with OBC
+    CREN = Bit_High;
     while((receiveEndJpegFlag  & 0x80) != 0x80){
-        //XXX : CAM1 break in ECC
         if(CAM1 == 0) break;
         Buffer[index_of_Buffer] = getUartData(0x00);
         if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
@@ -65,8 +61,6 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndJpegFlag >> 4) * Jump_adr;
-            sendChar(receiveEndJpegFlag);
-            sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
         else
         {
@@ -91,7 +85,6 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     * ==========================================================================
     */
     Erase_sectors_before_Write(Roop_adr, Jump_adr);
-    UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndJpegFlag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
 
@@ -101,13 +94,10 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     *  ----      ----     ----    finish_cnt        ----        ----        Flag_0x0E           Flag_0xFF
     * ====================================================================================================
     */
-    //FIXME : debug
-    sendChar(0xbb);
     CREN = Bit_High;
     UINT index_of_Buffer = 0;
     while((receiveEndJpegFlag  & 0x10) != 0x10)
     {
-        //XXX : CAM1 break in ECC
         if(CAM1 == 0) break;
         Buffer[index_of_Buffer] = getUartData(0x00);
         if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
@@ -122,9 +112,6 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             index_of_Buffer = 0;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
             receiveEndJpegFlag += 0x10;     //+1 cnt in receiveEndJpegFlag.
-            //FIXME : debug
-            sendChar(receiveEndJpegFlag);
-            sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
         else
         {
@@ -149,7 +136,6 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
     * ==========================================================================
     */
     Erase_sectors_before_Write(Roop_adr, Jump_adr);
-    UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndH264Flag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
 
@@ -173,11 +159,8 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
      * ===============================================================================================================
      */
     UINT index_of_Buffer = 0;
-    //FIXME : debug
-    sendChar(0x77);
     CREN = Bit_High;    //It is needed for integration with OBC
     while((receiveEndH264Flag  & 0x80) != 0x80){
-        //XXX : CAM1 break in ECC
         if(CAM1 == 0) break;
         Buffer[index_of_Buffer] = getUartData(0x00);
         if((receiveEndH264Flag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfH264[0]){
@@ -203,9 +186,6 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             receiveEndH264Flag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag.
             receiveEndH264Flag += 0x10;     //+1 8split_cnt in receiveEndH264Flag.
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndH264Flag >> 4) * Jump_adr;
-            //FIXME : debug
-            sendChar(receiveEndH264Flag);
-            sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
         else
         {
@@ -220,10 +200,6 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
         }
-        //FIXME : debug
-        if((receiveEndH264Flag  & 0x80) == 0x80){
-            sendChar(0xbb);
-        }
     }
 }
 
@@ -235,7 +211,6 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
     * ==========================================================================
     */
     Erase_sectors_before_Write(Roop_adr, Jump_adr);
-    UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndECCFlag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
 
@@ -255,14 +230,8 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
     */
     UINT index_of_Buffer = 0;
     UINT ECC_count = 0;
-    //FIXME :
-    sendChar(0xee);
-    sendChar(ECC_length);
-    sendChar(ECC_length/8);
-    sendChar(ECC_length-7*(ECC_length/8));
     CREN = Bit_High;    //It is needed for integration with OBC
     while(receiveEndECCFlag != 0x08){
-        //XXX : CAM1 break in ECC
         if(CAM1 == 0) break;
         Buffer[index_of_Buffer] = getUartData(0x00);
         if (receiveEndECCFlag < 0x07 && ECC_count == ECC_length/8 - 1)
@@ -274,13 +243,8 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             //  Jump to next group's first sector & change flag
             receiveEndECCFlag += 0x01;     //+1 8split_cnt in receiveEndECCFlag.
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndECCFlag) * Jump_adr;
-            //FIXME ; debug
-            sendChar(ECC_count);
 
             ECC_count = 0;
-            //FIXME : debug
-            sendChar(receiveEndECCFlag);
-            sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
         else if(receiveEndECCFlag == 0x07 && ECC_count == ECC_length -7*(ECC_length/8) -1)
         {
@@ -290,9 +254,6 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             index_of_Buffer = 0;
             ECC_count = 0;
             receiveEndECCFlag += 0x01;
-            //FIXME : debug
-            sendChar(receiveEndECCFlag);
-            sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
         else
         {
@@ -307,7 +268,6 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             index_of_Buffer = 0;
         }
     }
-    sendChar(0xee);
 }
 
 void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time, UINT end_time){
@@ -318,7 +278,7 @@ void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time, UIN
     * ==========================================================================
     */
     Erase_sectors_before_Write(Roop_adr, Jump_adr);
-    UBYTE Buffer[MaxOfMemory];
+    
     UBYTE receiveEndClockFlag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
 
@@ -339,8 +299,6 @@ void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time, UIN
     * ==========================================================================
     */
     UINT index_of_Buffer = 0;
-    
-    sendChar(0xcc);
     CREN = Bit_High;    //It is needed for integration with OBC
     set_timer_counter(0);
     set_timer_counter_min(0);
@@ -355,9 +313,6 @@ void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time, UIN
             receiveEndClockFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndClockFlag >> 4) * Jump_adr;
             sector_timer = get_timer_counter();
-            //FIXME : debug
-            sendChar(receiveEndClockFlag);
-            sendChar((UBYTE)(FROM_Write_adr >> 16));
         }
         else
         {

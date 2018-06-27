@@ -7,6 +7,7 @@
 #include "time.h"
 #include "FROM.h"
 #include "Timer.h"
+#include "typedefine.h"
 
 static UINT downlink_time = 10000;  //downlinktime is 10s as default
 static UINT rest_time = 5000;       //rest time is 5s as default
@@ -26,13 +27,11 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      *  8/8     7/8     6/8     5/8     4/8     3/8     2/8     1/8
      * ========================================================================
      */
-    sendChar(0x50);
     while(CAM2 == 1);   //  wait 5V SW
     if(CAMERA_POW == 1){
         onAmp();
     }
     UINT sendBufferCount = 1;
-    UBYTE Buffer[MaxOfMemory];
     UDWORD FROM_Read_adr = Roop_adr;
     UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
 
@@ -74,8 +73,6 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
 
-            //  FIXME : TIMER2
-             //  for rest
             if(get_timer_counter() > get_downlink_time()){
                 downlinkRest('A');
                 sendBufferCount = 0;
@@ -86,10 +83,6 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                 CLRWDT();
                 WDT_CLK = ~WDT_CLK;
             }
-//            if(timer_counter == 20){
-//                CLRWDT();
-//                WDT_CLK = ~WDT_CLK;
-//            }
         }
         else{
             readFROM_Count ++;
@@ -108,12 +101,10 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
      *  8/8     7/8     6/8     5/8     4/8     3/8     2/8     1/8
      * ========================================================================
      */
-    sendChar(0x50);
     if(CAMERA_POW == 1){
         onAmp();
     }
     UINT sendBufferCount = 1;
-    UBYTE Buffer[MaxOfMemory];
     UDWORD FROM_Read_adr = Roop_adr;
     UINT readFROM_Count = 0;                //How many sectors did you read in this while statement.
 
@@ -156,8 +147,6 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
 
-            //  FIXME : TIMER2
-             //  for rest
             if(get_timer_counter() > get_downlink_time()){
                 downlinkRest('A');
                 sendBufferCount = 0;
@@ -168,10 +157,6 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
                 CLRWDT();
                 WDT_CLK = ~WDT_CLK;
             }
-//            if(timer_counter == 20){
-//                CLRWDT();
-//                WDT_CLK = ~WDT_CLK;
-//            }
         }
         else{
             readFROM_Count ++;
@@ -195,7 +180,6 @@ void downlinkRest(UBYTE c){
         send_AB();
     }
     offAmp();
-    //XXX : rest by using Timer
     set_timer_counter(0);
     while(get_timer_counter() < get_rest_time());
     if(CAMERA_POW == 1){

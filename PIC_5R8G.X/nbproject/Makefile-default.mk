@@ -57,17 +57,17 @@ OBJECTDIR=build/${CND_CONF}/${IMAGE_TYPE}
 DISTDIR=dist/${CND_CONF}/${IMAGE_TYPE}
 
 # Source Files Quoted if spaced
-SOURCEFILES_QUOTED_IF_SPACED=source/5R8G_TEST.c source/InitMPU.c source/MAX2828.c source/FROM.c source/time.c source/UART.c source/SECTOR.c source/ReceiveJPEG.c source/Downlink.c source/CRC16.c
+SOURCEFILES_QUOTED_IF_SPACED=source/5R8G_TEST.c source/InitMPU.c source/MAX2828.c source/FROM.c source/time.c source/UART.c source/SECTOR.c source/ReceiveJPEG.c source/Downlink.c source/CRC16.c source/Timer.c
 
 # Object Files Quoted if spaced
-OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/source/5R8G_TEST.p1 ${OBJECTDIR}/source/InitMPU.p1 ${OBJECTDIR}/source/MAX2828.p1 ${OBJECTDIR}/source/FROM.p1 ${OBJECTDIR}/source/time.p1 ${OBJECTDIR}/source/UART.p1 ${OBJECTDIR}/source/SECTOR.p1 ${OBJECTDIR}/source/ReceiveJPEG.p1 ${OBJECTDIR}/source/Downlink.p1 ${OBJECTDIR}/source/CRC16.p1
-POSSIBLE_DEPFILES=${OBJECTDIR}/source/5R8G_TEST.p1.d ${OBJECTDIR}/source/InitMPU.p1.d ${OBJECTDIR}/source/MAX2828.p1.d ${OBJECTDIR}/source/FROM.p1.d ${OBJECTDIR}/source/time.p1.d ${OBJECTDIR}/source/UART.p1.d ${OBJECTDIR}/source/SECTOR.p1.d ${OBJECTDIR}/source/ReceiveJPEG.p1.d ${OBJECTDIR}/source/Downlink.p1.d ${OBJECTDIR}/source/CRC16.p1.d
+OBJECTFILES_QUOTED_IF_SPACED=${OBJECTDIR}/source/5R8G_TEST.p1 ${OBJECTDIR}/source/InitMPU.p1 ${OBJECTDIR}/source/MAX2828.p1 ${OBJECTDIR}/source/FROM.p1 ${OBJECTDIR}/source/time.p1 ${OBJECTDIR}/source/UART.p1 ${OBJECTDIR}/source/SECTOR.p1 ${OBJECTDIR}/source/ReceiveJPEG.p1 ${OBJECTDIR}/source/Downlink.p1 ${OBJECTDIR}/source/CRC16.p1 ${OBJECTDIR}/source/Timer.p1
+POSSIBLE_DEPFILES=${OBJECTDIR}/source/5R8G_TEST.p1.d ${OBJECTDIR}/source/InitMPU.p1.d ${OBJECTDIR}/source/MAX2828.p1.d ${OBJECTDIR}/source/FROM.p1.d ${OBJECTDIR}/source/time.p1.d ${OBJECTDIR}/source/UART.p1.d ${OBJECTDIR}/source/SECTOR.p1.d ${OBJECTDIR}/source/ReceiveJPEG.p1.d ${OBJECTDIR}/source/Downlink.p1.d ${OBJECTDIR}/source/CRC16.p1.d ${OBJECTDIR}/source/Timer.p1.d
 
 # Object Files
-OBJECTFILES=${OBJECTDIR}/source/5R8G_TEST.p1 ${OBJECTDIR}/source/InitMPU.p1 ${OBJECTDIR}/source/MAX2828.p1 ${OBJECTDIR}/source/FROM.p1 ${OBJECTDIR}/source/time.p1 ${OBJECTDIR}/source/UART.p1 ${OBJECTDIR}/source/SECTOR.p1 ${OBJECTDIR}/source/ReceiveJPEG.p1 ${OBJECTDIR}/source/Downlink.p1 ${OBJECTDIR}/source/CRC16.p1
+OBJECTFILES=${OBJECTDIR}/source/5R8G_TEST.p1 ${OBJECTDIR}/source/InitMPU.p1 ${OBJECTDIR}/source/MAX2828.p1 ${OBJECTDIR}/source/FROM.p1 ${OBJECTDIR}/source/time.p1 ${OBJECTDIR}/source/UART.p1 ${OBJECTDIR}/source/SECTOR.p1 ${OBJECTDIR}/source/ReceiveJPEG.p1 ${OBJECTDIR}/source/Downlink.p1 ${OBJECTDIR}/source/CRC16.p1 ${OBJECTDIR}/source/Timer.p1
 
 # Source Files
-SOURCEFILES=source/5R8G_TEST.c source/InitMPU.c source/MAX2828.c source/FROM.c source/time.c source/UART.c source/SECTOR.c source/ReceiveJPEG.c source/Downlink.c source/CRC16.c
+SOURCEFILES=source/5R8G_TEST.c source/InitMPU.c source/MAX2828.c source/FROM.c source/time.c source/UART.c source/SECTOR.c source/ReceiveJPEG.c source/Downlink.c source/CRC16.c source/Timer.c
 
 
 CFLAGS=
@@ -173,6 +173,14 @@ ${OBJECTDIR}/source/CRC16.p1: source/CRC16.c  nbproject/Makefile-${CND_CONF}.mk
 	@-${MV} ${OBJECTDIR}/source/CRC16.d ${OBJECTDIR}/source/CRC16.p1.d 
 	@${FIXDEPS} ${OBJECTDIR}/source/CRC16.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
 	
+${OBJECTDIR}/source/Timer.p1: source/Timer.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/source" 
+	@${RM} ${OBJECTDIR}/source/Timer.p1.d 
+	@${RM} ${OBJECTDIR}/source/Timer.p1 
+	${MP_CC} --pass1 $(MP_EXTRA_CC_PRE) --chip=$(MP_PROCESSOR_OPTION) -Q -G  -D__DEBUG=1 --debugger=icd3  --double=24 --float=24 --opt=+asm,+asmfile,-speed,+space,-debug,-local --addrqual=ignore --mode=free -P -N255 -I"include" --warn=0 --asmlist -DXPRJ_default=$(CND_CONF)  --summary=default,-psect,-class,+mem,-hex,-file --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,+osccal,-resetbits,-download,-stackcall,+clib $(COMPARISON_BUILD)  --output=-mcof,+elf:multilocs --stack=compiled:auto:auto "--errformat=%f:%l: error: (%n) %s" "--warnformat=%f:%l: warning: (%n) %s" "--msgformat=%f:%l: advisory: (%n) %s"    -o${OBJECTDIR}/source/Timer.p1  source/Timer.c 
+	@-${MV} ${OBJECTDIR}/source/Timer.d ${OBJECTDIR}/source/Timer.p1.d 
+	@${FIXDEPS} ${OBJECTDIR}/source/Timer.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
 else
 ${OBJECTDIR}/source/5R8G_TEST.p1: source/5R8G_TEST.c  nbproject/Makefile-${CND_CONF}.mk
 	@${MKDIR} "${OBJECTDIR}/source" 
@@ -253,6 +261,14 @@ ${OBJECTDIR}/source/CRC16.p1: source/CRC16.c  nbproject/Makefile-${CND_CONF}.mk
 	${MP_CC} --pass1 $(MP_EXTRA_CC_PRE) --chip=$(MP_PROCESSOR_OPTION) -Q -G  --double=24 --float=24 --opt=+asm,+asmfile,-speed,+space,-debug,-local --addrqual=ignore --mode=free -P -N255 -I"include" --warn=0 --asmlist -DXPRJ_default=$(CND_CONF)  --summary=default,-psect,-class,+mem,-hex,-file --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,+osccal,-resetbits,-download,-stackcall,+clib $(COMPARISON_BUILD)  --output=-mcof,+elf:multilocs --stack=compiled:auto:auto "--errformat=%f:%l: error: (%n) %s" "--warnformat=%f:%l: warning: (%n) %s" "--msgformat=%f:%l: advisory: (%n) %s"    -o${OBJECTDIR}/source/CRC16.p1  source/CRC16.c 
 	@-${MV} ${OBJECTDIR}/source/CRC16.d ${OBJECTDIR}/source/CRC16.p1.d 
 	@${FIXDEPS} ${OBJECTDIR}/source/CRC16.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
+	
+${OBJECTDIR}/source/Timer.p1: source/Timer.c  nbproject/Makefile-${CND_CONF}.mk
+	@${MKDIR} "${OBJECTDIR}/source" 
+	@${RM} ${OBJECTDIR}/source/Timer.p1.d 
+	@${RM} ${OBJECTDIR}/source/Timer.p1 
+	${MP_CC} --pass1 $(MP_EXTRA_CC_PRE) --chip=$(MP_PROCESSOR_OPTION) -Q -G  --double=24 --float=24 --opt=+asm,+asmfile,-speed,+space,-debug,-local --addrqual=ignore --mode=free -P -N255 -I"include" --warn=0 --asmlist -DXPRJ_default=$(CND_CONF)  --summary=default,-psect,-class,+mem,-hex,-file --output=default,-inhx032 --runtime=default,+clear,+init,-keep,-no_startup,+osccal,-resetbits,-download,-stackcall,+clib $(COMPARISON_BUILD)  --output=-mcof,+elf:multilocs --stack=compiled:auto:auto "--errformat=%f:%l: error: (%n) %s" "--warnformat=%f:%l: warning: (%n) %s" "--msgformat=%f:%l: advisory: (%n) %s"    -o${OBJECTDIR}/source/Timer.p1  source/Timer.c 
+	@-${MV} ${OBJECTDIR}/source/Timer.d ${OBJECTDIR}/source/Timer.p1.d 
+	@${FIXDEPS} ${OBJECTDIR}/source/Timer.p1.d $(SILENT) -rsi ${MP_CC_DIR}../  
 	
 endif
 

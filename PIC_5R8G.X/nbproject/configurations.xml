@@ -43,6 +43,8 @@
   </logicalFolder>
   <sourceRootList>
     <Elem>..</Elem>
+    <Elem>source</Elem>
+    <Elem>include</Elem>
   </sourceRootList>
   <projectmakefile>Makefile</projectmakefile>
   <confs>

@@ -11,8 +11,7 @@
 #define BAU_MIDDLE  0x1F		//57.6kbps
 #define BAU_HIGH	0x0F		//115.2kbps
 
-//TODO : this shoule be optimisation 
-#define BAU_WITH_OBC BAU_LOW
+#define BAU_WITH_OBC BAU_HIGH
 
 #define cam1		0x00
 #define cam2		0x01
@@ -38,27 +37,13 @@ void initbau(UBYTE);
 void sendChar(UBYTE);
 void send_01(void);
 void send_AB(void);
-void send_OK(void);
-void send_NG(void);
-void send_CRLF(void);
-void echo_back(void);
 void send_dummy_data(void);
-//XXX
 void send_dummy_data_timer(UBYTE);
 UBYTE    getUartData(UBYTE);
-typedef union{
-	UBYTE	Data[64];
-	UDWORD	dummy;
-}CamDataBuf;
 
 void onAmp(void);
 void offAmp(void);
 void change_downlink_baurate(UBYTE);
 UBYTE getDownlinkBAU(void);
-
-//extern bank2 volatile CamDataBuf	Rbuf2;		//画像データ用バッファ
-//extern bank3 volatile CamDataBuf	Rbuf3;		//画像データ用バッファ
-//extern USLONG 						dlength;	//データ長
-
 
 #endif						//#ifndef __UART_h__

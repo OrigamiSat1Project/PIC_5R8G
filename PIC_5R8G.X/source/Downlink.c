@@ -54,10 +54,10 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             receiveEndJpegFlag = 0x00;
         }
         if((Identify_8split & (0x01<<readFROM_Count)) == (0x01<<readFROM_Count)){
-            flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer0);
             for(UINT i=0; i<MaxOfMemory; i++){
-                downlinkChar(Buffer[i]);
-                if(Buffer[i] == FROM_default_data){
+                downlinkChar(Buffer0[i]);
+                if(Buffer0[i] == FROM_default_data){
                     receiveEndJpegFlag += 0x01;
                 }else{
                     receiveEndJpegFlag &= 0x00;
@@ -128,10 +128,10 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
             receiveEndJpegFlag = 0x00;
         }
         if((Identify_8split & (0x01<<readFROM_Count)) == (0x01<<readFROM_Count)){
-            flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer0);
             for(UINT i=0; i<MaxOfMemory; i++){
-                downlinkChar(Buffer[i]);
-                if(Buffer[i] == FROM_default_data){
+                downlinkChar(Buffer0[i]);
+                if(Buffer0[i] == FROM_default_data){
                     receiveEndJpegFlag += 0x01;
                 }else{
                     receiveEndJpegFlag &= 0x00;

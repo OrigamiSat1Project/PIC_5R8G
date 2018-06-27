@@ -19,7 +19,8 @@ typedef union{
 	UBYTE	uc[4];
 }EXCHG_LONG;	 //total 4byte
 
-#define MaxOfMemory 90  //  TODO : Use Bank function then magnify buffer size;
-UBYTE Buffer[MaxOfMemory];
+#define MaxOfMemory 96
+
+UBYTE volatile bank0 Buffer0[MaxOfMemory];
 
 #endif	//#ifndef __typedefine_h__

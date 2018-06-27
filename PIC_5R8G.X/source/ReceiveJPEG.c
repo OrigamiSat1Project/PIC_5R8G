@@ -47,15 +47,15 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     CREN = Bit_High;
     while((receiveEndJpegFlag  & 0x80) != 0x80){
         if(CAM1 == 0) break;
-        Buffer[index_of_Buffer] = getUartData(0x00);
-        if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
+        Buffer0[index_of_Buffer] = getUartData(0x00);
+        if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer0[index_of_Buffer] == FooterOfJPEG[0]){
             receiveEndJpegFlag |= 0x01;
             index_of_Buffer++;
         }
-        else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
+        else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer0[index_of_Buffer] == FooterOfJPEG[1])
         {
             BUSY = 0;   //BUSY ON
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer0);
             BUSY = 1;    //BUSY OFF
             index_of_Buffer = 0;
             //  Jump to next group's first sector & change flag
@@ -70,7 +70,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
         }
         if(index_of_Buffer == MaxOfMemory){
             BUSY = 0;   //BUSY ON
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer0);
             BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
@@ -100,15 +100,15 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
     while((receiveEndJpegFlag  & 0x10) != 0x10)
     {
         if(CAM1 == 0) break;
-        Buffer[index_of_Buffer] = getUartData(0x00);
-        if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfJPEG[0]){
+        Buffer0[index_of_Buffer] = getUartData(0x00);
+        if((receiveEndJpegFlag & 0x01) == 0x00 && Buffer0[index_of_Buffer] == FooterOfJPEG[0]){
             receiveEndJpegFlag |= 0x01;
             index_of_Buffer++;
         }
-        else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfJPEG[1])
+        else if ((receiveEndJpegFlag & 0x01) == 0x01 && Buffer0[index_of_Buffer] == FooterOfJPEG[1])
         {
             BUSY = 0;   //BUSY ON
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer0);
             BUSY = 1;   //BUSY OFF
             index_of_Buffer = 0;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
@@ -121,7 +121,7 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
         }
         if(index_of_Buffer == MaxOfMemory){
             BUSY = 0;   //BUSY ON
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer0);
             BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
@@ -163,23 +163,23 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
     CREN = Bit_High;    //It is needed for integration with OBC
     while((receiveEndH264Flag  & 0x80) != 0x80){
         if(CAM1 == 0) break;
-        Buffer[index_of_Buffer] = getUartData(0x00);
-        if((receiveEndH264Flag & 0x01) == 0x00 && Buffer[index_of_Buffer] == FooterOfH264[0]){
+        Buffer0[index_of_Buffer] = getUartData(0x00);
+        if((receiveEndH264Flag & 0x01) == 0x00 && Buffer0[index_of_Buffer] == FooterOfH264[0]){
             receiveEndH264Flag |= 0x01;
             index_of_Buffer++;
         }
-        else if((receiveEndH264Flag & 0x01) == 0x01 && Buffer[index_of_Buffer] == FooterOfH264[1]){
+        else if((receiveEndH264Flag & 0x01) == 0x01 && Buffer0[index_of_Buffer] == FooterOfH264[1]){
             receiveEndH264Flag |= 0x02;
             index_of_Buffer++;
         }
-        else if((receiveEndH264Flag & 0x02) == 0x02 && Buffer[index_of_Buffer] == FooterOfH264[2]){
+        else if((receiveEndH264Flag & 0x02) == 0x02 && Buffer0[index_of_Buffer] == FooterOfH264[2]){
             receiveEndH264Flag |= 0x04;
             index_of_Buffer++;
         }
-        else if ((receiveEndH264Flag & 0x04) == 0x04 && Buffer[index_of_Buffer] == FooterOfH264[3])
+        else if ((receiveEndH264Flag & 0x04) == 0x04 && Buffer0[index_of_Buffer] == FooterOfH264[3])
         {
             BUSY = 0;   //BUSY ON
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer0);
             BUSY = 1;   //BUSY OFF
             index_of_Buffer = 0;
 
@@ -196,7 +196,7 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
 
         if(index_of_Buffer == MaxOfMemory){
             BUSY = 0;   //BUSY ON
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer0);
             BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
@@ -234,11 +234,11 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
     CREN = Bit_High;    //It is needed for integration with OBC
     while(receiveEndECCFlag != 0x08){
         if(CAM1 == 0) break;
-        Buffer[index_of_Buffer] = getUartData(0x00);
+        Buffer0[index_of_Buffer] = getUartData(0x00);
         if (receiveEndECCFlag < 0x07 && ECC_count == ECC_length/8 - 1)
         {
             BUSY = 0;   //BUSY ON
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer0);
             BUSY = 1;   //BUSY OFF
             index_of_Buffer = 0;
             //  Jump to next group's first sector & change flag
@@ -250,7 +250,7 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
         else if(receiveEndECCFlag == 0x07 && ECC_count == ECC_length -7*(ECC_length/8) -1)
         {
             BUSY = 0;   //BUSY ON
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer0);
             BUSY = 1;   //BUSY OFF
             index_of_Buffer = 0;
             ECC_count = 0;
@@ -263,7 +263,7 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
         }
         if(index_of_Buffer == MaxOfMemory){
             BUSY = 0;   //BUSY ON
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer0);
             BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
@@ -305,10 +305,10 @@ void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time, UIN
     set_timer_counter_min(0);
     UINT sector_timer = get_timer_counter();
     while((receiveEndClockFlag  & 0x80) != 0x80 && get_timer_counter_min() < end_time){
-        Buffer[index_of_Buffer] = getUartData('T');
+        Buffer0[index_of_Buffer] = getUartData('T');
         if (get_timer_counter() - sector_timer >= split_time * 1000)
         {
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer0);
             index_of_Buffer = 0;
             //  Jump to next group's first sector & change flag
             receiveEndClockFlag += 0x10;     //+1 8split_cnt in receiveEndJpegFlag.
@@ -320,7 +320,7 @@ void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time, UIN
             index_of_Buffer++;
         }
         if(index_of_Buffer == MaxOfMemory){
-            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
+            flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer0);
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             index_of_Buffer = 0;
         }

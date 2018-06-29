@@ -234,7 +234,7 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
     PIE1bits.TMR2IE = 1;
 }
 
-void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
+void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UDWORD ECC_length){
    /* Comment
     * ==========================================================================
     * Erase sectors before writing FROM
@@ -245,29 +245,21 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
     UBYTE Buffer[MaxOfMemory];
     UBYTE receiveEndECCFlag = 0x00;
     UDWORD FROM_Write_adr = Roop_adr;         //Reset FROM_Write_adr
-
-    /* Comment
-     * =========================================================================
-     * We calc the length of ECC from Command_length
-     * =========================================================================
-     */
     
    /*  How to use receiveEndECCFlag
-    * ===============================================================================================================
+    * ==========================================================================
     * Bit7    Bit6    Bit5    Bit4    Bit3    Bit2    Bit1    Bit0
     *                                 cnt3    cnt2    cnt1    cnt0
     *
     *  Initialize                 = 0x00  (0b00000000)
-    * ===============================================================================================================
+    * ==========================================================================
     */
     UINT index_of_Buffer = 0;
-    UINT ECC_count = 0;
+    UDWORD ECC_count = 0;
     //FIXME :
     sendChar(0xee);
-    sendChar(ECC_length);
-    sendChar(ECC_length/8);
-    sendChar(ECC_length-7*(ECC_length/8));
     CREN = Bit_High;    //It is needed for integration with OBC
+    PIE1bits.TMR2IE = 0;
     while(receiveEndECCFlag != 0x08){
         //XXX : CAM1 break in ECC
         if(CAM1 == 0) break;
@@ -281,9 +273,6 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             //  Jump to next group's first sector & change flag
             receiveEndECCFlag += 0x01;     //+1 8split_cnt in receiveEndECCFlag.
             FROM_Write_adr = Roop_adr +(UINT)(receiveEndECCFlag) * Jump_adr;
-            //FIXME ; debug
-            sendChar(ECC_count);
-
             ECC_count = 0;
             //FIXME : debug
             sendChar(receiveEndECCFlag);
@@ -314,7 +303,7 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UINT ECC_length){
             index_of_Buffer = 0;
         }
     }
-    sendChar(0xee);
+    PIE1bits.TMR2IE = 1;
 }
 
 void Receive_8split_clock(UDWORD Roop_adr, UDWORD Jump_adr, UINT split_time, UINT end_time){

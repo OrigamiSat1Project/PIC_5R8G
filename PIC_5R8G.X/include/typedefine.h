@@ -9,7 +9,7 @@ typedef signed short SWORD;
 typedef unsigned short UWORD;
 typedef signed int SINT;
 typedef unsigned int UINT;
-//typedef unsigned short long USLONG;
+typedef unsigned short long USLONG;
 typedef signed long SDWORD;
 typedef unsigned long UDWORD;
 

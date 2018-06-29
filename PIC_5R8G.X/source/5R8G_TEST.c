@@ -83,7 +83,7 @@ void main(void){
             sendChar(Command[i]);
         }
         send_OK();
-        UINT ECC_length = 0;
+        UDWORD ECC_length = 0;
 
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
 
@@ -122,7 +122,7 @@ void main(void){
                 }
                 break;
 //            case 'D':
-//                switch(Command[2]){
+                switch(Command[2]){
 //                    case 'C':   //Clock
 //                        set_timer_counter(0);
 //                        set_timer_counter_min(0);
@@ -136,22 +136,22 @@ void main(void){
 //                        //  FIXME : for debug
 //                        send_OK();
 //                        break;
-//                    case '2':    //Use CAM2
-//                        while(CAM2 == 1);   //  wait 5V SW
-//                        while(CAM2 == 0){
-//                            if(CAMERA_POW == 1){
-//                                onAmp();
-//                            }
-//                            send_dummy_data();
-//                        }
-//                        offAmp();
-//                        //  FIXME : for debug
-//                        send_OK();
-//                        break;
-//                    default:
-//                        break;
-//                }
-//                break;
+                    case '2':    //Use CAM2
+                        while(CAM2 == 1);   //  wait 5V SW
+                        while(CAM2 == 0){
+                            if(CAMERA_POW == 1){
+                                onAmp();
+                            }
+                            send_dummy_data();
+                        }
+                        offAmp();
+                        //  FIXME : for debug
+                        send_OK();
+                        break;
+                    default:
+                        break;
+                }
+                break;
             case 'R':
                 switch(Command[2]){
                     case 'T':
@@ -179,16 +179,20 @@ void main(void){
                         }
                         //PIE1bits.TMR2IE = 1;
                         break;
-//                    case 'E':
-//                        //PIE1bits.TMR2IE = 0;
-//                        for(UINT i=0; i<3; i++){
-//                            ECC_length += Command[i+3] << 8*(2-i);
-//                        }
-//                        Receive_ECC(Roop_adr, Jump_adr, ECC_length);
-//                        //  FIXME : for debug
-//                        send_OK();
-//                        //PIE1bits.TMR2IE = 1;
-//                        break;
+                    case 'E':
+                        //PIE1bits.TMR2IE = 0;
+                        for(UINT i=0; i<3; i++){
+                            ECC_length += (UDWORD)(Command[i+3]) << 8*(2-i);
+                        }
+                        //FIXME
+                        for(UINT i=0; i<3; i++){
+                            sendChar((UBYTE)(ECC_length >> 8*(2-i)));
+                        }
+                        Receive_ECC(Roop_adr, Jump_adr, ECC_length);
+                        //  FIXME : for debug
+                        send_OK();
+                        //PIE1bits.TMR2IE = 1;
+                        break;
 //                    case 'C':   //Clock mode
 //                        set_timer_counter(0);
 //                        set_timer_counter_min(0);

@@ -169,7 +169,7 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
             }
 
             //  WDT dealing
-            if(get_timer_counter() == 20){
+            if(get_timer_counter() % 20 == 0){
                 CLRWDT();
                 WDT_CLK = ~WDT_CLK;
             }

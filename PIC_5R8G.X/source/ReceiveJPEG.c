@@ -72,10 +72,10 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
         if(index_of_Buffer == MaxOfMemory){
             BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
-            BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             FROM_Write_adr = flash_Write_FF0A(FROM_Write_adr);
             index_of_Buffer = 0;
+            BUSY = 1;   //BUSY OFF
         }
     }
     PIE1bits.TMR2IE = 1;
@@ -129,10 +129,10 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
         if(index_of_Buffer == MaxOfMemory){
             BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
-            BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             FROM_Write_adr = flash_Write_FF0A(FROM_Write_adr);
             index_of_Buffer = 0;
+            BUSY = 1;   //BUSY OFF
         }
     }
     PIE1bits.TMR2IE = 1;
@@ -209,10 +209,10 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
         if(index_of_Buffer == MaxOfMemory){
             BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
-            BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             FROM_Write_adr = flash_Write_FF0A(FROM_Write_adr);
             index_of_Buffer = 0;
+            BUSY = 1;   //BUSY OFF
         }
     }
     PIE1bits.TMR2IE = 1;
@@ -274,10 +274,11 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UDWORD ECC_length){
         if(index_of_Buffer == MaxOfMemory){
             BUSY = 0;   //BUSY ON
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
-            BUSY = 1;   //BUSY OFF
+            
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
             FROM_Write_adr = flash_Write_FF0A(FROM_Write_adr);
             index_of_Buffer = 0;
+            BUSY = 1;   //BUSY OFF
         }
     }
     PIE1bits.TMR2IE = 1;

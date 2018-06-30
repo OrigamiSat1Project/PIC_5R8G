@@ -187,5 +187,6 @@ void flash_ExchgLong(UDWORD);						//エンディアンの変換関数
 UBYTE flash_SPI_DataOut(UWORD, UBYTE *);
 UBYTE flash_Write_En(void);
 UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
+UDWORD flash_Write_FF0A(UDWORD);
 
 #endif /* __FROM_H__ */

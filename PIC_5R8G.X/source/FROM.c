@@ -475,3 +475,9 @@ UBYTE flash_Read_StsReg(UBYTE * pStsReg)
 
 	return FLASH_OK;
 }
+
+UDWORD flash_Write_FF0A(UDWORD FROM_Write_adr){
+    UBYTE FF0A[2] = {0xFF, 0x0A};
+    flash_Write_Data(FROM_Write_adr, (UDWORD)2, &FF0A);
+    return FROM_Write_adr+2;
+}

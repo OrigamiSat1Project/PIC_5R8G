@@ -357,10 +357,10 @@ void send_dummy_data(void){
             clock_in_tst = 0;
             onAmp();
         }
-        if(clock_in_tst % 100 == 0){
-            CLRWDT();
-            WDT_CLK = ~WDT_CLK;
-        }
+//        if(clock_in_tst % 100 == 0){
+//            CLRWDT();
+//            WDT_CLK = ~WDT_CLK;
+//        }
         clock_in_tst ++;
     }
 }
@@ -388,10 +388,10 @@ void send_dummy_data_timer(UBYTE time_command){
             clock_in_tst = 0;
             onAmp();
         }
-        if(clock_in_tst % 100 == 0){
-            CLRWDT();
-            WDT_CLK = ~WDT_CLK;
-        }
+//        if(clock_in_tst % 100 == 0){
+//            CLRWDT();
+//            WDT_CLK = ~WDT_CLK;
+//        }
         clock_in_tst ++;
     }
 }

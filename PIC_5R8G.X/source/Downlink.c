@@ -7,6 +7,7 @@
 #include "time.h"
 #include "FROM.h"
 #include "Timer.h"
+#include <limits.h>
 
 static UINT downlink_time = 10000;  //downlinktime is 10s as default
 static UINT rest_time = 5000;       //rest time is 5s as default
@@ -50,6 +51,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
     //FIXME
     //send_01();
     set_timer_counter(0);
+    set_timer_counter_only_rest(0);
     while(CAM2 == 0){
         if(readFROM_Count >= 8){
             readFROM_Count = 0;
@@ -65,31 +67,30 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                 }else{
                     receiveEndJpegFlag &= 0x00;
                 }
-                if(receiveEndJpegFlag >= (UBYTE)((MaxOfMemory)*2)){    //0d80 = 0x50, 0xff continue 50.
+                if(receiveEndJpegFlag >= (UBYTE)(MaxOfMemory*2)){
                     receiveEndJpegFlag &= 0x00;
                     readFROM_Count ++;
-                    FROM_Read_adr = Roop_adr - (UDWORD)(MaxOfMemory) + readFROM_Count * Jump_adr;
-                    //FIXME
-                    //downlinkRest('1');
-                    __delay_ms(3000);
+                    FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
+                    downlinkRest('1');
                     break;
                 }
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
+            
 
             //  FIXME : TIMER2
              //  for rest
             //FIXME
-            if(get_timer_counter() > get_downlink_time()){
-                //downlinkRest('A');
+            if(get_timer_counter_only_rest() > get_downlink_time()){
+                downlinkRest('A');
                 sendBufferCount = 0;
             }
 
             //  WDT dealing
-            if(get_timer_counter() == 20){
-                CLRWDT();
-                WDT_CLK = ~WDT_CLK;
-            }
+//            if(get_timer_counter() == 20){
+//                CLRWDT();
+//                WDT_CLK = ~WDT_CLK;
+//            }
 //            if(timer_counter == 20){
 //                CLRWDT();
 //                WDT_CLK = ~WDT_CLK;
@@ -134,6 +135,7 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
      */
     send_01();
     set_timer_counter(0);
+    set_timer_counter_only_rest(0);
     set_timer_counter_min(0);
     while(get_timer_counter_min() < ending_time){
         if(readFROM_Count >= 8){
@@ -153,30 +155,17 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
                 if(receiveEndJpegFlag >= (UBYTE)(MaxOfMemory)*2){
                     receiveEndJpegFlag &= 0x00;
                     readFROM_Count ++;
-                    FROM_Read_adr = Roop_adr - (UDWORD)(MaxOfMemory) + readFROM_Count * Jump_adr;
+                    FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
                     downlinkRest('1');
-                    __delay_ms(3000);
                     break;
                 }
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
 
-            //  FIXME : TIMER2
-             //  for rest
-            if(get_timer_counter() > get_downlink_time()){
+            if(get_timer_counter_only_rest() > get_downlink_time()){
                 downlinkRest('A');
                 sendBufferCount = 0;
             }
-
-            //  WDT dealing
-            if(get_timer_counter() % 20 == 0){
-                CLRWDT();
-                WDT_CLK = ~WDT_CLK;
-            }
-//            if(timer_counter == 20){
-//                CLRWDT();
-//                WDT_CLK = ~WDT_CLK;
-//            }
         }
         else{
             readFROM_Count ++;
@@ -200,9 +189,9 @@ void downlinkRest(UBYTE c){
         send_AB();
     }
     offAmp();
-    //XXX : rest by using Timer
-    set_timer_counter(0);
-    while(get_timer_counter() < get_rest_time());
+    set_timer_counter_only_rest(0);
+    while(get_timer_counter_only_rest() < get_rest_time());
+    
     if(CAMERA_POW == 1){
         onAmp();
     }
@@ -211,7 +200,7 @@ void downlinkRest(UBYTE c){
     }else{
         send_AB();
     }
-    set_timer_counter(0);
+    set_timer_counter_only_rest(0);
 }
 
 void set_downlink_time(UINT time){

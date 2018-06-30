@@ -16,7 +16,7 @@ extern "C" {
 #include "typedefine.h"
 #endif
 
-#define WDT_CLK		(RB6)
+//#define WDT_CLK		(RB6)
 
 void init_mpu(void);
 void init_module(void);

@@ -20,5 +20,7 @@ void set_timer_counter_min(UINT);
 UINT get_timer_counter_min(void);
 void set_timer_counter_only_getUart(UINT);
 UINT get_timer_counter_only_getUart(void);
+void set_timer_counter_only_rest(UINT);
+UINT get_timer_counter_only_rest(void);
 
 #endif	/* Timer_H */

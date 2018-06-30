@@ -34,7 +34,7 @@ const UBYTE MaxOfSector = 0x3f;
 #define JPGCOUNT 5000
 void main(void){
 
-    UDWORD Roop_adr = (UDWORD)0x00010000;
+    UDWORD Roop_adr = (UDWORD)0x010000;
     UDWORD Jump_adr = 0x20000;
     
     init_module();

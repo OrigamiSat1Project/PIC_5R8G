@@ -10,7 +10,6 @@
 
 static UINT downlink_time = 10000;  //downlinktime is 10s as default
 static UINT rest_time = 5000;       //rest time is 5s as default
-const UBYTE FROM_default_data = 0xff;
 
 void downlinkChar(UBYTE);
 void downlinkRest(UBYTE);
@@ -57,7 +56,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
             for(UINT i=0; i<MaxOfMemory; i++){
                 downlinkChar(Buffer[i]);
-                if(Buffer[i] == FROM_default_data){
+                if(Buffer[i] == FLASH_DUMMY_DATA){
                     receiveEndJpegFlag += 0x01;
                 }else{
                     receiveEndJpegFlag &= 0x00;
@@ -127,7 +126,7 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
             flash_Read_Data(FROM_Read_adr, (UDWORD)(MaxOfMemory), &Buffer);
             for(UINT i=0; i<MaxOfMemory; i++){
                 downlinkChar(Buffer[i]);
-                if(Buffer[i] == FROM_default_data){
+                if(Buffer[i] == FLASH_DUMMY_DATA){
                     receiveEndJpegFlag += 0x01;
                 }else{
                     receiveEndJpegFlag &= 0x00;

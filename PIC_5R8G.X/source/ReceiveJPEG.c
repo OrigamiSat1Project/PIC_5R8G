@@ -57,6 +57,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
         {
             BUSY = 0;
             flash_Write_Data(FROM_Write_adr, (UDWORD)(index_of_Buffer + 1), &Buffer);
+            
             BUSY = 1;
             index_of_Buffer = 0;
             receiveEndJpegFlag &= ~0x0f;    //Clear low order 4bit of receiveEndJpegFlag. Reset 0xFF flag
@@ -73,6 +74,7 @@ void Receive_8split_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
             BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
+            FROM_Write_adr = flash_Write_FF0A(FROM_Write_adr);
             index_of_Buffer = 0;
         }
     }
@@ -129,6 +131,7 @@ void Receive_thumbnail_JPEG(UDWORD Roop_adr, UDWORD Jump_adr){
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
             BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
+            FROM_Write_adr = flash_Write_FF0A(FROM_Write_adr);
             index_of_Buffer = 0;
         }
     }
@@ -208,6 +211,7 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
             BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
+            FROM_Write_adr = flash_Write_FF0A(FROM_Write_adr);
             index_of_Buffer = 0;
         }
     }
@@ -272,6 +276,7 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UDWORD ECC_length){
             flash_Write_Data(FROM_Write_adr, (UDWORD)(MaxOfMemory), &Buffer);
             BUSY = 1;   //BUSY OFF
             FROM_Write_adr += (UDWORD)(MaxOfMemory);
+            FROM_Write_adr = flash_Write_FF0A(FROM_Write_adr);
             index_of_Buffer = 0;
         }
     }

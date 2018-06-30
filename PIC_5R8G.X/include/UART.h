@@ -25,14 +25,6 @@
 #define Bit_High	0b1
 #define Bit_Low		0b0
 
-//柏山が定義
-#define Bank0 STATUS = 0x00;
-#define Bank1 STATUS = 0x20;
-#define Bank2 STATUS = 0xC0;
-#define Bank3 STATUS = 0xE0;
-
-//static UBYTE getUartData(void);
-
 void send_tst_str(void);
 void initbau(UBYTE);
 void sendChar(UBYTE);
@@ -46,19 +38,10 @@ void send_dummy_data(void);
 //XXX
 void send_dummy_data_timer(UBYTE);
 UBYTE    getUartData(UBYTE);
-typedef union{
-	UBYTE	Data[64];
-	UDWORD	dummy;
-}CamDataBuf;
 
 void onAmp(void);
 void offAmp(void);
 void change_downlink_baurate(UBYTE);
 UBYTE getDownlinkBAU(void);
-
-//extern bank2 volatile CamDataBuf	Rbuf2;		//画像データ用バッファ
-//extern bank3 volatile CamDataBuf	Rbuf3;		//画像データ用バッファ
-//extern USLONG 						dlength;	//データ長
-
 
 #endif						//#ifndef __UART_h__

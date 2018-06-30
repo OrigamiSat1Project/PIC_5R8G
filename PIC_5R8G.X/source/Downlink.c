@@ -1,5 +1,4 @@
 #include <xc.h>
-//#include "pic16f886.h"
 
 #include "InitMPU.h"
 #include "MAX2828.h"
@@ -27,11 +26,9 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      *  8/8     7/8     6/8     5/8     4/8     3/8     2/8     1/8
      * ========================================================================
      */
-    sendChar(0x50);
     while(CAM2 == 1);   //  wait 5V SW
     if(CAMERA_POW == 1){
-        //FIXME
-        //onAmp();
+        onAmp();
     }
     UINT sendBufferCount = 1;
     UBYTE Buffer[MaxOfMemory];
@@ -48,8 +45,6 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
      * Flag is OFF : FROM_Read_adr is jumping to next sector's start address.
      * =============================================================
      */
-    //FIXME
-    //send_01();
     set_timer_counter(0);
     set_timer_counter_only_rest(0);
     while(CAM2 == 0){
@@ -77,32 +72,18 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
             }
             FROM_Read_adr += (UDWORD)(MaxOfMemory);
             
-
-            //  FIXME : TIMER2
              //  for rest
-            //FIXME
             if(get_timer_counter_only_rest() > get_downlink_time()){
                 downlinkRest('A');
                 sendBufferCount = 0;
             }
-
-            //  WDT dealing
-//            if(get_timer_counter() == 20){
-//                CLRWDT();
-//                WDT_CLK = ~WDT_CLK;
-//            }
-//            if(timer_counter == 20){
-//                CLRWDT();
-//                WDT_CLK = ~WDT_CLK;
-//            }
         }
         else{
             readFROM_Count ++;
             FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
         }
     }
-    //FIXME
-    //offAmp();
+    offAmp();
     CREN = Bit_High;
     TXEN = Bit_Low;
 }
@@ -114,7 +95,6 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
      *  8/8     7/8     6/8     5/8     4/8     3/8     2/8     1/8
      * ========================================================================
      */
-    sendChar(0x50);
     if(CAMERA_POW == 1){
         onAmp();
     }

@@ -146,10 +146,6 @@
 #define FLASH_REG_WEL		(UBYTE)0x02				/* Write Enable Latch Bit						*/
 #define FLASH_REG_WIP		(UBYTE)0x01				/* Write In Progress Bit						*/
 
-/*- Definitions of byte unit reading writing switch --*//* !!!! Set more than "2" !!!!				*/
-#define FLASH_BYTE_READ		2						/* 1byte reading execution judgment bytes		*/
-#define FLASH_BYTE_WRITE	2						/* 1byte writing execution judgment bytes		*/
-
 /*----------------- SPI definitions -----------------*/
 #define FLASH_SPI_BUF			SSPBUF					/* SPI バッファレジスタ						*/
 #define FLASH_SPI_IF			SSPIF					/* SPI 割り込みフラグ						*/
@@ -167,11 +163,6 @@
 	SSPCON  = (UBYTE)0x20;		\
 } while (0)
 
-/* SPI通信禁止 */
-#define FLASH_SPI_DI() do {		\
-	SSPCON = (UBYTE)0x00;		\
-} while (0)
-
 /* CSコントロール */
 #define FLASH_SET_CS(Lv) do {	\
 	FROM_nCS = Lv;				\
@@ -180,36 +171,21 @@
 /*--------- Command transmission processing ----------*/
 /*											 Cmd					Arg				CmdSize			*/
 #define flash_Cmd_WREN()		flash_Send_Cmd(FLASH_CMD_WREN,	(UDWORD)0,		FLASH_CMD_SIZE		)
-#define flash_Cmd_WRDI()		flash_Send_Cmd(FLASH_CMD_WRDI,	(UDWORD)0,		FLASH_CMD_SIZE		)
 #define flash_Cmd_RDSR()		flash_Send_Cmd(FLASH_CMD_RDSR,	(UDWORD)0,		FLASH_CMD_SIZE		)
-#define flash_Cmd_WRSR()		flash_Send_Cmd(FLASH_CMD_WRSR,	(UDWORD)0,		FLASH_CMD_SIZE		)
 #define flash_Cmd_READ(Arg)		flash_Send_Cmd(FLASH_CMD_READ,	(UDWORD)Arg,	FLASH_CMD_SIZE+FLASH_ADDR_SIZE	)
 #define flash_Cmd_WRITE(Arg)	flash_Send_Cmd(FLASH_CMD_WRITE,	(UDWORD)Arg,	FLASH_CMD_SIZE+FLASH_ADDR_SIZE	)
 #define flash_Cmd_BE()			flash_Send_Cmd(FLASH_CMD_BE,	(UDWORD)0,		FLASH_CMD_SIZE		)
 #define flash_Cmd_SE(Arg)		flash_Send_Cmd(FLASH_CMD_SE,	(UDWORD)Arg,	FLASH_CMD_SIZE+FLASH_ADDR_SIZE	)
-#define flash_Cmd_DP()			flash_Send_Cmd(FLASH_CMD_DP,	(UDWORD)0,		FLASH_CMD_SIZE		)
-#define flash_Cmd_RES()			flash_Send_Cmd(FLASH_CMD_RES,	(UDWORD)0,		FLASH_CMD_SIZE+FLASH_ADDR_SIZE	)
-#define flash_Cmd_RDID()		flash_Send_Cmd(FLASH_CMD_RDID,	(UDWORD)0,		FLASH_CMD_SIZE		)
 
-/************************************************************************************************/
-/*	Prototypes																					*/
-/************************************************************************************************/
-/**/
 UBYTE flash_Write_Page(UDWORD , UWORD , UBYTE *);	//1-page write processing
 UBYTE flash_Read_StsReg(UBYTE *);					//Write-protection check
-//UBYTE flash_Write_StsReg(UBYTE *);					//Status register write processing
 UBYTE flash_Erase(UDWORD, UBYTE);					//Erase processing
 UBYTE flash_Read_Data(UDWORD, UDWORD, UBYTE *);		//Data read processing
 UBYTE flash_Write_Data(UDWORD, UDWORD, UBYTE *);	//Data write processing
-//UBYTE flash_Write_Protect(UBYTE);					//Write-protection setting processing
 void flash_ExchgLong(UDWORD);						//エンディアンの変換関数
  
 UBYTE flash_SPI_DataOut(UWORD, UBYTE *);
-//UBYTE flash_SPI_Rx(UWORD, UBYTE *);
 UBYTE flash_Write_En(void);
 UBYTE flash_Send_Cmd(UBYTE , UDWORD , UBYTE );
-
-//UBYTE flash_Deep_sleep(void);
-//UBYTE flash_Wake_up(void);
 
 #endif /* __FROM_H__ */

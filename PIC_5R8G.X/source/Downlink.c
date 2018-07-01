@@ -64,7 +64,7 @@ void Downlink(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split){
                 if(receiveEndJpegFlag >= (UBYTE)(MaxOfMemory*2)){
                     receiveEndJpegFlag &= 0x00;
                     readFROM_Count ++;
-                    FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
+                    FROM_Read_adr = Roop_adr - (UDWORD)(MaxOfMemory) + readFROM_Count * Jump_adr;
                     downlinkRest('1');
                     break;
                 }
@@ -134,7 +134,7 @@ void Downlink_clock(UDWORD Roop_adr, UDWORD Jump_adr, UBYTE Identify_8split, UIN
                 if(receiveEndJpegFlag >= (UBYTE)(MaxOfMemory)*2){
                     receiveEndJpegFlag &= 0x00;
                     readFROM_Count ++;
-                    FROM_Read_adr = Roop_adr + readFROM_Count * Jump_adr;
+                    FROM_Read_adr = Roop_adr -(UDWORD)(MaxOfMemory) + readFROM_Count * Jump_adr;
                     downlinkRest('1');
                     break;
                 }

@@ -12,7 +12,7 @@
 #define BAU_HIGH	0x0F		//115.2kbps
 
 //TODO : this shoule be optimisation 
-#define BAU_WITH_OBC BAU_HIGH
+#define BAU_WITH_OBC BAU_LOW
 
 #define cam1		0x00
 #define cam2		0x01

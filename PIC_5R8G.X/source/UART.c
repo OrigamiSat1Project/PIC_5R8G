@@ -105,6 +105,7 @@ void send_dummy_data(void){
     while(CAM2 == 0){
         UBYTE buf = STR[index_of_STR];
         downlinkChar(buf);
+        index_of_STR++;
         if(index_of_STR > 10){
             index_of_STR = 0;
         }
@@ -124,6 +125,7 @@ void send_dummy_data_timer(UBYTE time_command){
     while(get_timer_counter_min() < time_command){
         UBYTE buf = STR[index_of_STR];
         downlinkChar(buf);
+        index_of_STR++;
         if(index_of_STR > 10){
             index_of_STR = 0;
         }

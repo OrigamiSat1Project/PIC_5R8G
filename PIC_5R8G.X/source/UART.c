@@ -4,9 +4,9 @@
 
 //#include "typedefine.h"
 #include "UART.h"
+#include "Downlink.h"
 #include "time.h"
 #include "FROM.h"
-//#include "Main.h"
 #include "MAX2828.h"
 #include "InitMPU.h"
 #include "Timer.h"
@@ -100,27 +100,20 @@ void send_AB(void){
 void send_dummy_data(void){
     CREN = Bit_Low;
     TXEN = Bit_High;
-	UINT clock_in_tst = 0;
-    delay_ms(1000);
+    UINT index_of_STR = 0;
+    set_timer_counter_only_rest(0);
     while(CAM2 == 0){
-        if(clock_in_tst <= 1200 ){
-            for(UINT i=0;i<10;i++){
-                send_buf[0] = STR[i];
-                sendChar(send_buf[0]);
-                __delay_us(20);
-            }
-        }else if(1200 < clock_in_tst && clock_in_tst <= 1800){
-            //  shut down power of amp
-			if(CAMERA_POW == 0){
-				offAmp();
-			}
-            __delay_ms(8);
-        }else{
-            clock_in_tst = 0;
-            onAmp();
+        UBYTE buf = STR[index_of_STR];
+        downlinkChar(buf);
+        if(index_of_STR > 10){
+            index_of_STR = 0;
         }
-        clock_in_tst ++;
+        if(get_timer_counter_only_rest() > get_downlink_time()){
+            downlinkRest('1');
+        }
     }
+    CREN = Bit_High;
+    TXEN = Bit_Low;
 }
 //XXX
 void send_dummy_data_timer(UBYTE time_command){

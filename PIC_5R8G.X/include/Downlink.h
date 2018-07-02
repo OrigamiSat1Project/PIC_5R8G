@@ -5,6 +5,8 @@
 
 #include "typedefine.h"
 
+void downlinkChar(UBYTE);
+void downlinkRest(UBYTE);
 void Downlink(UDWORD, UDWORD, UBYTE);
 void Downlink_clock(UDWORD, UDWORD, UBYTE, UINT);
 void set_downlink_time(UINT);

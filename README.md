@@ -44,3 +44,5 @@ Shift-JIS
 
 ## FM module coding
 comit : [81415ec] 81415ec8beb79a05f4154e7712ffe62105a12e4a Bugfix : dummy downlink
+IDE : MPLABX IDE ver4.15
+compiler : XC8 ver1.45

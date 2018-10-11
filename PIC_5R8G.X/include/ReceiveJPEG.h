@@ -8,6 +8,9 @@
 void Receive_8split_JPEG(UDWORD, UDWORD);
 void Receive_thumbnail_JPEG(UDWORD, UDWORD);
 void Receive_8split_H264(UDWORD, UDWORD);
-void Receive_ECC(UDWORD, UDWORD, UDWORD);
+void Receive_ECC(UDWORD, UDWORD, UDWORD,UBYTE);
+
+#define WithCAM1 0x01
+#define WithoutCAM1 0x00
 
 #endif	/* RECEIVEJPEG_H */

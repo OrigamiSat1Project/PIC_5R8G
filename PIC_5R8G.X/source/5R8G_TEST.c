@@ -137,7 +137,13 @@ void main(void){
                         for(UINT i=0; i<3; i++){
                             ECC_length += (UDWORD)(Command[i+3]) << 8*(2-i);
                         }
-                        Receive_ECC(Roop_adr, Jump_adr, ECC_length);
+                        Receive_ECC(Roop_adr, Jump_adr, ECC_length, WithoutCAM1);
+                        break;
+                    case 'C':
+                        for(UINT i=0; i<3; i++){
+                            ECC_length += (UDWORD)(Command[i+3]) << 8*(2-i);
+                        }
+                        Receive_ECC(Roop_adr, Jump_adr, ECC_length, WithCAM1);
                         break;
                     default:
                         break;

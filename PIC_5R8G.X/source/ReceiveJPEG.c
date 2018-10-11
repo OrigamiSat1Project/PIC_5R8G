@@ -9,6 +9,7 @@
 #include "typedefine.h"
 #include "UART.h"
 #include "Timer.h"
+#include "ReceiveJPEG.h"
 
 const UBYTE FooterOfJPEG[] = {0xff, 0x1e};
 const UBYTE FooterOfH264[] = {0x00, 0x00, 0x01, 0x1e};
@@ -214,7 +215,7 @@ void Receive_8split_H264(UDWORD Roop_adr, UDWORD Jump_adr){
     PIE1bits.TMR2IE = 1;
 }
 
-void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UDWORD ECC_length){
+void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UDWORD ECC_length, UBYTE CAM1_mode){
    /* Comment
     * ==========================================================================
     * Erase sectors before writing FROM
@@ -239,8 +240,10 @@ void Receive_ECC(UDWORD Roop_adr, UDWORD Jump_adr, UDWORD ECC_length){
     CREN = Bit_High;    //It is needed for integration with OBC
     PIE1bits.TMR2IE = 0;
     while(receiveEndECCFlag != 0x08){
-        //XXX : CAM1 break in ECC
-        if(CAM1 == 0) break;
+        if(CAM1_mode == WithCAM1){
+            //XXX : CAM1 break in ECC
+            if(CAM1 == 0) break;    
+        }
         Buffer[index_of_Buffer] = getUartData(0x00);
         if (receiveEndECCFlag < 0x07 && ECC_count == ECC_length/8 - 1)
         {

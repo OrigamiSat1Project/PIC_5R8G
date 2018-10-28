@@ -23,6 +23,7 @@ Mission of this is
 ## Author
 
 [reokashiyama](https://github.com/reokashiyama)
+[ryogaide](https://github.com/ryogaide)
 
 ## Hardware
 PIC16F886 ([Microchip](http://www.microchip.com/ja))

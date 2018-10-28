@@ -43,6 +43,6 @@ MPLAB X IDE
 Shift-JIS
 
 ## FM module coding
-comit : [81415ec] 81415ec8beb79a05f4154e7712ffe62105a12e4a Bugfix : dummy downlink
+comit : [51237d7] 51237d7e783d32032fe3db0332d3c69a6ab9e13e  Add function ECC receive mode without CAM1
 IDE : MPLABX IDE ver4.15
 compiler : XC8 ver1.45

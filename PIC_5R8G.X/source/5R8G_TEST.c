@@ -55,25 +55,25 @@ void main(void){
         CREN = Bit_High;
         TXEN = Bit_High;
         UBYTE Command[8];
-        Command[0] = 0x21;
-        while(crc16(0,Command,6) != CRC_check(Command, 6)){
-            for(UINT i=0;i<8;i++){
-                Command[i] = 0x21;
-            }
-            //  sync with commands by OBC
-            while(Command[0] != '5'){
-                Command[0] = getUartData(0x00);
-            }
-            set_timer_counter(0);
-            for(UINT i=1;i<8;i++){
-                Command[i] = getUartData('T');
-            }
-        }
-        for(UINT i=0;i<8;i++){
-            sendChar(Command[i]);
-        }
-        //FIXME : debug
-        send_OK();
+//        Command[0] = 0x21;
+//        while(crc16(0,Command,6) != CRC_check(Command, 6)){
+//            for(UINT i=0;i<8;i++){
+//                Command[i] = 0x21;
+//            }
+//            //  sync with commands by OBC
+//            while(Command[0] != '5'){
+//                Command[0] = getUartData(0x00);
+//            }
+//            set_timer_counter(0);
+//            for(UINT i=1;i<8;i++){
+//                Command[i] = getUartData('T');
+//            }
+//        }
+//        for(UINT i=0;i<8;i++){
+//            sendChar(Command[i]);
+//        }
+//        //FIXME : debug
+//        send_OK();
 
         //  TODO : Add time restrict of picture downlink (10s downlink, 5s pause)
 
@@ -82,6 +82,10 @@ void main(void){
          * CRC16 judgement before go to switch-case statement
          * ========================================================================
          */
+        
+        //SET COMMAND MANUALY
+        Command[1] = 'D';
+        Command[2] = '2';
         
         switch(Command[1]){
             case 'B':

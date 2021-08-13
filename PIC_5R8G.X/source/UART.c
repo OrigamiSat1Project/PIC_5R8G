@@ -26,13 +26,13 @@ void            send_NG(void);
 
 static UBYTE BAU_WHEN_DOWNLINK = BAU_WITH_OBC;
 
-#define UART_DEBUG_MODE
+// #define UART_DEBUG_MODE
 
 //  Switch on power of amplifier
 void onAmp(){
     initbau(BAU_WHEN_DOWNLINK);
     __delay_ms(10);
-#ifndef UART_DEBUG_MODE
+#ifdef UART_DEBUG_MODE
     CAMERA_POW = 1;
     CAMERA_SEL = 1;
 #else

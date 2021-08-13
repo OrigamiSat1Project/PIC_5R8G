@@ -31,6 +31,8 @@
 
 const UBYTE MaxOfSector = 0x3f;
 
+#define DUMMY_MODE
+
 #define JPGCOUNT 5000
 void main(void){
 
@@ -46,6 +48,11 @@ void main(void){
         //TXEN = Bit_High;
         UBYTE Command[8];
         Command[0] = 0x21;
+        
+#ifdef DUMMY_MODE
+        Command[1] = 'D';
+        Command[2] = '2';
+#else
         while(crc16(0,Command,6) != CRC_check(Command, 6)){
             for(UINT i=0;i<8;i++){
                 Command[i] = 0x21;
@@ -62,8 +69,9 @@ void main(void){
         BUSY = 0;
         __delay_ms(3000);
         BUSY = 1;
-        UDWORD ECC_length = 0;
         
+#endif
+        UDWORD ECC_length = 0;
         switch(Command[1]){
             case 'P':
                 switch(Command[2]){
